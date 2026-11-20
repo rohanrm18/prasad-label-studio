@@ -12,67 +12,93 @@
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#f2f3f5;color:#171717;font-family:Arial,sans-serif}
-header{background:#111;color:white;text-align:center;padding:23px 12px}
-header h2{margin:0;letter-spacing:1px;font-size:21px}
-header p{font-size:11px;color:#ccc;margin:7px 0 0}
-main{max-width:600px;margin:auto;padding:15px}
-.card{background:white;border-radius:13px;padding:17px;margin-bottom:14px;box-shadow:0 2px 8px #00000008}
-h3{font-size:16px;margin:0 0 14px}
-label{display:block;font-size:13px;font-weight:bold;margin:12px 0 6px}
-input,select{width:100%;padding:12px;border:1px solid #ddd;border-radius:8px;font-size:16px;background:white;color:#111}
-button{border:0;border-radius:8px;padding:13px;font-weight:bold;font-size:14px;cursor:pointer}
-.primary{background:#111;color:white;width:100%;margin-top:10px}
-.secondary{background:#eee;color:#111}
-.danger{background:#fff0f0;color:#b00020;width:100%;margin-top:10px}
-.quick{display:flex;flex-wrap:wrap;gap:7px}
-.quick button{padding:10px 13px}
-.sizes{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
-.size{border:1px solid #ddd;border-radius:8px;padding:10px;text-align:center}
-.size label{margin:0;display:flex;align-items:center;justify-content:center;gap:5px}
-.size input{width:18px;height:18px}
-.qtyrow{display:grid;grid-template-columns:65px 1fr;gap:10px;align-items:center;margin:8px 0}
-.qtyrow input{padding:9px}
-.total{font-size:26px;font-weight:bold}
-.note{font-size:12px;color:#777;line-height:1.5}
-#preview{display:flex;justify-content:center;margin:15px 0;overflow:auto}
-.label{
-width:50mm;height:30mm;min-width:50mm;
-background:white;color:black;border:.4mm solid black;
-border-radius:1mm;padding:1.5mm;
-display:flex;flex-direction:column;align-items:center;
-overflow:hidden;justify-content:flex-start;
-}
-.brand{font-size:8pt;font-weight:900;margin-bottom:1mm}
-.details{width:100%;display:flex;justify-content:space-between;font-size:5.5pt}
-.sizebig{border:.5mm solid black;border-radius:1mm;padding:1mm 7mm;font-size:11pt;font-weight:900;margin:1mm 0}
-.barcode{width:42mm;height:5mm;max-width:100%}
-.bartext{font-size:5pt;margin-top:0}
-.product-option{padding:10px;background:#f5f5f5;border-radius:8px;margin:7px 0}
+header{background:#111;color:white;text-align:center;padding:20px 12px}
+header h1{font-size:23px;letter-spacing:2px;margin:0}
+header p{font-size:11px;letter-spacing:3px;margin:7px 0 0;color:#ccc}
+main{max-width:850px;margin:auto;padding:14px}
+.panel{background:white;border-radius:12px;padding:16px;margin-bottom:14px;box-shadow:0 2px 8px #0000000b}
+h2{font-size:16px;margin:0 0 14px}
+h3{font-size:14px;margin:16px 0 10px}
+label{display:block;font-size:12px;font-weight:bold;margin:10px 0 5px}
+input,select{width:100%;padding:11px;border:1px solid #ccc;border-radius:7px;font-size:15px;background:white}
+button{border:0;border-radius:7px;padding:11px 14px;font-size:13px;font-weight:bold;cursor:pointer}
+.primary{background:#111;color:white}
+.secondary{background:#e9e9e9;color:#111}
+.danger{background:#fee8e8;color:#a40000}
+.buttons{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.size-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.size-item{border:1px solid #ddd;border-radius:8px;padding:8px;text-align:center}
+.size-item input[type=checkbox]{width:auto;margin:0 3px 0 0}
+.size-item label{display:inline;font-size:13px;margin:0}
+.size-item input[type=number]{padding:7px;text-align:center;margin-top:7px}
+.size-item.active{border-color:#111;background:#f7f7f7}
+.template-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.template-option{border:1px solid #ddd;border-radius:8px;padding:12px;text-align:center;background:#fff}
+.template-option.active{border:2px solid #111;background:#f4f4f4}
+.template-option strong{display:block;font-size:13px}
+.template-option small{font-size:11px;color:#666}
+#previewWrap{overflow:auto;background:#eee;padding:14px;border-radius:8px}
+.label-preview{width:50mm;height:30mm;background:white;color:#111;border:0.25mm solid #111;padding:2mm;position:relative;overflow:hidden}
+.brand{font-size:9pt;font-weight:900;letter-spacing:.5px}
+.small{font-size:6.5pt}
+.style-line{font-size:7pt;font-weight:bold}
+.colour-line{font-size:7pt}
+.size-value{font-size:20pt;font-weight:900;line-height:1}
+.barcode{width:100%;height:9mm;display:block}
+.barcode-number{text-align:center;font-size:6pt;letter-spacing:1px}
+.classic .label-top{display:flex;justify-content:space-between;align-items:center;border-bottom:.3mm solid #111;padding-bottom:1mm}
+.classic .label-info{display:flex;justify-content:space-between;align-items:center;padding-top:1.5mm}
+.classic .size-value{font-size:21pt}
+.minimal{border:0;padding:2.5mm}
+.minimal .brand{font-size:7pt;letter-spacing:1px}
+.minimal .label-top{display:flex;justify-content:space-between}
+.minimal .label-info{display:flex;justify-content:space-between;align-items:center;margin-top:2mm}
+.minimal .size-value{font-size:24pt}
+.minimal .barcode{height:8mm;margin-top:1mm}
+.barcode-focus{padding:1.5mm}
+.barcode-focus .label-top{display:flex;justify-content:space-between;align-items:center}
+.barcode-focus .brand{font-size:8pt}
+.barcode-focus .label-info{display:flex;justify-content:space-between;align-items:center;margin-top:1mm}
+.barcode-focus .barcode{height:12mm;margin-top:1mm}
+.barcode-focus .barcode-number{font-size:6.5pt}
+.brand-focus{padding:2mm;text-align:center;border:1mm double #111}
+.brand-focus .brand{font-size:11pt;letter-spacing:1px}
+.brand-focus .label-top{border-bottom:.3mm solid #111;padding-bottom:1mm}
+.brand-focus .label-info{display:flex;justify-content:space-around;align-items:center;margin-top:2mm}
+.brand-focus .size-value{font-size:22pt}
+.brand-focus .barcode{height:8mm;margin-top:1mm}
+.saved-row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid #eee}
+.saved-row span{font-size:13px;font-weight:bold}
+.muted{font-size:12px;color:#666}
+.total{font-size:15px;font-weight:bold;margin-top:12px}
+#status{font-size:12px;margin-top:10px;color:#176b32}
+@media(max-width:450px){.grid2{grid-template-columns:1fr}.size-grid{grid-template-columns:repeat(4,1fr)}}
 @media print{
  @page{size:50mm 30mm;margin:0}
- html,body{width:50mm!important;margin:0!important;padding:0!important;background:white!important}
- body *{visibility:hidden}
- #printArea,#printArea *{visibility:visible}
+ html,body{margin:0!important;padding:0!important;width:50mm!important;background:white!important}
+ body *{visibility:hidden!important}
+ #printArea,#printArea *{visibility:visible!important}
  #printArea{position:absolute;left:0;top:0;width:50mm}
- .label{page-break-after:always;break-after:page;margin:0}
+ .print-label{width:50mm;height:30mm;page-break-after:always;break-after:page;overflow:hidden}
+ .print-label:last-child{page-break-after:auto;break-after:auto}
 }
 </style>
 </head>
 
 <body>
-
 <header>
-<h2>PRASAD LABEL STUDIO</h2>
+<h1>PRASAD LABEL STUDIO</h1>
 <p>BY PRASAD APPARELS</p>
 </header>
 
 <main>
 
-<div class="card">
-<h3>Product Details</h3>
+<section class="panel">
+<h2>1. Product Details</h2>
 
 <label>Style Number</label>
-<input id="style" value="8136">
+<input id="style" placeholder="Example: 8136">
 
 <label>Model / Category</label>
 <select id="model">
@@ -96,338 +122,353 @@ overflow:hidden;justify-content:flex-start;
 </select>
 
 <label>Colour</label>
-<input id="colour" value="White">
+<input id="colour" placeholder="Example: White">
 
 <label>Barcode Number</label>
-<input id="barcode" value="80508050" inputmode="numeric">
+<input id="barcodeNumber" placeholder="Example: 80508050" inputmode="numeric">
+
+<div class="buttons">
+<button class="primary" onclick="saveProduct()">SAVE PRODUCT</button>
+<button class="secondary" onclick="clearProduct()">CLEAR</button>
 </div>
+<div id="status"></div>
+</section>
 
-<div class="card">
-<h3>Saved Products</h3>
-
-<label>Select Saved Product</label>
-<select id="savedProducts">
-<option value="">-- Select Product --</option>
-</select>
-
-<button class="primary" onclick="loadProduct()">LOAD PRODUCT</button>
-<button class="primary" onclick="saveProduct()">SAVE CURRENT PRODUCT</button>
-<button class="danger" onclick="deleteProduct()">DELETE SAVED PRODUCT</button>
-
-<p class="note">Save your garment details and reuse them whenever required.</p>
+<section class="panel">
+<h2>2. Choose Label Design</h2>
+<div class="template-grid">
+<button class="template-option active" data-template="classic" onclick="chooseTemplate('classic')">
+<strong>Premium Classic</strong><small>Default design</small>
+</button>
+<button class="template-option" data-template="minimal" onclick="chooseTemplate('minimal')">
+<strong>Minimal</strong><small>Clean simple design</small>
+</button>
+<button class="template-option" data-template="barcode-focus" onclick="chooseTemplate('barcode-focus')">
+<strong>Barcode Focus</strong><small>Large barcode</small>
+</button>
+<button class="template-option" data-template="brand-focus" onclick="chooseTemplate('brand-focus')">
+<strong>Brand Focus</strong><small>Prominent brand name</small>
+</button>
 </div>
+</section>
 
-<div class="card">
-<h3>Select Sizes</h3>
-<p class="note">Select the sizes you want to print.</p>
-<div class="sizes" id="sizes"></div>
+<section class="panel">
+<h2>3. Select Sizes & Quantities</h2>
+<div class="buttons">
+<button class="secondary" onclick="selectAllSizes(true)">SELECT ALL</button>
+<button class="secondary" onclick="selectAllSizes(false)">CLEAR ALL</button>
 </div>
-
-<div class="card">
-<h3>Bulk Sets Printing</h3>
-
-<p class="note">Select a quick quantity or enter your own sets quantity.</p>
-
-<div class="quick">
-<button class="secondary" onclick="setCount(5)">5 Sets</button>
-<button class="secondary" onclick="setCount(10)">10 Sets</button>
-<button class="secondary" onclick="setCount(12)">12 Sets</button>
-<button class="secondary" onclick="setCount(20)">20 Sets</button>
-<button class="secondary" onclick="setCount(50)">50 Sets</button>
+<div class="grid2">
+<div>
+<label>Quick quantity per selected size</label>
+<div class="buttons">
+<button class="secondary" onclick="setQuick(5)">5</button>
+<button class="secondary" onclick="setQuick(10)">10</button>
+<button class="secondary" onclick="setQuick(12)">12</button>
+<button class="secondary" onclick="setQuick(20)">20</button>
+<button class="secondary" onclick="setQuick(50)">50</button>
 </div>
-
-<label>Enter Sets Manually</label>
-<input id="sets" type="number" min="0" value="12">
-
-<button class="primary" onclick="applySets()">APPLY SETS TO SELECTED SIZES</button>
 </div>
-
-<div class="card">
-<h3>Size-wise Quantity</h3>
-<div id="quantities"></div>
-<p>Total Labels</p>
-<div class="total" id="total">0</div>
+<div>
+<label>Custom quantity per selected size</label>
+<input type="number" id="customQty" min="1" value="10">
+<button class="primary" style="width:100%;margin-top:8px" onclick="applyCustom()">APPLY QUANTITY</button>
 </div>
-
-<div class="card">
-<h3>Label Preview</h3>
-
-<div id="preview"></div>
-
-<button class="secondary" onclick="updatePreview()">REFRESH PREVIEW</button>
-<button class="primary" onclick="printLabels()">PRINT ALL LABELS</button>
-
-<p class="note">
-Label size: 50 × 30 mm<br>
-Barcode format: Code 128<br>
-Use matching paper size in printer settings.
-</p>
 </div>
+<div class="size-grid" id="sizeGrid"></div>
+<div class="total">Total Labels: <span id="totalCount">0</span></div>
+</section>
+
+<section class="panel">
+<h2>4. Label Preview</h2>
+<div class="grid2">
+<div>
+<label>Preview Size</label>
+<select id="previewSize" onchange="updatePreview()"></select>
+</div>
+</div>
+<div id="previewWrap" style="margin-top:12px">
+<div id="previewLabel" class="label-preview classic"></div>
+</div>
+<p class="muted">Actual label size: 50 × 30 mm. Printer printable width: 48 mm.</p>
+</section>
+
+<section class="panel">
+<h2>5. Saved Products</h2>
+<div id="savedProducts"><p class="muted">No products saved yet.</p></div>
+</section>
+
+<section class="panel">
+<h2>6. Print Labels</h2>
+<p class="muted">Check your printer paper size and print scaling before printing. Select 50 × 30 mm paper if available and set scale to 100%.</p>
+<button class="primary" style="width:100%;padding:15px" onclick="printLabels()">PRINT ALL LABELS</button>
+<p class="muted">Printing uses your phone's browser print dialog. Direct Bluetooth printing will be added through the native app version after printer compatibility is verified.</p>
+</section>
 
 </main>
 
-<div id="printArea"></div>
+<div id="printArea" style="display:none"></div>
 
 <script>
-
-const sizeList=["0","1","2","3","4","5","6","7","8","9","10","12","13"];
-
+const sizes=["0","1","2","3","4","5","6","7","8","9","10","12","13"];
+let selectedTemplate="classic";
 let quantities={};
-let selected={};
 
-sizeList.forEach(s=>{
- quantities[s]=0;
- selected[s]=true;
-});
+sizes.forEach(s=>quantities[s]=0);
 
-// PRODUCT DETAILS
-
-function details(){
- return {
- style:document.getElementById("style").value.trim(),
- model:document.getElementById("model").value,
- colour:document.getElementById("colour").value.trim(),
- barcode:document.getElementById("barcode").value.trim()
- };
-}
-
-// SAVED PRODUCTS
-
-let savedProductList=[];
-
-try{
- savedProductList=JSON.parse(
- localStorage.getItem("prasadProducts")||"[]"
- );
- if(!Array.isArray(savedProductList))savedProductList=[];
-}catch(e){
- savedProductList=[];
-}
-
-function refreshSavedProducts(){
- const select=document.getElementById("savedProducts");
- select.innerHTML='<option value="">-- Select Product --</option>';
-
- savedProductList.forEach((p,i)=>{
-  const option=document.createElement("option");
-  option.value=i;
-  option.textContent=p.style+" - "+p.model+" - "+p.colour;
-  select.appendChild(option);
+function makeSizeGrid(){
+ const grid=document.getElementById("sizeGrid");
+ const preview=document.getElementById("previewSize");
+ grid.innerHTML="";
+ preview.innerHTML="";
+ sizes.forEach(size=>{
+  const item=document.createElement("div");
+  item.className="size-item";
+  item.id="item-"+size;
+  item.innerHTML=`
+   <div><input type="checkbox" id="check-${size}" onchange="toggleSize('${size}')">
+   <label for="check-${size}">${size}</label></div>
+   <input type="number" id="qty-${size}" min="0" value="0" onchange="changeQty('${size}')">
+  `;
+  grid.appendChild(item);
+  const opt=document.createElement("option");
+  opt.value=size;opt.textContent="Size "+size;
+  preview.appendChild(opt);
  });
-}
-
-function saveProduct(){
- const p=details();
-
- if(!p.style||!p.barcode){
-  alert("Enter Style Number and Barcode Number.");
-  return;
- }
-
- const existing=savedProductList.findIndex(
-  x=>x.style===p.style
- );
-
- if(existing>=0){
-  if(!confirm("This style already exists. Update saved product?"))return;
-  savedProductList[existing]=p;
- }else{
-  savedProductList.push(p);
- }
-
- localStorage.setItem("prasadProducts",JSON.stringify(savedProductList));
-
- refreshSavedProducts();
- alert("Product saved successfully!");
-}
-
-function loadProduct(){
- const i=document.getElementById("savedProducts").value;
-
- if(i===""){
-  alert("Select a saved product first.");
-  return;
- }
-
- const p=savedProductList[Number(i)];
-
- document.getElementById("style").value=p.style;
- document.getElementById("model").value=p.model;
- document.getElementById("colour").value=p.colour;
- document.getElementById("barcode").value=p.barcode;
-
- updatePreview();
- alert("Product loaded successfully!");
-}
-
-function deleteProduct(){
- const i=document.getElementById("savedProducts").value;
-
- if(i===""){
-  alert("Select a product first.");
-  return;
- }
-
- if(!confirm("Delete this saved product?"))return;
-
- savedProductList.splice(Number(i),1);
-
- localStorage.setItem("prasadProducts",JSON.stringify(savedProductList));
-
- refreshSavedProducts();
- alert("Product deleted!");
-}
-
-// SIZE SELECTION
-
-function makeSizes(){
- document.getElementById("sizes").innerHTML=sizeList.map(s=>
- `<div class="size">
- <label>
- <input type="checkbox" id="check${s}" checked
- onchange="selected['${s}']=this.checked">
- ${s}
- </label>
- </div>`
- ).join("");
-
- makeQuantities();
-}
-
-// SIZE QUANTITY
-
-function makeQuantities(){
- document.getElementById("quantities").innerHTML=sizeList.map(s=>
- `<div class="qtyrow">
- <strong>Size ${s}</strong>
- <input type="number" min="0" value="${quantities[s]}"
- onchange="quantities['${s}']=Math.max(0,Number(this.value)||0);updateTotal()">
- </div>`
- ).join("");
-
  updateTotal();
 }
 
-function setCount(n){
- document.getElementById("sets").value=n;
+function toggleSize(size){
+ const checked=document.getElementById("check-"+size).checked;
+ document.getElementById("item-"+size).classList.toggle("active",checked);
+ if(!checked){
+  quantities[size]=0;
+  document.getElementById("qty-"+size).value=0;
+ }
+ updateTotal();
 }
 
-function applySets(){
- const n=Math.max(0,Number(document.getElementById("sets").value)||0);
+function changeQty(size){
+ let qty=Math.max(0,parseInt(document.getElementById("qty-"+size).value)||0);
+ quantities[size]=qty;
+ document.getElementById("check-"+size).checked=qty>0;
+ document.getElementById("item-"+size).classList.toggle("active",qty>0);
+ updateTotal();
+}
 
- sizeList.forEach(s=>{
-  if(selected[s])quantities[s]=n;
+function selectAllSizes(checked){
+ sizes.forEach(size=>{
+  document.getElementById("check-"+size).checked=checked;
+  document.getElementById("item-"+size).classList.toggle("active",checked);
+  if(!checked){
+   quantities[size]=0;
+   document.getElementById("qty-"+size).value=0;
+  }
  });
+ updateTotal();
+}
 
- makeQuantities();
+function setQuick(qty){
+ sizes.forEach(size=>{
+  if(document.getElementById("check-"+size).checked){
+   quantities[size]=qty;
+   document.getElementById("qty-"+size).value=qty;
+  }
+ });
+ updateTotal();
+}
+
+function applyCustom(){
+ const qty=Math.max(1,parseInt(document.getElementById("customQty").value)||1);
+ setQuick(qty);
 }
 
 function updateTotal(){
- const total=sizeList.reduce((a,s)=>a+quantities[s],0);
- document.getElementById("total").textContent=total;
+ const total=sizes.reduce((sum,s)=>sum+(quantities[s]||0),0);
+ document.getElementById("totalCount").textContent=total;
 }
 
-// SAFE TEXT
+function chooseTemplate(template){
+ selectedTemplate=template;
+ document.querySelectorAll(".template-option").forEach(btn=>{
+  btn.classList.toggle("active",btn.dataset.template===template);
+ });
+ updatePreview();
+}
 
-function escapeText(v){
- return String(v).replace(/[&<>"']/g,c=>({
- "&":"&amp;","<":"&lt;",">":"&gt;",
- '"':"&quot;","'":"&#39;"
+function productData(){
+ return {
+  style:document.getElementById("style").value.trim(),
+  model:document.getElementById("model").value,
+  colour:document.getElementById("colour").value.trim(),
+  barcode:document.getElementById("barcodeNumber").value.trim()
+ };
+}
+
+function labelHTML(size,template){
+ const p=productData();
+ const barcode=p.barcode||p.style||"000000";
+ return `
+ <div class="label-top">
+  <div class="brand">PRASAD APPARELS</div>
+  <div class="small">${escapeHTML(p.model)}</div>
+ </div>
+ <div class="label-info">
+  <div>
+   <div class="style-line">STYLE: ${escapeHTML(p.style||"-")}</div>
+   <div class="colour-line">COLOUR: ${escapeHTML(p.colour||"-")}</div>
+  </div>
+  <div class="size-value">${escapeHTML(size)}</div>
+ </div>
+ <svg class="barcode" data-barcode="${escapeHTML(barcode)}"></svg>
+ <div class="barcode-number">${escapeHTML(barcode)}</div>
+ `;
+}
+
+function escapeHTML(value){
+ return String(value).replace(/[&<>"']/g,c=>({
+  "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
  }[c]));
 }
 
-// LABEL DESIGN
-
-function makeLabel(size,d){
- const div=document.createElement("div");
- div.className="label";
-
- div.innerHTML=`
- <div class="brand">PRASAD APPARELS</div>
- <div class="details">
- <b>STYLE: ${escapeText(d.style)}</b>
- <span>COLOUR: ${escapeText(d.colour)}</span>
- </div>
- <div class="sizebig">SIZE ${escapeText(size)}</div>
- <svg class="barcode"></svg>
- <div class="bartext">${escapeText(d.barcode)}</div>
- `;
-
- if(window.JsBarcode){
-  try{
-   JsBarcode(div.querySelector("svg"),d.barcode,{
-    format:"CODE128",
-    displayValue:false,
-    margin:0,
-    height:18,
-    width:1.1
-   });
-  }catch(e){
-   div.querySelector("svg").outerHTML="<small>Barcode error</small>";
-  }
- }
-
- return div;
-}
-
-// PREVIEW
-
-function updatePreview(){
- const d=details();
-
- const s=sizeList.find(s=>selected[s])||"14";
-
- const p=document.getElementById("preview");
- p.innerHTML="";
- p.appendChild(makeLabel(s,d));
-}
-
-// BULK PRINTING
-
-function printLabels(){
- const d=details();
-
- if(!d.style||!d.barcode||!d.colour){
-  alert("Please complete all product details.");
-  return;
- }
-
+function renderBarcode(container){
  if(!window.JsBarcode){
-  alert("Barcode library not loaded. Check internet connection.");
+  container.querySelectorAll(".barcode").forEach(el=>{
+   el.outerHTML='<div class="barcode-number">Barcode library unavailable</div>';
+  });
   return;
  }
-
- const area=document.getElementById("printArea");
- area.innerHTML="";
-
- let total=0;
-
- sizeList.forEach(s=>{
-  if(!selected[s])return;
-
-  for(let i=0;i<quantities[s];i++){
-   area.appendChild(makeLabel(s,d));
-   total++;
+ container.querySelectorAll(".barcode").forEach(svg=>{
+  const value=svg.dataset.barcode||"000000";
+  try{
+   JsBarcode(svg,value,{format:"CODE128",displayValue:false,margin:0,width:1.35,height:35});
+  }catch(e){
+   svg.outerHTML='<div class="barcode-number">Invalid barcode</div>';
   }
  });
-
- if(total===0){
-  alert("Enter quantities for selected sizes first.");
-  return;
- }
-
- if(!confirm("Print "+total+" labels?"))return;
-
- window.print();
 }
 
-// START APP
+function updatePreview(){
+ const size=document.getElementById("previewSize").value||"0";
+ const preview=document.getElementById("previewLabel");
+ preview.className="label-preview "+selectedTemplate;
+ preview.innerHTML=labelHTML(size,selectedTemplate);
+ renderBarcode(preview);
+}
 
-makeSizes();
-refreshSavedProducts();
+function saveProduct(){
+ const p=productData();
+ if(!p.style){
+  alert("Please enter Style Number.");
+  return;
+ }
+ let products=JSON.parse(localStorage.getItem("prasadProducts")||"{}");
+ products[p.style]=p;
+ localStorage.setItem("prasadProducts",JSON.stringify(products));
+ document.getElementById("status").textContent="Product saved successfully.";
+ showSavedProducts();
+}
+
+function showSavedProducts(){
+ const products=JSON.parse(localStorage.getItem("prasadProducts")||"{}");
+ const box=document.getElementById("savedProducts");
+ const keys=Object.keys(products);
+ if(!keys.length){
+  box.innerHTML='<p class="muted">No products saved yet.</p>';
+  return;
+ }
+ box.innerHTML="";
+ keys.forEach(key=>{
+  const p=products[key];
+  const row=document.createElement("div");
+  row.className="saved-row";
+  const info=document.createElement("span");
+  info.textContent=p.style+" — "+p.model+" — "+p.colour;
+  const actions=document.createElement("div");
+  actions.className="buttons";
+  actions.style.margin="0";
+  const load=document.createElement("button");
+  load.className="secondary";
+  load.textContent="LOAD";
+  load.onclick=()=>loadProduct(key);
+  const del=document.createElement("button");
+  del.className="danger";
+  del.textContent="DELETE";
+  del.onclick=()=>deleteProduct(key);
+  actions.append(load,del);
+  row.append(info,actions);
+  box.appendChild(row);
+ });
+}
+
+function loadProduct(key){
+ const products=JSON.parse(localStorage.getItem("prasadProducts")||"{}");
+ const p=products[key];
+ if(!p)return;
+ document.getElementById("style").value=p.style||"";
+ document.getElementById("model").value=p.model||"Other";
+ document.getElementById("colour").value=p.colour||"";
+ document.getElementById("barcodeNumber").value=p.barcode||"";
+ updatePreview();
+ document.getElementById("status").textContent="Product loaded.";
+ window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function deleteProduct(key){
+ if(!confirm("Delete product "+key+"?"))return;
+ const products=JSON.parse(localStorage.getItem("prasadProducts")||"{}");
+ delete products[key];
+ localStorage.setItem("prasadProducts",JSON.stringify(products));
+ showSavedProducts();
+}
+
+function clearProduct(){
+ document.getElementById("style").value="";
+ document.getElementById("colour").value="";
+ document.getElementById("barcodeNumber").value="";
+ document.getElementById("model").selectedIndex=0;
+ document.getElementById("status").textContent="";
+ updatePreview();
+}
+
+function printLabels(){
+ const p=productData();
+ if(!p.style){
+  alert("Please enter Style Number.");
+  return;
+ }
+ const total=sizes.reduce((sum,s)=>sum+(quantities[s]||0),0);
+ if(total===0){
+  alert("Please select sizes and enter quantities.");
+  return;
+ }
+ const area=document.getElementById("printArea");
+ area.innerHTML="";
+ area.style.display="block";
+ sizes.forEach(size=>{
+  for(let i=0;i<(quantities[size]||0);i++){
+   const label=document.createElement("div");
+   label.className="print-label";
+   const inner=document.createElement("div");
+   inner.className="label-preview "+selectedTemplate;
+   inner.innerHTML=labelHTML(size,selectedTemplate);
+   label.appendChild(inner);
+   area.appendChild(label);
+  }
+ });
+ renderBarcode(area);
+ const cleanup=()=>{
+  area.innerHTML="";
+  area.style.display="none";
+  window.removeEventListener("afterprint",cleanup);
+ };
+ window.addEventListener("afterprint",cleanup);
+ setTimeout(()=>window.print(),300);
+}
+
+makeSizeGrid();
+showSavedProducts();
 updatePreview();
-
 </script>
 </body>
 </html>
-
