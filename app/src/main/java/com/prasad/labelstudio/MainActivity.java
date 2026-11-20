@@ -7,10 +7,9 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.view.ViewGroup;
+import android.webkit.JavascriptInterface;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -19,11 +18,16 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class MainActivity extends Activity {
 
@@ -34,10 +38,35 @@ public class MainActivity extends Activity {
         UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
     private BluetoothAdapter bluetoothAdapter;
-    private BluetoothSocket bluetoothSocket;
+    private volatile BluetoothSocket bluetoothSocket;
 
-    private TextView statusText;
     private WebView webView;
+    private TextView statusText;
+    private TextView progressText;
+    private Button cancelButton;
+
+    private final ExecutorService printExecutor =
+        Executors.newSingleThreadExecutor();
+
+    private volatile boolean printing = false;
+    private volatile boolean cancelRequested = false;
+
+    private static class LabelJob {
+        String style;
+        String model;
+        String colour;
+        String size;
+        String barcode;
+
+        LabelJob(String style, String model, String colour,
+                 String size, String barcode) {
+            this.style = style;
+            this.model = model;
+            this.colour = colour;
+            this.size = size;
+            this.barcode = barcode;
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,31 +90,43 @@ public class MainActivity extends Activity {
         connectButton.setText("CONNECT P58D PRINTER");
         top.addView(connectButton);
 
+        progressText = new TextView(this);
+        progressText.setText("");
+        progressText.setTextSize(13);
+        top.addView(progressText);
+
+        cancelButton = new Button(this);
+        cancelButton.setText("CANCEL PRINTING");
+        cancelButton.setVisibility(Button.GONE);
+        cancelButton.setBackgroundColor(0xFFFFDDDD);
+        top.addView(cancelButton);
+
         root.addView(top);
 
         webView = new WebView(this);
         webView.getSettings().setJavaScriptEnabled(true);
         webView.getSettings().setDomStorageEnabled(true);
 
-        webView.setWebViewClient(new WebViewClient() {
+        webView.addJavascriptInterface(
+            new PrinterBridge(), "AndroidPrinter"
+        );
 
+        webView.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(
                 WebView view, WebResourceRequest request) {
-
                 return handleUrl(request.getUrl().toString());
             }
 
             @Override
             public boolean shouldOverrideUrlLoading(
                 WebView view, String url) {
-
                 return handleUrl(url);
             }
         });
 
         root.addView(webView, new LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.MATCH_PARENT,
             0, 1
         ));
 
@@ -95,35 +136,259 @@ public class MainActivity extends Activity {
             checkBluetoothPermission()
         );
 
+        cancelButton.setOnClickListener(v -> cancelPrinting());
+
         webView.loadUrl(WEBSITE);
     }
 
-    private boolean handleUrl(String url) {
+    private class PrinterBridge {
 
-        if (url == null || !url.startsWith("bprint://")) {
+        @JavascriptInterface
+        public void printSingle(String json) {
+            try {
+                JSONObject data = new JSONObject(json);
+
+                LabelJob job = new LabelJob(
+                    data.optString("style"),
+                    data.optString("model"),
+                    data.optString("colour"),
+                    data.optString("size"),
+                    data.optString("barcode")
+                );
+
+                runOnUiThread(() -> {
+                    if (printing) {
+                        showMessage("A print job is already running");
+                        return;
+                    }
+
+                    if (!printerReady()) return;
+
+                    ArrayList<LabelJob> jobs = new ArrayList<>();
+                    jobs.add(job);
+                    startPrintQueue(jobs);
+                });
+
+            } catch (Exception e) {
+                runOnUiThread(() ->
+                    showMessage("Invalid label information")
+                );
+            }
+        }
+
+        @JavascriptInterface
+        public void printBulk(String json) {
+            try {
+                JSONObject data = new JSONObject(json);
+
+                String style = data.optString("style");
+                String model = data.optString("model");
+                String colour = data.optString("colour");
+                String barcode = data.optString("barcode");
+
+                JSONArray items = data.getJSONArray("items");
+
+                ArrayList<LabelJob> jobs = new ArrayList<>();
+                StringBuilder summary = new StringBuilder();
+
+                for (int i = 0; i < items.length(); i++) {
+                    JSONObject item = items.getJSONObject(i);
+
+                    String size = item.optString("size");
+                    int quantity = item.optInt("quantity", 0);
+
+                    if (quantity <= 0) continue;
+
+                    summary.append("Size ")
+                        .append(size)
+                        .append(" - ")
+                        .append(quantity)
+                        .append(" labels\n");
+
+                    for (int j = 0; j < quantity; j++) {
+                        jobs.add(new LabelJob(
+                            style, model, colour, size, barcode
+                        ));
+                    }
+                }
+
+                if (jobs.isEmpty()) {
+                    runOnUiThread(() ->
+                        showMessage("No labels selected")
+                    );
+                    return;
+                }
+
+                runOnUiThread(() -> {
+                    if (printing) {
+                        showMessage("A print job is already running");
+                        return;
+                    }
+
+                    if (!printerReady()) return;
+
+                    showFirstBulkConfirmation(jobs, summary.toString());
+                });
+
+            } catch (Exception e) {
+                runOnUiThread(() ->
+                    showMessage("Invalid bulk print information")
+                );
+            }
+        }
+    }
+
+    private void showFirstBulkConfirmation(
+        ArrayList<LabelJob> jobs, String summary) {
+
+        new AlertDialog.Builder(this)
+            .setTitle("Bulk print summary")
+            .setMessage(
+                summary + "\nTotal labels: " + jobs.size()
+                + "\n\nContinue to the final confirmation?"
+            )
+            .setNegativeButton("CANCEL", (d, w) -> d.dismiss())
+            .setPositiveButton("CONTINUE", (d, w) ->
+                showSecondBulkConfirmation(jobs)
+            )
+            .setCancelable(false)
+            .show();
+    }
+
+    private void showSecondBulkConfirmation(
+        ArrayList<LabelJob> jobs) {
+
+        new AlertDialog.Builder(this)
+            .setTitle("Final confirmation")
+            .setMessage(
+                "Are you sure you want to print "
+                + jobs.size()
+                + " labels on P58D?\n\n"
+                + "The printer will start immediately."
+            )
+            .setNegativeButton("GO BACK", (d, w) -> d.dismiss())
+            .setPositiveButton("CONFIRM PRINT", (d, w) ->
+                startPrintQueue(jobs)
+            )
+            .setCancelable(false)
+            .show();
+    }
+
+    private boolean printerReady() {
+        try {
+            if (bluetoothSocket == null ||
+                !bluetoothSocket.isConnected()) {
+                showMessage("Connect P58D printer first");
+                return false;
+            }
+            return true;
+        } catch (Exception e) {
+            showMessage("Printer connection unavailable");
             return false;
         }
+    }
 
-        String responseUrl = url.substring("bprint://".length());
+    private void startPrintQueue(ArrayList<LabelJob> jobs) {
 
-        try {
-            Uri data = Uri.parse(responseUrl);
-
-            String style = data.getQueryParameter("style");
-            String model = data.getQueryParameter("model");
-            String colour = data.getQueryParameter("colour");
-            String size = data.getQueryParameter("size");
-            String barcode = data.getQueryParameter("barcode");
-
-            printLabel(
-                style, model, colour, size, barcode
-            );
-
-        } catch (Exception e) {
-            showMessage("Invalid print request");
+        if (printing) {
+            showMessage("Printing is already in progress");
+            return;
         }
 
-        return true;
+        if (!printerReady()) return;
+
+        printing = true;
+        cancelRequested = false;
+
+        int total = jobs.size();
+
+        cancelButton.setVisibility(Button.VISIBLE);
+        progressText.setText("Preparing " + total + " labels...");
+        statusText.setText("Printing on P58D...");
+
+        printExecutor.execute(() -> {
+
+            int completed = 0;
+            boolean failed = false;
+
+            for (LabelJob job : jobs) {
+
+                if (cancelRequested) break;
+
+                try {
+                    printOneLabel(job);
+                    completed++;
+
+                    final int done = completed;
+                    final int remaining = total - done;
+
+                    runOnUiThread(() ->
+                        progressText.setText(
+                            "Printed: " + done
+                            + " / " + total
+                            + "    Remaining: " + remaining
+                        )
+                    );
+
+                    Thread.sleep(250);
+
+                } catch (Exception e) {
+                    failed = true;
+                    break;
+                }
+            }
+
+            final int finalCompleted = completed;
+            final int finalRemaining = total - completed;
+            final boolean wasCancelled = cancelRequested;
+            final boolean hadFailure = failed;
+
+            printing = false;
+
+            runOnUiThread(() -> {
+
+                cancelButton.setVisibility(Button.GONE);
+
+                if (hadFailure) {
+                    statusText.setText("Printing stopped - printer error");
+                    progressText.setText(
+                        "Printed: " + finalCompleted
+                        + "    Not completed: " + finalRemaining
+                    );
+                    showMessage("Printing failed. Check printer connection.");
+                } else if (wasCancelled) {
+                    statusText.setText("Printing cancelled");
+                    progressText.setText(
+                        "Printed: " + finalCompleted
+                        + "    Remaining: " + finalRemaining
+                    );
+                    showMessage("Remaining labels cancelled");
+                } else {
+                    statusText.setText("Printing completed");
+                    progressText.setText(
+                        "Successfully sent " + finalCompleted + " labels"
+                    );
+                    showMessage("Bulk printing completed");
+                }
+            });
+        });
+    }
+
+    private void cancelPrinting() {
+        if (!printing) return;
+
+        cancelRequested = true;
+        cancelButton.setEnabled(false);
+        cancelButton.setText("CANCELLING...");
+
+        showMessage(
+            "Stopping remaining labels. The current label may finish."
+        );
+
+        cancelButton.postDelayed(() -> {
+            cancelButton.setEnabled(true);
+            cancelButton.setText("CANCEL PRINTING");
+        }, 500);
     }
 
     private void checkBluetoothPermission() {
@@ -142,7 +407,6 @@ public class MainActivity extends Activity {
                     Manifest.permission.BLUETOOTH_CONNECT
                 }, 100
             );
-
             return;
         }
 
@@ -151,9 +415,7 @@ public class MainActivity extends Activity {
 
     @Override
     public void onRequestPermissionsResult(
-        int requestCode,
-        String[] permissions,
-        int[] results) {
+        int requestCode, String[] permissions, int[] results) {
 
         super.onRequestPermissionsResult(
             requestCode, permissions, results
@@ -162,16 +424,13 @@ public class MainActivity extends Activity {
         if (requestCode == 100 &&
             results.length > 0 &&
             results[0] == PackageManager.PERMISSION_GRANTED) {
-
             showPairedPrinters();
-
         } else {
             showMessage("Bluetooth permission required");
         }
     }
 
     private void showPairedPrinters() {
-
         try {
             Set<BluetoothDevice> devices =
                 bluetoothAdapter.getBondedDevices();
@@ -209,21 +468,27 @@ public class MainActivity extends Activity {
 
     private void connectPrinter(BluetoothDevice device) {
 
+        if (printing) {
+            showMessage("Wait until printing finishes");
+            return;
+        }
+
         statusText.setText("Connecting to printer...");
 
         new Thread(() -> {
-
             try {
-                if (bluetoothSocket != null) {
-                    bluetoothSocket.close();
-                }
+                BluetoothSocket oldSocket = bluetoothSocket;
+                bluetoothSocket = null;
 
-                bluetoothSocket =
+                if (oldSocket != null) oldSocket.close();
+
+                BluetoothSocket newSocket =
                     device.createRfcommSocketToServiceRecord(
                         PRINTER_UUID
                     );
 
-                bluetoothSocket.connect();
+                newSocket.connect();
+                bluetoothSocket = newSocket;
 
                 runOnUiThread(() -> {
                     statusText.setText(
@@ -233,102 +498,74 @@ public class MainActivity extends Activity {
                 });
 
             } catch (Exception e) {
-
                 runOnUiThread(() -> {
                     statusText.setText("Printer connection failed");
-                    showMessage(e.getMessage());
+                    showMessage("Could not connect to printer");
                 });
             }
-
         }).start();
     }
 
-    private void printLabel(
-        String style,
-        String model,
-        String colour,
-        String size,
-        String barcode) {
+    private void printOneLabel(LabelJob job) throws Exception {
 
-        if (bluetoothSocket == null ||
-            !bluetoothSocket.isConnected()) {
+        BluetoothSocket socket = bluetoothSocket;
 
-            showMessage("Connect P58D printer first");
-            return;
+        if (socket == null || !socket.isConnected()) {
+            throw new Exception("Printer disconnected");
         }
 
-        new Thread(() -> {
+        OutputStream out = socket.getOutputStream();
 
-            try {
-                OutputStream out =
-                    bluetoothSocket.getOutputStream();
+        out.write(new byte[]{0x1B, 0x40});
 
-                out.write(new byte[]{0x1B, 0x40});
+        out.write(new byte[]{0x1B, 0x61, 0x01});
+        out.write(new byte[]{0x1B, 0x45, 0x01});
 
-                // Center brand name
-                out.write(new byte[]{0x1B, 0x61, 0x01});
-                out.write(new byte[]{0x1B, 0x45, 0x01});
-                out.write("PRASAD APPARELS\n".getBytes(
-                    StandardCharsets.UTF_8
-                ));
-                out.write(new byte[]{0x1B, 0x45, 0x00});
+        out.write("PRASAD APPARELS\n".getBytes(
+            StandardCharsets.UTF_8
+        ));
 
-                // Left aligned product details
-                out.write(new byte[]{0x1B, 0x61, 0x00});
+        out.write(new byte[]{0x1B, 0x45, 0x00});
+        out.write(new byte[]{0x1B, 0x61, 0x00});
 
-                out.write(("STYLE: " + safe(style) + "\n")
-                    .getBytes(StandardCharsets.UTF_8));
+        out.write(("STYLE: " + safe(job.style) + "\n")
+            .getBytes(StandardCharsets.UTF_8));
 
-                out.write(("MODEL: " + safe(model) + "\n")
-                    .getBytes(StandardCharsets.UTF_8));
+        out.write(("MODEL: " + safe(job.model) + "\n")
+            .getBytes(StandardCharsets.UTF_8));
 
-                out.write(("COLOUR: " + safe(colour) + "\n")
-                    .getBytes(StandardCharsets.UTF_8));
+        out.write(("COLOUR: " + safe(job.colour) + "\n")
+            .getBytes(StandardCharsets.UTF_8));
 
-                // Highlight size
-                out.write(new byte[]{0x1B, 0x45, 0x01});
-                out.write(("SIZE: " + safe(size) + "\n")
-                    .getBytes(StandardCharsets.UTF_8));
-                out.write(new byte[]{0x1B, 0x45, 0x00});
+        out.write(new byte[]{0x1B, 0x45, 0x01});
 
-                // Code 128 barcode
-                if (barcode != null && !barcode.isEmpty()) {
+        out.write(("SIZE: " + safe(job.size) + "\n")
+            .getBytes(StandardCharsets.UTF_8));
 
-                    out.write(new byte[]{0x1D, 0x48, 0x02});
-                    out.write(new byte[]{0x1D, 0x68, 55});
-                    out.write(new byte[]{0x1D, 0x77, 2});
+        out.write(new byte[]{0x1B, 0x45, 0x00});
 
-                    byte[] code =
-                        ("{B" + barcode).getBytes(
-                            StandardCharsets.US_ASCII
-                        );
+        if (job.barcode != null && !job.barcode.isEmpty()) {
 
-                    out.write(new byte[]{
-                        0x1D, 0x6B, 0x49,
-                        (byte) code.length
-                    });
+            out.write(new byte[]{0x1D, 0x48, 0x02});
+            out.write(new byte[]{0x1D, 0x68, 55});
+            out.write(new byte[]{0x1D, 0x77, 2});
 
-                    out.write(code);
-                    out.write('\n');
-                }
+            byte[] code = ("{B" + job.barcode).getBytes(
+                StandardCharsets.US_ASCII
+            );
 
-                out.write('\n');
-                out.write('\n');
-                out.write(new byte[]{0x1D, 0x56, 0x00});
-                out.flush();
+            out.write(new byte[]{
+                0x1D, 0x6B, 0x49, (byte) code.length
+            });
 
-                runOnUiThread(() ->
-                    showMessage("Print sent to P58D")
-                );
+            out.write(code);
+            out.write('\n');
+        }
 
-            } catch (Exception e) {
-
-                runOnUiThread(() ->
-                    showMessage("Printing failed: " + e.getMessage())
-                );
-            }
-
-        }).start();
+        out.write('\n');
+        out.write('\n');
+        out.write(new byte[]{0x1D, 0x56, 0x00});
+        out.flush();
     }
 
     private String safe(String value) {
@@ -336,26 +573,21 @@ public class MainActivity extends Activity {
     }
 
     private void showMessage(String message) {
-        Toast.makeText(
-            this,
-            message,
-            Toast.LENGTH_LONG
-        ).show();
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
 
+        cancelRequested = true;
+        printExecutor.shutdownNow();
+
         try {
-            if (bluetoothSocket != null) {
-                bluetoothSocket.close();
-            }
+            if (bluetoothSocket != null) bluetoothSocket.close();
         } catch (Exception ignored) {
         }
 
-        if (webView != null) {
-            webView.destroy();
-        }
+        if (webView != null) webView.destroy();
     }
 }
