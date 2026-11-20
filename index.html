@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#111111">
 <title>Prasad Label Studio</title>
+
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
 
 <style>
@@ -56,14 +57,14 @@ button{border:0;border-radius:7px;padding:11px 14px;font-size:13px;font-weight:b
 .barcode-number{text-align:center;font-size:6pt;letter-spacing:1px;line-height:1}
 .barcode-area{width:100%;text-align:center;margin-top:auto}
 
-/* 1. PREMIUM CLASSIC */
+/* PREMIUM CLASSIC */
 .classic{border:.35mm solid #111;border-radius:1.5mm;padding:1.6mm}
 .classic .label-top{border-bottom:.3mm solid #111;padding-bottom:1mm}
 .classic .label-info{padding-top:1mm}
 .classic .size-box{border-left:.3mm solid #111;padding-left:2mm}
 .classic .barcode{height:7.5mm}
 
-/* 2. LUXURY GOLD - prints in monochrome on thermal printers */
+/* LUXURY GOLD */
 .luxury{border:.6mm double #111;border-radius:2mm;padding:1.7mm}
 .luxury .brand{font-family:Georgia,serif;font-size:9pt;letter-spacing:.15px}
 .luxury .label-top{border-bottom:.35mm solid #111;padding-bottom:1.3mm}
@@ -72,7 +73,7 @@ button{border:0;border-radius:7px;padding:11px 14px;font-size:13px;font-weight:b
 .luxury .size-value{font-family:Georgia,serif;font-size:23pt}
 .luxury .barcode{height:7.5mm}
 
-/* 3. RETAIL PRO */
+/* RETAIL PRO */
 .retail{border:.6mm solid #111;border-radius:2mm;padding:1.5mm}
 .retail .label-top{background:#111;color:white;padding:1.2mm 0}
 .retail .brand{font-size:9pt;letter-spacing:.4px}
@@ -81,7 +82,7 @@ button{border:0;border-radius:7px;padding:11px 14px;font-size:13px;font-weight:b
 .retail .size-value{font-size:23pt}
 .retail .barcode{height:7.5mm}
 
-/* 4. WHOLESALE PRO */
+/* WHOLESALE PRO */
 .wholesale{border:.35mm solid #111;border-radius:1mm;padding:1.7mm}
 .wholesale .label-top{justify-content:flex-start;border-bottom:.5mm solid #111;padding-bottom:1mm}
 .wholesale .brand{font-family:Georgia,serif;font-size:9pt;letter-spacing:.2px}
@@ -115,6 +116,7 @@ button{border:0;border-radius:7px;padding:11px 14px;font-size:13px;font-weight:b
 </head>
 
 <body>
+
 <header>
 <h1>PRASAD LABEL STUDIO</h1>
 <p>BY PRASAD APPARELS</p>
@@ -165,27 +167,33 @@ button{border:0;border-radius:7px;padding:11px 14px;font-size:13px;font-weight:b
 <section class="panel">
 <h2>2. Choose Label Design</h2>
 <div class="template-grid">
+
 <button class="template-option active" data-template="classic" onclick="chooseTemplate('classic')">
 <strong>1. Premium Classic</strong>
 <small>Clean professional design</small>
 </button>
+
 <button class="template-option" data-template="luxury" onclick="chooseTemplate('luxury')">
 <strong>2. Luxury Gold</strong>
 <small>Elegant double border</small>
 </button>
+
 <button class="template-option" data-template="retail" onclick="chooseTemplate('retail')">
 <strong>3. Retail Pro</strong>
 <small>Bold brand header</small>
 </button>
+
 <button class="template-option" data-template="wholesale" onclick="chooseTemplate('wholesale')">
 <strong>4. Wholesale Pro</strong>
 <small>Structured product details</small>
 </button>
+
 </div>
 </section>
 
 <section class="panel">
 <h2>3. Select Sizes & Quantities</h2>
+
 <div class="buttons">
 <button class="secondary" onclick="selectAllSizes(true)">SELECT ALL</button>
 <button class="secondary" onclick="selectAllSizes(false)">CLEAR ALL</button>
@@ -202,6 +210,7 @@ button{border:0;border-radius:7px;padding:11px 14px;font-size:13px;font-weight:b
 <button class="secondary" onclick="setQuick(50)">50</button>
 </div>
 </div>
+
 <div>
 <label>Custom quantity per selected size</label>
 <input type="number" id="customQty" min="1" value="10">
@@ -217,9 +226,11 @@ button{border:0;border-radius:7px;padding:11px 14px;font-size:13px;font-weight:b
 <h2>4. Label Preview</h2>
 <label>Preview Size</label>
 <select id="previewSize" onchange="updatePreview()"></select>
+
 <div id="previewWrap" style="margin-top:12px">
 <div id="previewLabel" class="label-preview classic"></div>
 </div>
+
 <p class="muted">Actual label size: 50 × 30 mm. Printer printable width: 48 mm.</p>
 </section>
 
@@ -230,9 +241,20 @@ button{border:0;border-radius:7px;padding:11px 14px;font-size:13px;font-weight:b
 
 <section class="panel">
 <h2>6. Print Labels</h2>
-<p class="muted">Select 50 × 30 mm paper if available and set print scale to 100%.</p>
-<button class="primary" style="width:100%;padding:15px" onclick="printLabels()">PRINT ALL LABELS</button>
-<p class="muted">Printing uses your phone's browser print dialog. Direct Bluetooth printing is not included in this web version.</p>
+
+<p class="muted">Bluetooth printing sends product details and barcode data to your Bluetooth Print app.</p>
+
+<button class="primary" style="width:100%;padding:15px" onclick="printBluetoothLabel()">
+PRINT ONE LABEL VIA BLUETOOTH
+</button>
+
+<p class="muted">Bluetooth printing currently prints the selected preview size only.</p>
+
+<button class="secondary" style="width:100%;padding:15px;margin-top:10px" onclick="printLabels()">
+PRINT ALL LABELS (BROWSER)
+</button>
+
+<p class="muted">Browser printing uses your phone's print dialog. Select 50 × 30 mm paper if available and set scale to 100%.</p>
 </section>
 
 </main>
@@ -240,14 +262,21 @@ button{border:0;border-radius:7px;padding:11px 14px;font-size:13px;font-weight:b
 <div id="printArea" style="display:none"></div>
 
 <script>
+
+/* GOOGLE PRINTING SERVICE */
+const PRASAD_PRINT_URL = "https://script.google.com/macros/s/AKfycbynyp5TWBYicDwVzr6plL87H834F55TN8Zlino1bB_Z9BsmOfY-i2tgZIFhLqVaqow/exec";
+
 const sizes=["0","1","2","3","4","5","6","7","8","9","10","12","13"];
+
 let selectedTemplate="classic";
 let quantities={};
+
 sizes.forEach(s=>quantities[s]=0);
 
 function makeSizeGrid(){
  const grid=document.getElementById("sizeGrid");
  const preview=document.getElementById("previewSize");
+
  grid.innerHTML="";
  preview.innerHTML="";
 
@@ -255,6 +284,7 @@ function makeSizeGrid(){
   const item=document.createElement("div");
   item.className="size-item";
   item.id="item-"+size;
+
   item.innerHTML=`
    <div>
     <input type="checkbox" id="check-${size}" onchange="toggleSize('${size}')">
@@ -262,6 +292,7 @@ function makeSizeGrid(){
    </div>
    <input type="number" id="qty-${size}" min="0" value="0" onchange="changeQty('${size}')">
   `;
+
   grid.appendChild(item);
 
   const opt=document.createElement("option");
@@ -269,24 +300,30 @@ function makeSizeGrid(){
   opt.textContent="Size "+size;
   preview.appendChild(opt);
  });
+
  updateTotal();
 }
 
 function toggleSize(size){
  const checked=document.getElementById("check-"+size).checked;
+
  document.getElementById("item-"+size).classList.toggle("active",checked);
+
  if(!checked){
   quantities[size]=0;
   document.getElementById("qty-"+size).value=0;
  }
+
  updateTotal();
 }
 
 function changeQty(size){
  let qty=Math.max(0,parseInt(document.getElementById("qty-"+size).value)||0);
+
  quantities[size]=qty;
  document.getElementById("check-"+size).checked=qty>0;
  document.getElementById("item-"+size).classList.toggle("active",qty>0);
+
  updateTotal();
 }
 
@@ -294,11 +331,13 @@ function selectAllSizes(checked){
  sizes.forEach(size=>{
   document.getElementById("check-"+size).checked=checked;
   document.getElementById("item-"+size).classList.toggle("active",checked);
+
   if(!checked){
    quantities[size]=0;
    document.getElementById("qty-"+size).value=0;
   }
  });
+
  updateTotal();
 }
 
@@ -309,6 +348,7 @@ function setQuick(qty){
    document.getElementById("qty-"+size).value=qty;
   }
  });
+
  updateTotal();
 }
 
@@ -324,9 +364,11 @@ function updateTotal(){
 
 function chooseTemplate(template){
  selectedTemplate=template;
+
  document.querySelectorAll(".template-option").forEach(btn=>{
   btn.classList.toggle("active",btn.dataset.template===template);
  });
+
  updatePreview();
 }
 
@@ -341,7 +383,11 @@ function productData(){
 
 function escapeHTML(value){
  return String(value).replace(/[&<>"']/g,c=>({
-  "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  "&":"&amp;",
+  "<":"&lt;",
+  ">":"&gt;",
+  '"':"&quot;",
+  "'":"&#39;"
  }[c]));
 }
 
@@ -353,17 +399,20 @@ function labelHTML(size){
  <div class="label-top">
   <div class="brand">PRASAD APPARELS</div>
  </div>
+
  <div class="label-info">
   <div class="details">
    <div class="detail-line"><b>STYLE:</b> ${escapeHTML(p.style||"-")}</div>
    <div class="detail-line"><b>MODEL:</b> ${escapeHTML(p.model)}</div>
    <div class="detail-line"><b>COLOUR:</b> ${escapeHTML(p.colour||"-")}</div>
   </div>
+
   <div class="size-box">
    <div class="size-caption">SIZE</div>
    <div class="size-value">${escapeHTML(size)}</div>
   </div>
  </div>
+
  <div class="barcode-area">
   <svg class="barcode" data-barcode="${escapeHTML(barcode)}"></svg>
   <div class="barcode-number">${escapeHTML(barcode)}</div>
@@ -381,6 +430,7 @@ function renderBarcode(container){
 
  container.querySelectorAll(".barcode").forEach(svg=>{
   const value=svg.dataset.barcode||"000000";
+
   try{
    JsBarcode(svg,value,{
     format:"CODE128",
@@ -398,22 +448,30 @@ function renderBarcode(container){
 function updatePreview(){
  const size=document.getElementById("previewSize").value||"0";
  const preview=document.getElementById("previewLabel");
+
  preview.className="label-preview "+selectedTemplate;
  preview.innerHTML=labelHTML(size);
+
  renderBarcode(preview);
 }
 
+/* SAVE PRODUCT */
 function saveProduct(){
  const p=productData();
+
  if(!p.style){
   alert("Please enter Style Number.");
   return;
  }
 
  let products=JSON.parse(localStorage.getItem("prasadProducts")||"{}");
+
  products[p.style]=p;
+
  localStorage.setItem("prasadProducts",JSON.stringify(products));
+
  document.getElementById("status").textContent="Product saved successfully.";
+
  showSavedProducts();
 }
 
@@ -428,8 +486,10 @@ function showSavedProducts(){
  }
 
  box.innerHTML="";
+
  keys.forEach(key=>{
   const p=products[key];
+
   const row=document.createElement("div");
   row.className="saved-row";
 
@@ -452,6 +512,7 @@ function showSavedProducts(){
 
   actions.append(load,del);
   row.append(info,actions);
+
   box.appendChild(row);
  });
 }
@@ -459,15 +520,18 @@ function showSavedProducts(){
 function loadProduct(key){
  const products=JSON.parse(localStorage.getItem("prasadProducts")||"{}");
  const p=products[key];
+
  if(!p)return;
 
  document.getElementById("style").value=p.style||"";
  document.getElementById("model").value=p.model||"Other";
  document.getElementById("colour").value=p.colour||"";
  document.getElementById("barcodeNumber").value=p.barcode||"";
+
  updatePreview();
 
  document.getElementById("status").textContent="Product loaded.";
+
  window.scrollTo({top:0,behavior:"smooth"});
 }
 
@@ -475,8 +539,11 @@ function deleteProduct(key){
  if(!confirm("Delete product "+key+"?"))return;
 
  const products=JSON.parse(localStorage.getItem("prasadProducts")||"{}");
+
  delete products[key];
+
  localStorage.setItem("prasadProducts",JSON.stringify(products));
+
  showSavedProducts();
 }
 
@@ -486,10 +553,43 @@ function clearProduct(){
  document.getElementById("barcodeNumber").value="";
  document.getElementById("model").selectedIndex=0;
  document.getElementById("status").textContent="";
+
  updatePreview();
 }
 
+/* BLUETOOTH PRINTING */
+function printBluetoothLabel(){
+
+ const p=productData();
+
+ if(!p.style){
+  alert("Please enter Style Number.");
+  return;
+ }
+
+ if(!p.barcode){
+  alert("Please enter Barcode Number.");
+  return;
+ }
+
+ const size=document.getElementById("previewSize").value;
+
+ const responseURL=new URL(PRASAD_PRINT_URL);
+
+ responseURL.searchParams.set("style",p.style);
+ responseURL.searchParams.set("model",p.model);
+ responseURL.searchParams.set("colour",p.colour);
+ responseURL.searchParams.set("size",size);
+ responseURL.searchParams.set("barcode",p.barcode);
+
+ const printLink="bprint://"+responseURL.toString();
+
+ window.location.href=printLink;
+}
+
+/* NORMAL BROWSER PRINTING */
 function printLabels(){
+
  const p=productData();
 
  if(!p.style){
@@ -498,17 +598,20 @@ function printLabels(){
  }
 
  const total=sizes.reduce((sum,s)=>sum+(quantities[s]||0),0);
+
  if(total===0){
   alert("Please select sizes and enter quantities.");
   return;
  }
 
  const area=document.getElementById("printArea");
+
  area.innerHTML="";
  area.style.display="block";
 
  sizes.forEach(size=>{
   for(let i=0;i<(quantities[size]||0);i++){
+
    const label=document.createElement("div");
    label.className="print-label";
 
@@ -530,12 +633,15 @@ function printLabels(){
  };
 
  window.addEventListener("afterprint",cleanup);
+
  setTimeout(()=>window.print(),500);
 }
 
+/* INITIALIZE */
 makeSizeGrid();
 showSavedProducts();
 updatePreview();
+
 </script>
 </body>
 </html>
