@@ -10,7 +10,6 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.webkit.JavascriptInterface;
-import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
@@ -111,19 +110,8 @@ public class MainActivity extends Activity {
             new PrinterBridge(), "AndroidPrinter"
         );
 
-        webView.setWebViewClient(new WebViewClient() {
-            @Override
-            public boolean shouldOverrideUrlLoading(
-                WebView view, WebResourceRequest request) {
-                return handleUrl(request.getUrl().toString());
-            }
-
-            @Override
-            public boolean shouldOverrideUrlLoading(
-                WebView view, String url) {
-                return handleUrl(url);
-            }
-        });
+        // FIX: No handleUrl() call is needed.
+        webView.setWebViewClient(new WebViewClient());
 
         root.addView(webView, new LinearLayout.LayoutParams(
             LinearLayout.LayoutParams.MATCH_PARENT,
@@ -136,10 +124,14 @@ public class MainActivity extends Activity {
             checkBluetoothPermission()
         );
 
-        cancelButton.setOnClickListener(v -> cancelPrinting());
+        cancelButton.setOnClickListener(v ->
+            cancelPrinting()
+        );
 
         webView.loadUrl(WEBSITE);
     }
+
+    // ANDROID JAVASCRIPT BRIDGE
 
     private class PrinterBridge {
 
@@ -166,6 +158,7 @@ public class MainActivity extends Activity {
 
                     ArrayList<LabelJob> jobs = new ArrayList<>();
                     jobs.add(job);
+
                     startPrintQueue(jobs);
                 });
 
@@ -227,7 +220,9 @@ public class MainActivity extends Activity {
 
                     if (!printerReady()) return;
 
-                    showFirstBulkConfirmation(jobs, summary.toString());
+                    showFirstBulkConfirmation(
+                        jobs, summary.toString()
+                    );
                 });
 
             } catch (Exception e) {
@@ -238,6 +233,8 @@ public class MainActivity extends Activity {
         }
     }
 
+    // FIRST BULK CONFIRMATION
+
     private void showFirstBulkConfirmation(
         ArrayList<LabelJob> jobs, String summary) {
 
@@ -247,13 +244,17 @@ public class MainActivity extends Activity {
                 summary + "\nTotal labels: " + jobs.size()
                 + "\n\nContinue to the final confirmation?"
             )
-            .setNegativeButton("CANCEL", (d, w) -> d.dismiss())
+            .setNegativeButton("CANCEL", (d, w) ->
+                d.dismiss()
+            )
             .setPositiveButton("CONTINUE", (d, w) ->
                 showSecondBulkConfirmation(jobs)
             )
             .setCancelable(false)
             .show();
     }
+
+    // SECOND BULK CONFIRMATION
 
     private void showSecondBulkConfirmation(
         ArrayList<LabelJob> jobs) {
@@ -266,7 +267,9 @@ public class MainActivity extends Activity {
                 + " labels on P58D?\n\n"
                 + "The printer will start immediately."
             )
-            .setNegativeButton("GO BACK", (d, w) -> d.dismiss())
+            .setNegativeButton("GO BACK", (d, w) ->
+                d.dismiss()
+            )
             .setPositiveButton("CONFIRM PRINT", (d, w) ->
                 startPrintQueue(jobs)
             )
@@ -274,19 +277,26 @@ public class MainActivity extends Activity {
             .show();
     }
 
+    // CHECK PRINTER
+
     private boolean printerReady() {
         try {
             if (bluetoothSocket == null ||
                 !bluetoothSocket.isConnected()) {
+
                 showMessage("Connect P58D printer first");
                 return false;
             }
+
             return true;
+
         } catch (Exception e) {
             showMessage("Printer connection unavailable");
             return false;
         }
     }
+
+    // PRINT QUEUE
 
     private void startPrintQueue(ArrayList<LabelJob> jobs) {
 
@@ -350,34 +360,49 @@ public class MainActivity extends Activity {
                 cancelButton.setVisibility(Button.GONE);
 
                 if (hadFailure) {
-                    statusText.setText("Printing stopped - printer error");
+                    statusText.setText(
+                        "Printing stopped - printer error"
+                    );
+
                     progressText.setText(
                         "Printed: " + finalCompleted
                         + "    Not completed: " + finalRemaining
                     );
-                    showMessage("Printing failed. Check printer connection.");
+
+                    showMessage(
+                        "Printing failed. Check printer connection."
+                    );
+
                 } else if (wasCancelled) {
                     statusText.setText("Printing cancelled");
+
                     progressText.setText(
                         "Printed: " + finalCompleted
                         + "    Remaining: " + finalRemaining
                     );
+
                     showMessage("Remaining labels cancelled");
+
                 } else {
                     statusText.setText("Printing completed");
+
                     progressText.setText(
                         "Successfully sent " + finalCompleted + " labels"
                     );
-                    showMessage("Bulk printing completed");
+
+                    showMessage("Printing completed");
                 }
             });
         });
     }
 
+    // CANCEL PRINTING
+
     private void cancelPrinting() {
         if (!printing) return;
 
         cancelRequested = true;
+
         cancelButton.setEnabled(false);
         cancelButton.setText("CANCELLING...");
 
@@ -390,6 +415,8 @@ public class MainActivity extends Activity {
             cancelButton.setText("CANCEL PRINTING");
         }, 500);
     }
+
+    // BLUETOOTH PERMISSION
 
     private void checkBluetoothPermission() {
 
@@ -407,6 +434,7 @@ public class MainActivity extends Activity {
                     Manifest.permission.BLUETOOTH_CONNECT
                 }, 100
             );
+
             return;
         }
 
@@ -424,11 +452,15 @@ public class MainActivity extends Activity {
         if (requestCode == 100 &&
             results.length > 0 &&
             results[0] == PackageManager.PERMISSION_GRANTED) {
+
             showPairedPrinters();
+
         } else {
             showMessage("Bluetooth permission required");
         }
     }
+
+    // SHOW PAIRED BLUETOOTH PRINTERS
 
     private void showPairedPrinters() {
         try {
@@ -442,6 +474,7 @@ public class MainActivity extends Activity {
 
             for (BluetoothDevice device : devices) {
                 printerList.add(device);
+
                 names.add(
                     device.getName() + " - " + device.getAddress()
                 );
@@ -465,6 +498,8 @@ public class MainActivity extends Activity {
             showMessage("Bluetooth permission required");
         }
     }
+
+    // CONNECT P58D
 
     private void connectPrinter(BluetoothDevice device) {
 
@@ -494,17 +529,23 @@ public class MainActivity extends Activity {
                     statusText.setText(
                         "Connected: " + device.getName()
                     );
+
                     showMessage("P58D connected successfully");
                 });
 
             } catch (Exception e) {
                 runOnUiThread(() -> {
-                    statusText.setText("Printer connection failed");
+                    statusText.setText(
+                        "Printer connection failed"
+                    );
+
                     showMessage("Could not connect to printer");
                 });
             }
         }).start();
     }
+
+    // PRINT ONE LABEL
 
     private void printOneLabel(LabelJob job) throws Exception {
 
@@ -564,7 +605,9 @@ public class MainActivity extends Activity {
 
         out.write('\n');
         out.write('\n');
+
         out.write(new byte[]{0x1D, 0x56, 0x00});
+
         out.flush();
     }
 
@@ -573,8 +616,14 @@ public class MainActivity extends Activity {
     }
 
     private void showMessage(String message) {
-        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+        Toast.makeText(
+            this,
+            message,
+            Toast.LENGTH_LONG
+        ).show();
     }
+
+    // CLOSE APP
 
     @Override
     public void onDestroy() {
@@ -584,10 +633,14 @@ public class MainActivity extends Activity {
         printExecutor.shutdownNow();
 
         try {
-            if (bluetoothSocket != null) bluetoothSocket.close();
+            if (bluetoothSocket != null) {
+                bluetoothSocket.close();
+            }
         } catch (Exception ignored) {
         }
 
-        if (webView != null) webView.destroy();
+        if (webView != null) {
+            webView.destroy();
+        }
     }
 }
