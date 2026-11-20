@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -242,19 +241,33 @@ button{border:0;border-radius:7px;padding:11px 14px;font-size:13px;font-weight:b
 <section class="panel">
 <h2>6. Print Labels</h2>
 
-<p class="muted">Bluetooth printing sends product details and barcode data to your Bluetooth Print app.</p>
+<p class="muted">
+Connect your P58D printer using the CONNECT P58D PRINTER button above.
+</p>
 
-<button class="primary" style="width:100%;padding:15px" onclick="printBluetoothLabel()">
-PRINT ONE LABEL VIA BLUETOOTH
+<button class="primary" style="width:100%;padding:15px"
+onclick="printBluetoothLabel()">
+PRINT ONE LABEL
 </button>
 
-<p class="muted">Bluetooth printing currently prints the selected preview size only.</p>
-
-<button class="secondary" style="width:100%;padding:15px;margin-top:10px" onclick="printLabels()">
-PRINT ALL LABELS (BROWSER)
+<button class="primary" style="width:100%;padding:15px;margin-top:10px"
+onclick="printBulkBluetoothLabels()">
+PRINT BULK LABELS
 </button>
 
-<p class="muted">Browser printing uses your phone's print dialog. Select 50 × 30 mm paper if available and set scale to 100%.</p>
+<p class="muted">
+Bulk printing requires two confirmations before printing starts.
+You can cancel remaining labels while printing.
+</p>
+
+<button class="secondary" style="width:100%;padding:15px;margin-top:10px"
+onclick="printLabels()">
+BROWSER PRINT
+</button>
+
+<p class="muted">
+Browser printing uses your phone's print dialog. Select 50 × 30 mm paper if available and set scale to 100%.
+</p>
 </section>
 
 </main>
@@ -262,9 +275,6 @@ PRINT ALL LABELS (BROWSER)
 <div id="printArea" style="display:none"></div>
 
 <script>
-
-/* GOOGLE PRINTING SERVICE */
-const PRASAD_PRINT_URL = "https://script.google.com/macros/s/AKfycbynyp5TWBYicDwVzr6plL87H834F55TN8Zlino1bB_Z9BsmOfY-i2tgZIFhLqVaqow/exec";
 
 const sizes=["0","1","2","3","4","5","6","7","8","9","10","12","13"];
 
@@ -456,6 +466,7 @@ function updatePreview(){
 }
 
 /* SAVE PRODUCT */
+
 function saveProduct(){
  const p=productData();
 
@@ -557,7 +568,8 @@ function clearProduct(){
  updatePreview();
 }
 
-/* BLUETOOTH PRINTING */
+/* ANDROID SINGLE LABEL PRINTING */
+
 function printBluetoothLabel(){
 
  const p=productData();
@@ -572,22 +584,72 @@ function printBluetoothLabel(){
   return;
  }
 
+ if(!window.AndroidPrinter){
+  alert("Please open Prasad Label Studio Android app to print.");
+  return;
+ }
+
  const size=document.getElementById("previewSize").value;
 
- const responseURL=new URL(PRASAD_PRINT_URL);
-
- responseURL.searchParams.set("style",p.style);
- responseURL.searchParams.set("model",p.model);
- responseURL.searchParams.set("colour",p.colour);
- responseURL.searchParams.set("size",size);
- responseURL.searchParams.set("barcode",p.barcode);
-
- const printLink="bprint://"+responseURL.toString();
-
- window.location.href=printLink;
+ AndroidPrinter.printSingle(JSON.stringify({
+  style:p.style,
+  model:p.model,
+  colour:p.colour,
+  size:size,
+  barcode:p.barcode
+ }));
 }
 
-/* NORMAL BROWSER PRINTING */
+/* ANDROID BULK LABEL PRINTING */
+
+function printBulkBluetoothLabels(){
+
+ const p=productData();
+
+ if(!p.style){
+  alert("Please enter Style Number.");
+  return;
+ }
+
+ if(!p.barcode){
+  alert("Please enter Barcode Number.");
+  return;
+ }
+
+ if(!window.AndroidPrinter){
+  alert("Please open Prasad Label Studio Android app to print.");
+  return;
+ }
+
+ const items=[];
+
+ sizes.forEach(size=>{
+  const quantity=quantities[size]||0;
+
+  if(quantity>0){
+   items.push({
+    size:size,
+    quantity:quantity
+   });
+  }
+ });
+
+ if(items.length===0){
+  alert("Please select sizes and enter quantities.");
+  return;
+ }
+
+ AndroidPrinter.printBulk(JSON.stringify({
+  style:p.style,
+  model:p.model,
+  colour:p.colour,
+  barcode:p.barcode,
+  items:items
+ }));
+}
+
+/* NORMAL BROWSER PRINTING - KEEP FOR IPHONE */
+
 function printLabels(){
 
  const p=productData();
@@ -638,6 +700,7 @@ function printLabels(){
 }
 
 /* INITIALIZE */
+
 makeSizeGrid();
 showSavedProducts();
 updatePreview();
