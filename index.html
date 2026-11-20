@@ -6,7 +6,6 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#111111">
 <title>Prasad Label Studio</title>
-
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
 
 <style>
@@ -18,7 +17,6 @@ header p{font-size:11px;letter-spacing:3px;margin:7px 0 0;color:#ccc}
 main{max-width:850px;margin:auto;padding:14px}
 .panel{background:white;border-radius:12px;padding:16px;margin-bottom:14px;box-shadow:0 2px 8px #0000000b}
 h2{font-size:16px;margin:0 0 14px}
-h3{font-size:14px;margin:16px 0 10px}
 label{display:block;font-size:12px;font-weight:bold;margin:10px 0 5px}
 input,select{width:100%;padding:11px;border:1px solid #ccc;border-radius:7px;font-size:15px;background:white}
 button{border:0;border-radius:7px;padding:11px 14px;font-size:13px;font-weight:bold;cursor:pointer}
@@ -33,53 +31,83 @@ button{border:0;border-radius:7px;padding:11px 14px;font-size:13px;font-weight:b
 .size-item label{display:inline;font-size:13px;margin:0}
 .size-item input[type=number]{padding:7px;text-align:center;margin-top:7px}
 .size-item.active{border-color:#111;background:#f7f7f7}
-.template-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.template-option{border:1px solid #ddd;border-radius:8px;padding:12px;text-align:center;background:#fff}
+.template-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.template-option{border:1px solid #ddd;border-radius:9px;padding:13px;text-align:left;background:white;color:#111}
 .template-option.active{border:2px solid #111;background:#f4f4f4}
-.template-option strong{display:block;font-size:13px}
+.template-option strong{display:block;font-size:13px;margin-bottom:4px}
 .template-option small{font-size:11px;color:#666}
 #previewWrap{overflow:auto;background:#eee;padding:14px;border-radius:8px}
-.label-preview{width:50mm;height:30mm;background:white;color:#111;border:0.25mm solid #111;padding:2mm;position:relative;overflow:hidden}
-.brand{font-size:9pt;font-weight:900;letter-spacing:.5px}
-.small{font-size:6.5pt}
-.style-line{font-size:7pt;font-weight:bold}
-.colour-line{font-size:7pt}
-.size-value{font-size:20pt;font-weight:900;line-height:1}
-.barcode{width:100%;height:9mm;display:block}
-.barcode-number{text-align:center;font-size:6pt;letter-spacing:1px}
-.classic .label-top{display:flex;justify-content:space-between;align-items:center;border-bottom:.3mm solid #111;padding-bottom:1mm}
-.classic .label-info{display:flex;justify-content:space-between;align-items:center;padding-top:1.5mm}
-.classic .size-value{font-size:21pt}
-.minimal{border:0;padding:2.5mm}
-.minimal .brand{font-size:7pt;letter-spacing:1px}
-.minimal .label-top{display:flex;justify-content:space-between}
-.minimal .label-info{display:flex;justify-content:space-between;align-items:center;margin-top:2mm}
-.minimal .size-value{font-size:24pt}
-.minimal .barcode{height:8mm;margin-top:1mm}
-.barcode-focus{padding:1.5mm}
-.barcode-focus .label-top{display:flex;justify-content:space-between;align-items:center}
-.barcode-focus .brand{font-size:8pt}
-.barcode-focus .label-info{display:flex;justify-content:space-between;align-items:center;margin-top:1mm}
-.barcode-focus .barcode{height:12mm;margin-top:1mm}
-.barcode-focus .barcode-number{font-size:6.5pt}
-.brand-focus{padding:2mm;text-align:center;border:1mm double #111}
-.brand-focus .brand{font-size:11pt;letter-spacing:1px}
-.brand-focus .label-top{border-bottom:.3mm solid #111;padding-bottom:1mm}
-.brand-focus .label-info{display:flex;justify-content:space-around;align-items:center;margin-top:2mm}
-.brand-focus .size-value{font-size:22pt}
-.brand-focus .barcode{height:8mm;margin-top:1mm}
+.label-preview{
+ width:50mm;height:30mm;background:white;color:#111;
+ position:relative;overflow:hidden;padding:1.8mm;
+ display:flex;flex-direction:column;
+ font-family:Arial,sans-serif;
+}
+.label-top{display:flex;justify-content:center;align-items:center;text-align:center}
+.brand{font-size:9pt;font-weight:900;letter-spacing:.35px;white-space:nowrap}
+.label-info{display:flex;justify-content:space-between;align-items:center;flex:1;min-height:0}
+.details{min-width:0;flex:1}
+.detail-line{font-size:6.5pt;line-height:1.45;white-space:nowrap;overflow:hidden}
+.detail-line b{font-weight:800}
+.size-box{min-width:12mm;text-align:center;display:flex;flex-direction:column;justify-content:center;align-items:center}
+.size-caption{font-size:6pt;font-weight:bold;letter-spacing:.5px}
+.size-value{font-size:22pt;font-weight:900;line-height:1}
+.barcode{width:100%;height:8mm;display:block}
+.barcode-number{text-align:center;font-size:6pt;letter-spacing:1px;line-height:1}
+.barcode-area{width:100%;text-align:center;margin-top:auto}
+
+/* 1. PREMIUM CLASSIC */
+.classic{border:.35mm solid #111;border-radius:1.5mm;padding:1.6mm}
+.classic .label-top{border-bottom:.3mm solid #111;padding-bottom:1mm}
+.classic .label-info{padding-top:1mm}
+.classic .size-box{border-left:.3mm solid #111;padding-left:2mm}
+.classic .barcode{height:7.5mm}
+
+/* 2. LUXURY GOLD - prints in monochrome on thermal printers */
+.luxury{border:.6mm double #111;border-radius:2mm;padding:1.7mm}
+.luxury .brand{font-family:Georgia,serif;font-size:9pt;letter-spacing:.15px}
+.luxury .label-top{border-bottom:.35mm solid #111;padding-bottom:1.3mm}
+.luxury .label-info{padding-top:1mm}
+.luxury .size-box{border-left:.3mm solid #111;padding-left:2mm}
+.luxury .size-value{font-family:Georgia,serif;font-size:23pt}
+.luxury .barcode{height:7.5mm}
+
+/* 3. RETAIL PRO */
+.retail{border:.6mm solid #111;border-radius:2mm;padding:1.5mm}
+.retail .label-top{background:#111;color:white;padding:1.2mm 0}
+.retail .brand{font-size:9pt;letter-spacing:.4px}
+.retail .label-info{padding:1mm 0}
+.retail .size-box{border-left:.5mm solid #111;padding-left:2mm;min-width:13mm}
+.retail .size-value{font-size:23pt}
+.retail .barcode{height:7.5mm}
+
+/* 4. WHOLESALE PRO */
+.wholesale{border:.35mm solid #111;border-radius:1mm;padding:1.7mm}
+.wholesale .label-top{justify-content:flex-start;border-bottom:.5mm solid #111;padding-bottom:1mm}
+.wholesale .brand{font-family:Georgia,serif;font-size:9pt;letter-spacing:.2px}
+.wholesale .label-info{padding-top:1mm}
+.wholesale .details{border-right:.35mm solid #111}
+.wholesale .size-box{min-width:12mm}
+.wholesale .size-value{font-size:21pt}
+.wholesale .barcode{height:7.5mm}
+
 .saved-row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid #eee}
 .saved-row span{font-size:13px;font-weight:bold}
 .muted{font-size:12px;color:#666}
 .total{font-size:15px;font-weight:bold;margin-top:12px}
 #status{font-size:12px;margin-top:10px;color:#176b32}
-@media(max-width:450px){.grid2{grid-template-columns:1fr}.size-grid{grid-template-columns:repeat(4,1fr)}}
+
+@media(max-width:450px){
+ .grid2{grid-template-columns:1fr}
+ .size-grid{grid-template-columns:repeat(4,1fr)}
+}
+
 @media print{
  @page{size:50mm 30mm;margin:0}
  html,body{margin:0!important;padding:0!important;width:50mm!important;background:white!important}
  body *{visibility:hidden!important}
  #printArea,#printArea *{visibility:visible!important}
- #printArea{position:absolute;left:0;top:0;width:50mm}
+ #printArea{display:block!important;position:absolute;left:0;top:0;width:50mm}
  .print-label{width:50mm;height:30mm;page-break-after:always;break-after:page;overflow:hidden}
  .print-label:last-child{page-break-after:auto;break-after:auto}
 }
@@ -138,16 +166,20 @@ button{border:0;border-radius:7px;padding:11px 14px;font-size:13px;font-weight:b
 <h2>2. Choose Label Design</h2>
 <div class="template-grid">
 <button class="template-option active" data-template="classic" onclick="chooseTemplate('classic')">
-<strong>Premium Classic</strong><small>Default design</small>
+<strong>1. Premium Classic</strong>
+<small>Clean professional design</small>
 </button>
-<button class="template-option" data-template="minimal" onclick="chooseTemplate('minimal')">
-<strong>Minimal</strong><small>Clean simple design</small>
+<button class="template-option" data-template="luxury" onclick="chooseTemplate('luxury')">
+<strong>2. Luxury Gold</strong>
+<small>Elegant double border</small>
 </button>
-<button class="template-option" data-template="barcode-focus" onclick="chooseTemplate('barcode-focus')">
-<strong>Barcode Focus</strong><small>Large barcode</small>
+<button class="template-option" data-template="retail" onclick="chooseTemplate('retail')">
+<strong>3. Retail Pro</strong>
+<small>Bold brand header</small>
 </button>
-<button class="template-option" data-template="brand-focus" onclick="chooseTemplate('brand-focus')">
-<strong>Brand Focus</strong><small>Prominent brand name</small>
+<button class="template-option" data-template="wholesale" onclick="chooseTemplate('wholesale')">
+<strong>4. Wholesale Pro</strong>
+<small>Structured product details</small>
 </button>
 </div>
 </section>
@@ -158,6 +190,7 @@ button{border:0;border-radius:7px;padding:11px 14px;font-size:13px;font-weight:b
 <button class="secondary" onclick="selectAllSizes(true)">SELECT ALL</button>
 <button class="secondary" onclick="selectAllSizes(false)">CLEAR ALL</button>
 </div>
+
 <div class="grid2">
 <div>
 <label>Quick quantity per selected size</label>
@@ -175,18 +208,15 @@ button{border:0;border-radius:7px;padding:11px 14px;font-size:13px;font-weight:b
 <button class="primary" style="width:100%;margin-top:8px" onclick="applyCustom()">APPLY QUANTITY</button>
 </div>
 </div>
+
 <div class="size-grid" id="sizeGrid"></div>
 <div class="total">Total Labels: <span id="totalCount">0</span></div>
 </section>
 
 <section class="panel">
 <h2>4. Label Preview</h2>
-<div class="grid2">
-<div>
 <label>Preview Size</label>
 <select id="previewSize" onchange="updatePreview()"></select>
-</div>
-</div>
 <div id="previewWrap" style="margin-top:12px">
 <div id="previewLabel" class="label-preview classic"></div>
 </div>
@@ -200,9 +230,9 @@ button{border:0;border-radius:7px;padding:11px 14px;font-size:13px;font-weight:b
 
 <section class="panel">
 <h2>6. Print Labels</h2>
-<p class="muted">Check your printer paper size and print scaling before printing. Select 50 × 30 mm paper if available and set scale to 100%.</p>
+<p class="muted">Select 50 × 30 mm paper if available and set print scale to 100%.</p>
 <button class="primary" style="width:100%;padding:15px" onclick="printLabels()">PRINT ALL LABELS</button>
-<p class="muted">Printing uses your phone's browser print dialog. Direct Bluetooth printing will be added through the native app version after printer compatibility is verified.</p>
+<p class="muted">Printing uses your phone's browser print dialog. Direct Bluetooth printing is not included in this web version.</p>
 </section>
 
 </main>
@@ -213,7 +243,6 @@ button{border:0;border-radius:7px;padding:11px 14px;font-size:13px;font-weight:b
 const sizes=["0","1","2","3","4","5","6","7","8","9","10","12","13"];
 let selectedTemplate="classic";
 let quantities={};
-
 sizes.forEach(s=>quantities[s]=0);
 
 function makeSizeGrid(){
@@ -221,18 +250,23 @@ function makeSizeGrid(){
  const preview=document.getElementById("previewSize");
  grid.innerHTML="";
  preview.innerHTML="";
+
  sizes.forEach(size=>{
   const item=document.createElement("div");
   item.className="size-item";
   item.id="item-"+size;
   item.innerHTML=`
-   <div><input type="checkbox" id="check-${size}" onchange="toggleSize('${size}')">
-   <label for="check-${size}">${size}</label></div>
+   <div>
+    <input type="checkbox" id="check-${size}" onchange="toggleSize('${size}')">
+    <label for="check-${size}">${size}</label>
+   </div>
    <input type="number" id="qty-${size}" min="0" value="0" onchange="changeQty('${size}')">
   `;
   grid.appendChild(item);
+
   const opt=document.createElement("option");
-  opt.value=size;opt.textContent="Size "+size;
+  opt.value=size;
+  opt.textContent="Size "+size;
   preview.appendChild(opt);
  });
  updateTotal();
@@ -305,30 +339,36 @@ function productData(){
  };
 }
 
-function labelHTML(size,template){
- const p=productData();
- const barcode=p.barcode||p.style||"000000";
- return `
- <div class="label-top">
-  <div class="brand">PRASAD APPARELS</div>
-  <div class="small">${escapeHTML(p.model)}</div>
- </div>
- <div class="label-info">
-  <div>
-   <div class="style-line">STYLE: ${escapeHTML(p.style||"-")}</div>
-   <div class="colour-line">COLOUR: ${escapeHTML(p.colour||"-")}</div>
-  </div>
-  <div class="size-value">${escapeHTML(size)}</div>
- </div>
- <svg class="barcode" data-barcode="${escapeHTML(barcode)}"></svg>
- <div class="barcode-number">${escapeHTML(barcode)}</div>
- `;
-}
-
 function escapeHTML(value){
  return String(value).replace(/[&<>"']/g,c=>({
   "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
  }[c]));
+}
+
+function labelHTML(size){
+ const p=productData();
+ const barcode=p.barcode||p.style||"000000";
+
+ return `
+ <div class="label-top">
+  <div class="brand">PRASAD APPARELS</div>
+ </div>
+ <div class="label-info">
+  <div class="details">
+   <div class="detail-line"><b>STYLE:</b> ${escapeHTML(p.style||"-")}</div>
+   <div class="detail-line"><b>MODEL:</b> ${escapeHTML(p.model)}</div>
+   <div class="detail-line"><b>COLOUR:</b> ${escapeHTML(p.colour||"-")}</div>
+  </div>
+  <div class="size-box">
+   <div class="size-caption">SIZE</div>
+   <div class="size-value">${escapeHTML(size)}</div>
+  </div>
+ </div>
+ <div class="barcode-area">
+  <svg class="barcode" data-barcode="${escapeHTML(barcode)}"></svg>
+  <div class="barcode-number">${escapeHTML(barcode)}</div>
+ </div>
+ `;
 }
 
 function renderBarcode(container){
@@ -338,10 +378,17 @@ function renderBarcode(container){
   });
   return;
  }
+
  container.querySelectorAll(".barcode").forEach(svg=>{
   const value=svg.dataset.barcode||"000000";
   try{
-   JsBarcode(svg,value,{format:"CODE128",displayValue:false,margin:0,width:1.35,height:35});
+   JsBarcode(svg,value,{
+    format:"CODE128",
+    displayValue:false,
+    margin:0,
+    width:1.25,
+    height:30
+   });
   }catch(e){
    svg.outerHTML='<div class="barcode-number">Invalid barcode</div>';
   }
@@ -352,7 +399,7 @@ function updatePreview(){
  const size=document.getElementById("previewSize").value||"0";
  const preview=document.getElementById("previewLabel");
  preview.className="label-preview "+selectedTemplate;
- preview.innerHTML=labelHTML(size,selectedTemplate);
+ preview.innerHTML=labelHTML(size);
  renderBarcode(preview);
 }
 
@@ -362,6 +409,7 @@ function saveProduct(){
   alert("Please enter Style Number.");
   return;
  }
+
  let products=JSON.parse(localStorage.getItem("prasadProducts")||"{}");
  products[p.style]=p;
  localStorage.setItem("prasadProducts",JSON.stringify(products));
@@ -373,28 +421,35 @@ function showSavedProducts(){
  const products=JSON.parse(localStorage.getItem("prasadProducts")||"{}");
  const box=document.getElementById("savedProducts");
  const keys=Object.keys(products);
+
  if(!keys.length){
   box.innerHTML='<p class="muted">No products saved yet.</p>';
   return;
  }
+
  box.innerHTML="";
  keys.forEach(key=>{
   const p=products[key];
   const row=document.createElement("div");
   row.className="saved-row";
+
   const info=document.createElement("span");
   info.textContent=p.style+" — "+p.model+" — "+p.colour;
+
   const actions=document.createElement("div");
   actions.className="buttons";
   actions.style.margin="0";
+
   const load=document.createElement("button");
   load.className="secondary";
   load.textContent="LOAD";
   load.onclick=()=>loadProduct(key);
+
   const del=document.createElement("button");
   del.className="danger";
   del.textContent="DELETE";
   del.onclick=()=>deleteProduct(key);
+
   actions.append(load,del);
   row.append(info,actions);
   box.appendChild(row);
@@ -405,17 +460,20 @@ function loadProduct(key){
  const products=JSON.parse(localStorage.getItem("prasadProducts")||"{}");
  const p=products[key];
  if(!p)return;
+
  document.getElementById("style").value=p.style||"";
  document.getElementById("model").value=p.model||"Other";
  document.getElementById("colour").value=p.colour||"";
  document.getElementById("barcodeNumber").value=p.barcode||"";
  updatePreview();
+
  document.getElementById("status").textContent="Product loaded.";
  window.scrollTo({top:0,behavior:"smooth"});
 }
 
 function deleteProduct(key){
  if(!confirm("Delete product "+key+"?"))return;
+
  const products=JSON.parse(localStorage.getItem("prasadProducts")||"{}");
  delete products[key];
  localStorage.setItem("prasadProducts",JSON.stringify(products));
@@ -433,37 +491,46 @@ function clearProduct(){
 
 function printLabels(){
  const p=productData();
+
  if(!p.style){
   alert("Please enter Style Number.");
   return;
  }
+
  const total=sizes.reduce((sum,s)=>sum+(quantities[s]||0),0);
  if(total===0){
   alert("Please select sizes and enter quantities.");
   return;
  }
+
  const area=document.getElementById("printArea");
  area.innerHTML="";
  area.style.display="block";
+
  sizes.forEach(size=>{
   for(let i=0;i<(quantities[size]||0);i++){
    const label=document.createElement("div");
    label.className="print-label";
+
    const inner=document.createElement("div");
    inner.className="label-preview "+selectedTemplate;
-   inner.innerHTML=labelHTML(size,selectedTemplate);
+   inner.innerHTML=labelHTML(size);
+
    label.appendChild(inner);
    area.appendChild(label);
   }
  });
+
  renderBarcode(area);
+
  const cleanup=()=>{
   area.innerHTML="";
   area.style.display="none";
   window.removeEventListener("afterprint",cleanup);
  };
+
  window.addEventListener("afterprint",cleanup);
- setTimeout(()=>window.print(),300);
+ setTimeout(()=>window.print(),500);
 }
 
 makeSizeGrid();
