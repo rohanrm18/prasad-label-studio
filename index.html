@@ -224,25 +224,7 @@ body{padding-bottom:calc(62px + env(safe-area-inset-bottom))}
 <input id="style" placeholder="Example: 8136">
 
 <label>Model / Category</label>
-<select id="model">
-<option>Kurta Pyjama</option>
-<option>Kurta Jacket Pyjama</option>
-<option>Kurta Jacket Dhoti Pyjama</option>
-<option>Indo Western</option>
-<option>Jacket Dhoti</option>
-<option>Coat Suit</option>
-<option>Sherwani</option>
-<option>Jodhpuri Suit</option>
-<option>Pathani Suit</option>
-<option>Nehru Jacket Set</option>
-<option>Dhoti Kurta</option>
-<option>Waistcoat Set</option>
-<option>Bandhgala Suit</option>
-<option>Achkan Set</option>
-<option>Shirt Pant</option>
-<option>Blazer Set</option>
-<option>Other</option>
-</select>
+<input id="model" placeholder="Enter model / category (optional)">
 
 <label>Colour</label>
 <input id="colour" placeholder="Example: White">
@@ -757,7 +739,7 @@ function loadProduct(key){
  if(!p)return;
 
  document.getElementById("style").value=p.style||"";
- document.getElementById("model").value=p.model||"Other";
+ document.getElementById("model").value=p.model||"";
  document.getElementById("colour").value=p.colour||"";
  document.getElementById("barcodeNumber").value=p.barcode||"";
  document.getElementById("noBarcode").checked=!!p.noBarcode;
@@ -781,7 +763,7 @@ function clearProduct(){
  document.getElementById("style").value="";
  document.getElementById("colour").value="";
  document.getElementById("barcodeNumber").value="";
- document.getElementById("model").selectedIndex=0;
+ document.getElementById("model").value="";
  document.getElementById("status").textContent="";
  updatePreview();
 }
