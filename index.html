@@ -150,7 +150,7 @@ button{border:0;border-radius:7px;padding:11px 14px;font-size:13px;font-weight:b
  .print-label{width:50mm;height:30mm;page-break-after:always;break-after:page;overflow:hidden}
  .print-label:last-child{page-break-after:auto;break-after:auto}
 }
-</style>
+\n/* CLEAN MOBILE-FIRST WORKFLOW: templates first, preview immediately below */\nmain{display:flex;flex-direction:column;gap:0}\n.template-grid{grid-template-columns:repeat(2,minmax(0,1fr))}\n.template-option{min-height:72px;touch-action:manipulation}\n#previewWrap{display:flex;justify-content:center;align-items:flex-start;min-height:150px;overflow-x:auto;overscroll-behavior-x:contain}\n.label-preview{flex:0 0 50mm}\n@media(max-width:360px){.template-grid{grid-template-columns:1fr 1fr}.template-option{padding:10px 8px}}\n</style>
 </head>
 
 <body>
@@ -161,9 +161,33 @@ button{border:0;border-radius:7px;padding:11px 14px;font-size:13px;font-weight:b
 </header>
 
 <main>
+<section class="panel">
+<h2>1. Choose Label Design</h2>
+<div class="template-grid">
+<button class="template-option active" data-template="classic" onclick="chooseTemplate('classic')"><strong>1. Signature</strong><small>Premium framed brand label</small></button>
+<button class="template-option" data-template="luxury" onclick="chooseTemplate('luxury')"><strong>2. Heritage</strong><small>Elegant boutique style</small></button>
+<button class="template-option" data-template="retail" onclick="chooseTemplate('retail')"><strong>3. Bold Retail</strong><small>High-contrast shop label</small></button>
+<button class="template-option" data-template="wholesale" onclick="chooseTemplate('wholesale')"><strong>4. Wholesale</strong><small>Compact stock-room layout</small></button>
+<button class="template-option" data-template="editorial" onclick="chooseTemplate('editorial')"><strong>5. Designer Edit</strong><small>Editorial fashion-label look</small></button>
+<button class="template-option" data-template="sizefocus" onclick="chooseTemplate('sizefocus')"><strong>6. Size Focus</strong><small>Large, easy-to-read size</small></button>
+<button class="template-option" data-template="frame" onclick="chooseTemplate('frame')"><strong>7. Double Frame</strong><small>Luxury boxed composition</small></button>
+<button class="template-option" data-template="barcodefocus" onclick="chooseTemplate('barcodefocus')"><strong>8. Barcode Pro</strong><small>Barcode-first stock label</small></button>
+</div>
+</section>
 
 <section class="panel">
-<h2>1. Product Details</h2>
+<h2>2. Label Preview</h2>
+<label>Preview Size</label>
+<select id="previewSize" onchange="updatePreview()"></select>
+<div id="previewWrap" style="margin-top:12px">
+<div id="previewLabel" class="label-preview classic"></div>
+</div>
+<p class="muted">Actual label size: 50 × 30 mm. Printer printable width: 48 mm.</p>
+</section>
+
+
+<section class="panel">
+<h2>3. Product Details</h2>
 
 <label>Style Number</label>
 <input id="style" placeholder="Example: 8136">
@@ -218,22 +242,10 @@ button{border:0;border-radius:7px;padding:11px 14px;font-size:13px;font-weight:b
 <div id="status"></div>
 </section>
 
-<section class="panel">
-<h2>2. Choose Label Design</h2>
-<div class="template-grid">
-<button class="template-option active" data-template="classic" onclick="chooseTemplate('classic')"><strong>1. Signature</strong><small>Premium framed brand label</small></button>
-<button class="template-option" data-template="luxury" onclick="chooseTemplate('luxury')"><strong>2. Heritage</strong><small>Elegant boutique style</small></button>
-<button class="template-option" data-template="retail" onclick="chooseTemplate('retail')"><strong>3. Bold Retail</strong><small>High-contrast shop label</small></button>
-<button class="template-option" data-template="wholesale" onclick="chooseTemplate('wholesale')"><strong>4. Wholesale</strong><small>Compact stock-room layout</small></button>
-<button class="template-option" data-template="editorial" onclick="chooseTemplate('editorial')"><strong>5. Designer Edit</strong><small>Editorial fashion-label look</small></button>
-<button class="template-option" data-template="sizefocus" onclick="chooseTemplate('sizefocus')"><strong>6. Size Focus</strong><small>Large, easy-to-read size</small></button>
-<button class="template-option" data-template="frame" onclick="chooseTemplate('frame')"><strong>7. Double Frame</strong><small>Luxury boxed composition</small></button>
-<button class="template-option" data-template="barcodefocus" onclick="chooseTemplate('barcodefocus')"><strong>8. Barcode Pro</strong><small>Barcode-first stock label</small></button>
-</div>
-</section>
+
 
 <section class="panel">
-<h2>3. MyLabel-Style Custom Designer</h2>
+<h2>4. MyLabel-Style Custom Designer</h2>
 <p class="muted">Adjust the label yourself. Preview changes instantly. Save your settings for future labels.</p>
 <label>Brand name</label><input id="dBrand" value="PRASAD APPARELS" oninput="designerChanged()">
 <div class="grid2"><div><label>Alignment</label><div class="auto-box muted" style="margin:0">Automatic balanced alignment — preview and print stay aligned</div></div><div><label>Border</label><select id="dBorder" onchange="designerChanged()"><option value="none">No border</option><option value="solid">Solid</option><option value="double">Double</option></select></div>
@@ -245,7 +257,7 @@ button{border:0;border-radius:7px;padding:11px 14px;font-size:13px;font-weight:b
 <label><input id="dShowModel" type="checkbox" checked onchange="designerChanged()"> Model</label><label><input id="dShowColour" type="checkbox" checked onchange="designerChanged()"> Colour</label>
 <label><input id="dShowSize" type="checkbox" checked onchange="designerChanged()"> Size</label><label><input id="dShowBarcode" type="checkbox" checked onchange="designerChanged()"> Barcode</label></div>
 <div class="buttons"><button class="primary" onclick="saveDesigner()">SAVE DESIGN</button><button class="secondary" onclick="resetDesigner()">RESET DESIGN</button></div><div id="designerStatus" class="muted"></div>
-</section><section class="panel"><h2>4. Select Sizes & Quantities</h2>
+</section><section class="panel"><h2>5. Select Sizes & Quantities</h2>
 
 <div class="buttons">
 <button class="secondary" onclick="selectAllSizes(true)">SELECT ALL</button>
@@ -274,15 +286,7 @@ button{border:0;border-radius:7px;padding:11px 14px;font-size:13px;font-weight:b
 <div class="total">Total Labels: <span id="totalCount">0</span></div>
 </section>
 
-<section class="panel">
-<h2>5. Label Preview</h2>
-<label>Preview Size</label>
-<select id="previewSize" onchange="updatePreview()"></select>
-<div id="previewWrap" style="margin-top:12px">
-<div id="previewLabel" class="label-preview classic"></div>
-</div>
-<p class="muted">Actual label size: 50 × 30 mm. Printer printable width: 48 mm.</p>
-</section>
+
 
 <section class="panel">
 <h2>6. Saved Products</h2>
