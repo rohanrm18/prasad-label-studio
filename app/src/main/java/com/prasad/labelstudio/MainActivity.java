@@ -804,8 +804,8 @@ public class MainActivity extends Activity {
         float gap=ts+7, detailsBaseY=y+detailsYOffset, detailStep=0;
         x+=detailsX;
         if(sty){c.drawText("STYLE: "+safe(job.style),x,detailsBaseY+detailStep,p);detailStep+=gap;}
-        if(model){c.drawText("MODEL: "+safe(job.model),x,detailsBaseY+detailsY+detailStep,p);detailStep+=gap;}
-        if(col){c.drawText("COLOUR: "+safe(job.colour),x,detailsBaseY+detailsY+detailStep,p);detailStep+=gap;}
+        if(model){c.drawText("MODEL: "+safe(job.model),x,detailsBaseY+detailStep,p);detailStep+=gap;}
+        if(col){c.drawText("COLOUR: "+safe(job.colour),x,detailsBaseY+detailStep,p);detailStep+=gap;}
         float detailsY=detailsBaseY+detailStep;
 
         if(size){
@@ -816,13 +816,13 @@ public class MainActivity extends Activity {
                 float sy=Math.min(bar?150:210,detailsY+ss+5)+sizeY;
                 if(boxed){
                     float bw="sizefocus".equals(t)?126:105,bh2=58;
-                    float left=Math.max(8,Math.min(width-bw-8,width/2f-bw/2f));
+                    float left=Math.max(8,Math.min(width-bw-8,width/2f-bw/2f))+sizeX;
                     float top=Math.max(y+4,sy-bh2+8);
                     if("frame".equals(t)){p.setStyle(Paint.Style.STROKE);p.setStrokeWidth(2);c.drawRect(left,top,left+bw,top+bh2,p);p.setStyle(Paint.Style.FILL);}
                     else{c.drawRect(left,top,left+bw,top+bh2,p);p.setColor(Color.WHITE);}
                     p.setTextSize(10);c.drawText("SIZE",left+bw/2,top+14,p);
                     p.setTextSize(ss);c.drawText(safe(job.size),left+bw/2,top+bh2-7,p);p.setColor(Color.BLACK);
-                }else{p.setTextSize(Math.max(10,ss-4));c.drawText("SIZE  "+safe(job.size),width/2f+ox,sy,p);}
+                }else{p.setTextSize(Math.max(10,ss-4));c.drawText("SIZE  "+safe(job.size),width/2f+ox+sizeX,sy,p);}
             }else if(boxed){
                 float bw="sizefocus".equals(t)?126:105,bh2="sizefocus".equals(t)?72:62;
                 float left=Math.max(8,Math.min(width-bw-8,width-pad-bw))+sizeX;
