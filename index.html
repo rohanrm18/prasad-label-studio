@@ -284,6 +284,8 @@ body{padding-bottom:calc(62px + env(safe-area-inset-bottom))}
 <div><label>Size number</label><input id="dSizeSize" type="range" min="20" max="48" value="34" oninput="designerChanged()"></div><div><label>Barcode height</label><input id="dBarcodeHeight" type="range" min="25" max="80" value="48" oninput="designerChanged()"></div>
 <div><label>Inner spacing</label><input id="dPadding" type="range" min="2" max="12" value="6" oninput="designerChanged()"></div><div><label>Font style</label><select id="dFont" onchange="designerChanged()"><option value="sans">Modern Sans</option><option value="serif">Classic Serif</option><option value="bold">Bold Retail</option></select></div><div><label>Details alignment</label><select id="dAlign" onchange="designerChanged()"><option value="left">Left</option><option value="center">Center</option><option value="right">Right</option></select></div><div><label>On-page positioning</label><div class="muted">Move objects directly on the label preview.</div></div><div><label>Layout</label><select id="dLayout" onchange="designerChanged()"><option value="standard">Details + large size</option><option value="stacked">Stacked details</option></select></div></div>
 <div class="auto-box" style="margin-top:14px">
+<select id="dCanvasTarget" hidden><option value="all">All</option><option value="brand">Brand</option><option value="details">Details</option><option value="size">Size</option><option value="barcode">Barcode</option></select>
+<input id="dCanvasX" type="hidden" value="0"><input id="dCanvasY" type="hidden" value="0">
 <strong>MOVE IT DIRECTLY ON THE LABEL</strong>
 <p class="muted">Touch the brand, product details, size or barcode on the actual label preview. Keep your finger on it and drag it to the exact place you want. Use the corner handle to resize. The preview shows the position before printing.</p>
 <label>Selected item size</label><input id="dCanvasScale" type="range" min="0.5" max="1.8" step="0.05" value="1" oninput="changeCanvasScale()">
@@ -543,11 +545,13 @@ function getDesignSettings(){
  d.scales={...DESIGN_DEFAULTS.scales,...(d.scales||{})};d.template=selectedTemplate;return d;
 }
 function loadMoveControls(){
- const d=getDesignSettings(),target=document.getElementById("dMoveTarget").value,pos=d.positions[target]||{x:0,y:0};
+ const targetEl=document.getElementById("dMoveTarget");if(!targetEl)return;
+ const d=getDesignSettings(),target=targetEl.value,pos=d.positions[target]||{x:0,y:0};
  document.getElementById("dMoveX").value=pos.x||0;document.getElementById("dMoveY").value=pos.y||0;
 }
 function moveSelectedItem(){
- const d=getDesignSettings(),target=document.getElementById("dMoveTarget").value;
+ const targetEl=document.getElementById("dMoveTarget");if(!targetEl)return;
+ const d=getDesignSettings(),target=targetEl.value;
  d.positions[target]={x:+document.getElementById("dMoveX").value,y:+document.getElementById("dMoveY").value};
  localStorage.setItem("prasadLabelDesign",JSON.stringify({...d,template:undefined}));
  updatePreview();
@@ -618,7 +622,7 @@ function renderBarcode(container){
 
 let canvasSelected="brand",canvasDrag=null;
 function canvasNode(key){const preview=document.getElementById("previewLabel");return ({brand:preview.querySelector(".label-top"),details:preview.querySelector(".details"),size:preview.querySelector(".size-box"),barcode:preview.querySelector(".barcode-area")})[key];}
-function loadCanvasControls(){const d=getDesignSettings();canvasSelected=document.getElementById("dCanvasTarget").value;const p=canvasSelected==="all"?(d.groupOffset||{x:0,y:0}):(d.positions?.[canvasSelected]||{x:0,y:0});document.getElementById("dCanvasX").value=(+p.x||0);document.getElementById("dCanvasY").value=(+p.y||0);document.getElementById("dCanvasScale").disabled=canvasSelected==="all";document.getElementById("dCanvasScale").value=canvasSelected==="all"?1:(d.scales?.[canvasSelected]||1);document.getElementById("dCanvasScaleValue").textContent=canvasSelected==="all"?"Adjusts every label item together":Math.round((d.scales?.[canvasSelected]||1)*100)+"%";document.getElementById("canvasEditorStatus").textContent=canvasSelected==="all"?"All label content selected. Move the complete layout together.":"Selected: "+canvasSelected+". Position and size changes apply to preview and saved print layout.";}
+function loadCanvasControls(){const d=getDesignSettings();const target=document.getElementById("dCanvasTarget");if(!target)return;const p=canvasSelected==="all"?(d.groupOffset||{x:0,y:0}):(d.positions?.[canvasSelected]||{x:0,y:0});document.getElementById("dCanvasX").value=(+p.x||0);document.getElementById("dCanvasY").value=(+p.y||0);document.getElementById("dCanvasScale").disabled=canvasSelected==="all";document.getElementById("dCanvasScale").value=canvasSelected==="all"?1:(d.scales?.[canvasSelected]||1);document.getElementById("dCanvasScaleValue").textContent=canvasSelected==="all"?"Select one item to resize":Math.round((d.scales?.[canvasSelected]||1)*100)+"%";document.getElementById("canvasEditorStatus").textContent=canvasSelected==="all"?"Drag an item directly on the label preview.":"Selected: "+canvasSelected+". Drag it on the label to position it.";}
 function changeCanvasPosition(){const d=getDesignSettings(),p={x:Math.max(-20,Math.min(20,Number(document.getElementById("dCanvasX").value)||0)),y:Math.max(-12,Math.min(12,Number(document.getElementById("dCanvasY").value)||0))};if(canvasSelected==="all")d.groupOffset=p;else{d.positions=d.positions||{...DESIGN_DEFAULTS.positions};d.positions[canvasSelected]=p;}localStorage.setItem("prasadLabelDesign",JSON.stringify(d));updatePreview();selectCanvasItem(canvasSelected);}
 function nudgeCanvas(dx,dy){const d=getDesignSettings(),p=canvasSelected==="all"?(d.groupOffset||{x:0,y:0}):(d.positions?.[canvasSelected]||{x:0,y:0});document.getElementById("dCanvasX").value=Math.max(-20,Math.min(20,(+p.x||0)+dx));document.getElementById("dCanvasY").value=Math.max(-12,Math.min(12,(+p.y||0)+dy));changeCanvasPosition();}
 function changeCanvasScale(){if(canvasSelected==="all")return;const d=getDesignSettings();d.scales=d.scales||{...DESIGN_DEFAULTS.scales};d.scales[canvasSelected]=+document.getElementById("dCanvasScale").value;document.getElementById("dCanvasScaleValue").textContent=Math.round(d.scales[canvasSelected]*100)+"%";localStorage.setItem("prasadLabelDesign",JSON.stringify(d));const node=canvasNode(canvasSelected);if(node){const p=d.positions?.[canvasSelected]||{x:0,y:0};node.style.transform="translate("+p.x+"mm,"+p.y+"mm) scale("+d.scales[canvasSelected]+")";}}
