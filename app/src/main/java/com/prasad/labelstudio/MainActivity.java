@@ -737,6 +737,19 @@ public class MainActivity extends Activity {
         int bh=Math.max(25,Math.min(80,d.optInt("barcodeHeight",48)));
         int pad=Math.max(5,Math.min(30,d.optInt("padding",6)*2));
         int ox=Math.max(-40,Math.min(40,d.optInt("offsetX",0)*2));
+        JSONObject positions=d.optJSONObject("positions");
+        JSONObject brandPos=positions==null?null:positions.optJSONObject("brand");
+        JSONObject detailsPos=positions==null?null:positions.optJSONObject("details");
+        JSONObject sizePos=positions==null?null:positions.optJSONObject("size");
+        JSONObject barcodePos=positions==null?null:positions.optJSONObject("barcode");
+        int brandX=brandPos==null?0:(int)Math.max(-128,Math.min(128,brandPos.optDouble("x",0)*12.8));
+        int brandY=brandPos==null?0:(int)Math.max(-128,Math.min(128,brandPos.optDouble("y",0)*12.8));
+        int detailsX=detailsPos==null?0:(int)Math.max(-128,Math.min(128,detailsPos.optDouble("x",0)*12.8));
+        int detailsY=detailsPos==null?0:(int)Math.max(-128,Math.min(128,detailsPos.optDouble("y",0)*12.8));
+        int sizeX=sizePos==null?0:(int)Math.max(-128,Math.min(128,sizePos.optDouble("x",0)*12.8));
+        int sizeY=sizePos==null?0:(int)Math.max(-128,Math.min(128,sizePos.optDouble("y",0)*12.8));
+        int barcodeX=barcodePos==null?0:(int)Math.max(-128,Math.min(128,barcodePos.optDouble("x",0)*12.8));
+        int barcodeY=barcodePos==null?0:(int)Math.max(-128,Math.min(128,barcodePos.optDouble("y",0)*12.8));
         boolean brand=d.optBoolean("showBrand",true), sty=d.optBoolean("showStyle",true);
         boolean model=d.optBoolean("showModel",true), col=d.optBoolean("showColour",true);
         boolean size=d.optBoolean("showSize",true);
@@ -778,7 +791,7 @@ public class MainActivity extends Activity {
             p.setTypeface(Typeface.create(family,Typeface.BOLD));
             p.setTextSize("editorial".equals(t)?bs+2:("barcodefocus".equals(t)?bs-1:bs));
             p.setTextAlign(brandLeft?Paint.Align.LEFT:Paint.Align.CENTER);
-            c.drawText(name,brandLeft?pad+("editorial".equals(t)?9:0):width/2f,y,p);
+            c.drawText(name,(brandLeft?pad+("editorial".equals(t)?9:0):width/2f)+brandX,y+brandY,p);
             p.setColor(Color.BLACK);y+=bs+("retail".equals(t)?19:12);
             if(!"retail".equals(t)){p.setStrokeWidth("luxury".equals(t)?2:1);c.drawLine(pad,y-5,width-pad,y-5,p);}
         }else y=15;
@@ -788,17 +801,19 @@ public class MainActivity extends Activity {
         Paint.Align a="center".equals(align)?Paint.Align.CENTER:("right".equals(align)?Paint.Align.RIGHT:Paint.Align.LEFT);
         p.setTextAlign(a);
         float x=a==Paint.Align.CENTER?width/2f+ox:(a==Paint.Align.RIGHT?width-pad+ox:pad+ox);
-        float gap=ts+7, detailsY=y;
-        if(sty){c.drawText("STYLE: "+safe(job.style),x,detailsY,p);detailsY+=gap;}
-        if(model){c.drawText("MODEL: "+safe(job.model),x,detailsY,p);detailsY+=gap;}
-        if(col){c.drawText("COLOUR: "+safe(job.colour),x,detailsY,p);detailsY+=gap;}
+        float gap=ts+7, detailsBaseY=y, detailStep=0;
+        x+=detailsX;
+        if(sty){c.drawText("STYLE: "+safe(job.style),x,detailsBaseY+detailsY+detailStep,p);detailStep+=gap;}
+        if(model){c.drawText("MODEL: "+safe(job.model),x,detailsBaseY+detailsY+detailStep,p);detailStep+=gap;}
+        if(col){c.drawText("COLOUR: "+safe(job.colour),x,detailsBaseY+detailsY+detailStep,p);detailStep+=gap;}
+        float detailsY=detailsBaseY+detailsY+detailStep;
 
         if(size){
             boolean boxed="editorial".equals(t)||"sizefocus".equals(t)||"frame".equals(t);
             p.setTypeface(Typeface.create(family,Typeface.BOLD));
             if("stacked".equals(layout)){
                 p.setTextAlign(Paint.Align.CENTER);
-                float sy=Math.min(bar?150:210,detailsY+ss+5);
+                float sy=Math.min(bar?150:210,detailsY+ss+5)+sizeY;
                 if(boxed){
                     float bw="sizefocus".equals(t)?126:105,bh2=58;
                     float left=Math.max(8,Math.min(width-bw-8,width/2f-bw/2f));
@@ -810,15 +825,15 @@ public class MainActivity extends Activity {
                 }else{p.setTextSize(Math.max(10,ss-4));c.drawText("SIZE  "+safe(job.size),width/2f+ox,sy,p);}
             }else if(boxed){
                 float bw="sizefocus".equals(t)?126:105,bh2="sizefocus".equals(t)?72:62;
-                float left=Math.max(8,Math.min(width-bw-8,width-pad-bw));
-                float top=Math.max(y+3,Math.min(130,detailsY-2));
+                float left=Math.max(8,Math.min(width-bw-8,width-pad-bw))+sizeX;
+                float top=Math.max(y+3,Math.min(130,detailsY-2))+sizeY;
                 if("frame".equals(t)){p.setStyle(Paint.Style.STROKE);p.setStrokeWidth(2);c.drawRect(left,top,left+bw,top+bh2,p);p.setStyle(Paint.Style.FILL);}
                 else{c.drawRect(left,top,left+bw,top+bh2,p);p.setColor(Color.WHITE);}
                 p.setTextAlign(Paint.Align.CENTER);p.setTextSize(10);c.drawText("SIZE",left+bw/2,top+16,p);
                 p.setTextSize(ss);c.drawText(safe(job.size),left+bw/2,top+bh2-8,p);p.setColor(Color.BLACK);
             }else{
                 p.setTextSize(ss);p.setTextAlign(Paint.Align.RIGHT);
-                c.drawText(safe(job.size),width-pad+ox,Math.min(164,Math.max(145,detailsY+ss/2f)),p);
+                c.drawText(safe(job.size),width-pad+ox+sizeX,Math.min(164,Math.max(145,detailsY+ss/2f))+sizeY,p);
             }
         }
 
@@ -826,8 +841,8 @@ public class MainActivity extends Activity {
         if(bar){
             int bw="barcodefocus".equals(t)?350:("wholesale".equals(t)?285:320);
             int barcodeH=Math.min(bh,76);
-            int bx=Math.max(4,Math.min(width-bw-4,(width-bw)/2));
-            int by=Math.max(100,height-15-barcodeH);
+            int bx=Math.max(4,Math.min(width-bw-4,(width-bw)/2))+barcodeX;
+            int by=Math.max(100,height-15-barcodeH)+barcodeY;
             BitMatrix matrix=new MultiFormatWriter().encode(job.barcode.trim(),BarcodeFormat.CODE_128,bw,barcodeH);
             for(int xx=0;xx<matrix.getWidth();xx++)for(int yy=0;yy<matrix.getHeight();yy++)
                 if(matrix.get(xx,yy))c.drawRect(bx+xx,by+yy,bx+xx+1,by+yy+1,p);
