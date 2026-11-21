@@ -2,6 +2,11 @@ package com.prasad.labelstudio;
 
 import android.Manifest;
 import android.app.Activity;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Typeface;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -17,6 +22,10 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.MultiFormatWriter;
+import com.google.zxing.common.BitMatrix;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -655,70 +664,82 @@ public class MainActivity extends Activity {
         }).start();
     }
 
-    // PRINT ONE LABEL
-
+    // PRINT ONE LABEL AS A SINGLE 50 x 30 mm RASTER IMAGE
+    // P58D printable area: 384 dots wide x 240 dots high at 203 dpi.
     private void printOneLabel(LabelJob job) throws Exception {
-
         BluetoothSocket socket = bluetoothSocket;
-
         if (socket == null || !socket.isConnected()) {
             throw new Exception("Printer disconnected");
         }
 
-        OutputStream out = socket.getOutputStream();
+        final int width = 384;
+        final int height = 240;
+        Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        canvas.drawColor(Color.WHITE);
 
-        out.write(new byte[]{0x1B, 0x40});
+        Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        paint.setColor(Color.BLACK);
+        paint.setTypeface(Typeface.create("sans-serif", Typeface.BOLD));
+        paint.setTextAlign(Paint.Align.CENTER);
+        paint.setTextSize(22);
+        canvas.drawText("PRASAD APPARELS", width / 2f, 25, paint);
 
-        out.write(new byte[]{0x1B, 0x61, 0x01});
-        out.write(new byte[]{0x1B, 0x45, 0x01});
+        paint.setTextAlign(Paint.Align.LEFT);
+        paint.setTypeface(Typeface.create("sans-serif", Typeface.NORMAL));
+        paint.setTextSize(17);
+        canvas.drawText("STYLE: " + safe(job.style), 10, 55, paint);
+        canvas.drawText("MODEL: " + safe(job.model), 10, 78, paint);
+        canvas.drawText("COLOUR: " + safe(job.colour), 10, 101, paint);
 
-        out.write("PRASAD APPARELS\n".getBytes(
-            StandardCharsets.UTF_8
-        ));
+        paint.setTypeface(Typeface.create("sans-serif", Typeface.BOLD));
+        paint.setTextSize(31);
+        canvas.drawText("SIZE: " + safe(job.size), 10, 139, paint);
 
-        out.write(new byte[]{0x1B, 0x45, 0x00});
-        out.write(new byte[]{0x1B, 0x61, 0x00});
-
-        out.write(("STYLE: " + safe(job.style) + "\n")
-            .getBytes(StandardCharsets.UTF_8));
-
-        out.write(("MODEL: " + safe(job.model) + "\n")
-            .getBytes(StandardCharsets.UTF_8));
-
-        out.write(("COLOUR: " + safe(job.colour) + "\n")
-            .getBytes(StandardCharsets.UTF_8));
-
-        out.write(new byte[]{0x1B, 0x45, 0x01});
-
-        out.write(("SIZE: " + safe(job.size) + "\n")
-            .getBytes(StandardCharsets.UTF_8));
-
-        out.write(new byte[]{0x1B, 0x45, 0x00});
-
-        if (job.barcode != null && !job.barcode.isEmpty()) {
-
-            out.write(new byte[]{0x1D, 0x48, 0x02});
-            out.write(new byte[]{0x1D, 0x68, 55});
-            out.write(new byte[]{0x1D, 0x77, 2});
-
-            byte[] code = ("{B" + job.barcode).getBytes(
-                StandardCharsets.US_ASCII
+        if (job.barcode != null && !job.barcode.trim().isEmpty()) {
+            BitMatrix matrix = new MultiFormatWriter().encode(
+                job.barcode.trim(), BarcodeFormat.CODE_128, 350, 62
             );
-
-            out.write(new byte[]{
-                0x1D, 0x6B, 0x49, (byte) code.length
-            });
-
-            out.write(code);
-            out.write('\n');
+            paint.setColor(Color.BLACK);
+            for (int x = 0; x < matrix.getWidth(); x++) {
+                for (int y = 0; y < matrix.getHeight(); y++) {
+                    if (matrix.get(x, y)) {
+                        canvas.drawRect(17 + x, 151 + y, 18 + x, 152 + y, paint);
+                    }
+                }
+            }
+            paint.setTextAlign(Paint.Align.CENTER);
+            paint.setTypeface(Typeface.create("sans-serif", Typeface.NORMAL));
+            paint.setTextSize(14);
+            canvas.drawText(job.barcode.trim(), width / 2f, 231, paint);
         }
 
-        out.write('\n');
-        out.write('\n');
+        // Convert each row to ESC/POS GS v 0 monochrome raster bytes.
+        int bytesPerRow = (width + 7) / 8;
+        byte[] raster = new byte[bytesPerRow * height];
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                if (Color.red(bitmap.getPixel(x, y)) < 160) {
+                    int index = y * bytesPerRow + (x / 8);
+                    raster[index] |= (byte) (0x80 >> (x % 8));
+                }
+            }
+        }
+        bitmap.recycle();
 
-        out.write(new byte[]{0x1D, 0x56, 0x00});
-
+        OutputStream out = socket.getOutputStream();
+        out.write(new byte[]{0x1B, 0x40}); // Initialize printer
+        // GS v 0, normal-density raster bit image.
+        out.write(new byte[]{
+            0x1D, 0x76, 0x30, 0x00,
+            (byte) (bytesPerRow & 0xFF),
+            (byte) ((bytesPerRow >> 8) & 0xFF),
+            (byte) (height & 0xFF),
+            (byte) ((height >> 8) & 0xFF)
+        });
+        out.write(raster);
         out.flush();
+        // No per-label cut command: gap-label sensor should advance to next sticker.
     }
 
     private String safe(String value) {
