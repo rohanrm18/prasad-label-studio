@@ -166,7 +166,7 @@ body{padding-bottom:calc(62px + env(safe-area-inset-bottom))}
  .print-label{width:50mm;height:30mm;page-break-after:always;break-after:page;overflow:hidden}
  .print-label:last-child{page-break-after:auto;break-after:auto}
 }
-\n/* CLEAN MOBILE-FIRST WORKFLOW: templates first, preview immediately below */\nmain{display:flex;flex-direction:column;gap:0}\n.template-grid{grid-template-columns:repeat(2,minmax(0,1fr))}\n.template-option{min-height:72px;touch-action:manipulation}\n#previewWrap{display:flex;justify-content:center;align-items:flex-start;min-height:150px;overflow-x:auto;overscroll-behavior-x:contain}\n.label-preview{flex:0 0 50mm}\n@media(max-width:360px){.template-grid{grid-template-columns:1fr 1fr}.template-option{padding:10px 8px}}\n.label-preview .manual-selected{outline:1px dashed #1677ff!important;outline-offset:2px;touch-action:none;cursor:move;position:relative}
+\n/* CLEAN MOBILE-FIRST WORKFLOW: templates first, preview immediately below */\nmain{display:flex;flex-direction:column;gap:0}\n.template-grid{grid-template-columns:repeat(2,minmax(0,1fr))}\n.template-option{min-height:72px;touch-action:manipulation}\n#previewWrap{display:flex;justify-content:center;align-items:flex-start;min-height:150px;overflow-x:auto;overscroll-behavior-x:contain}\n.label-preview{flex:0 0 50mm}\n@media(max-width:360px){.template-grid{grid-template-columns:1fr 1fr}.template-option{padding:10px 8px}}\n.label-preview .label-top,.label-preview .details,.label-preview .size-box,.label-preview .barcode-area{touch-action:none;cursor:grab;position:relative}\n.label-preview .manual-selected{outline:1px dashed #1677ff!important;outline-offset:2px;touch-action:none;cursor:grabbing;position:relative}
 .label-preview .manual-selected:after{content:none}\n.manual-resize-handle{position:absolute;right:-4px;bottom:-4px;width:12px;height:12px;border:1px solid #1677ff;background:#fff;border-radius:2px;z-index:5;touch-action:none;cursor:nwse-resize}\n@media print{.manual-resize-handle{display:none!important}}
 @media print{.manual-selected{outline:none!important}}
 </style>
@@ -279,23 +279,16 @@ body{padding-bottom:calc(62px + env(safe-area-inset-bottom))}
 <h2>Edit Label Design</h2>
 <p class="muted">Adjust the label yourself. Preview changes instantly. Save your settings for future labels.</p>
 <label>Brand name</label><input id="dBrand" value="PRASAD APPARELS" oninput="designerChanged()">
-<div class="grid2"><div><label>Alignment</label><div class="auto-box muted" style="margin:0">Automatic balanced alignment — preview and print stay aligned</div></div><div><label>Border</label><select id="dBorder" onchange="designerChanged()"><option value="none">No border</option><option value="solid">Solid</option><option value="double">Double</option></select></div>
+<div class="grid2"><div><label>Canvas editing</label><div class="auto-box muted" style="margin:0">Tap any item on the label and drag it anywhere with your finger.</div></div><div><label>Border</label><select id="dBorder" onchange="designerChanged()"><option value="none">No border</option><option value="solid">Solid</option><option value="double">Double</option></select></div>
 <div><label>Brand size</label><input id="dBrandSize" type="range" min="12" max="30" value="18" oninput="designerChanged()"></div><div><label>Details size</label><input id="dTextSize" type="range" min="10" max="22" value="13" oninput="designerChanged()"></div>
 <div><label>Size number</label><input id="dSizeSize" type="range" min="20" max="48" value="34" oninput="designerChanged()"></div><div><label>Barcode height</label><input id="dBarcodeHeight" type="range" min="25" max="80" value="48" oninput="designerChanged()"></div>
-<div><label>Inner spacing</label><input id="dPadding" type="range" min="2" max="12" value="6" oninput="designerChanged()"></div><div><label>Font style</label><select id="dFont" onchange="designerChanged()"><option value="sans">Modern Sans</option><option value="serif">Classic Serif</option><option value="bold">Bold Retail</option></select></div><div><label>Details alignment</label><select id="dAlign" onchange="designerChanged()"><option value="left">Left</option><option value="center">Center</option><option value="right">Right</option></select></div><div><label>Horizontal position (details)</label><input id="dOffsetX" type="range" min="-20" max="20" value="0" oninput="designerChanged()"></div><div><label>Move selected item</label><select id="dMoveTarget" onchange="loadMoveControls()"><option value="brand">Brand name</option><option value="details">Style / Model / Colour</option><option value="size">Size</option><option value="barcode">Barcode</option></select></div><div><label>Move left / right (mm)</label><input id="dMoveX" type="range" min="-10" max="10" value="0" oninput="moveSelectedItem()"></div><div><label>Move up / down (mm)</label><input id="dMoveY" type="range" min="-10" max="10" value="0" oninput="moveSelectedItem()"></div><div><label>Layout</label><select id="dLayout" onchange="designerChanged()"><option value="standard">Details + large size</option><option value="stacked">Stacked details</option></select></div></div>
+<div><label>Inner spacing</label><input id="dPadding" type="range" min="2" max="12" value="6" oninput="designerChanged()"></div><div><label>Font style</label><select id="dFont" onchange="designerChanged()"><option value="sans">Modern Sans</option><option value="serif">Classic Serif</option><option value="bold">Bold Retail</option></select></div><div><label>Details alignment</label><select id="dAlign" onchange="designerChanged()"><option value="left">Left</option><option value="center">Center</option><option value="right">Right</option></select></div><div><label>On-page positioning</label><div class="muted">Move objects directly on the label preview.</div></div><div><label>Layout</label><select id="dLayout" onchange="designerChanged()"><option value="standard">Details + large size</option><option value="stacked">Stacked details</option></select></div></div>
 <div class="auto-box" style="margin-top:14px">
-<strong>MANUAL PREVIEW ADJUSTMENT</strong>
-<p class="muted">Select an item here or tap it on the label preview. Change exact position and size, or drag the item directly on the preview.</p>
-<label>Selected item</label><select id="dCanvasTarget" onchange="selectCanvasItem(this.value)"><option value="all">All label content</option><option value="brand">Brand</option><option value="details">Style / Model / Colour</option><option value="size">Size</option><option value="barcode">Barcode</option></select>
-<div class="grid2">
-<div><label>Move left / right (mm)</label><input id="dCanvasX" type="number" step="0.5" min="-20" max="20" value="0" oninput="changeCanvasPosition()"></div>
-<div><label>Move up / down (mm)</label><input id="dCanvasY" type="number" step="0.5" min="-12" max="12" value="0" oninput="changeCanvasPosition()"></div>
-</div>
-<label>Item size</label><input id="dCanvasScale" type="range" min="0.5" max="1.8" step="0.05" value="1" oninput="changeCanvasScale()">
-<div class="muted" id="dCanvasScaleValue">100%</div>
-<div class="buttons"><button type="button" class="secondary" onclick="nudgeCanvas(-0.5,0)">← LEFT</button><button type="button" class="secondary" onclick="nudgeCanvas(0.5,0)">RIGHT →</button><button type="button" class="secondary" onclick="nudgeCanvas(0,-0.5)">↑ UP</button><button type="button" class="secondary" onclick="nudgeCanvas(0,0.5)">↓ DOWN</button></div>
-<div class="buttons"><button type="button" class="secondary" onclick="resetCanvasSelection()">RESET SELECTED ITEM</button></div>
-<div id="canvasEditorStatus" class="muted">Select an item to adjust its exact position.</div>
+<strong>MOVE IT DIRECTLY ON THE LABEL</strong>
+<p class="muted">Touch the brand, product details, size or barcode on the actual label preview. Keep your finger on it and drag it to the exact place you want. Use the corner handle to resize. The preview shows the position before printing.</p>
+<label>Selected item size</label><input id="dCanvasScale" type="range" min="0.5" max="1.8" step="0.05" value="1" oninput="changeCanvasScale()">
+<div class="muted" id="dCanvasScaleValue">Tap an item on the label to select it.</div>
+<div id="canvasEditorStatus" class="muted">Drag any item directly on the label preview.</div>
 </div>
 <label>Show on label</label><div class="grid2">
 <label><input id="dShowBrand" type="checkbox" checked onchange="designerChanged()"> Brand</label><label><input id="dShowStyle" type="checkbox" checked onchange="designerChanged()"> Style</label>
@@ -663,7 +656,7 @@ function enableCanvasEditing(){
    }
    localStorage.setItem("prasadLabelDesign",JSON.stringify(d));
   };
-  node.onpointerup=()=>{if(canvasDrag){canvasDrag=null;updatePreview();selectCanvasItem(canvasSelected);}};
+  node.onpointerup=()=>{if(canvasDrag){canvasDrag=null;updatePreview();selectCanvasItem(canvasSelected);document.getElementById("canvasEditorStatus").textContent="Position saved in preview. It will be used for printing.";}};
   node.onpointercancel=()=>{canvasDrag=null;};
   let handle=node.querySelector(":scope > .manual-resize-handle");
   if(!handle){handle=document.createElement("span");handle.className="manual-resize-handle";handle.setAttribute("aria-label","Resize item");node.appendChild(handle);}
