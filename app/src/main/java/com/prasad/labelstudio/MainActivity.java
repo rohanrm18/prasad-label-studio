@@ -76,17 +76,19 @@ public class MainActivity extends Activity {
     private static class LabelJob {
         String style;
         String model;
+        String category;
         String colour;
         String size;
         String barcode;
         boolean autoBarcode;
         JSONObject design;
 
-        LabelJob(String style, String model, String colour,
+        LabelJob(String style, String model, String category, String colour,
                  String size, String barcode, boolean autoBarcode, JSONObject design) {
 
             this.style = style;
             this.model = model;
+            this.category = category;
             this.colour = colour;
             this.size = size;
             this.barcode = barcode;
@@ -208,6 +210,7 @@ public class MainActivity extends Activity {
             record.put("barcode", job.barcode == null ? "" : job.barcode);
             record.put("style", job.style == null ? "" : job.style);
             record.put("model", job.model == null ? "" : job.model);
+            record.put("category", job.category == null ? "" : job.category);
             record.put("colour", job.colour == null ? "" : job.colour);
             record.put("size", job.size == null ? "" : job.size);
             record.put("printedAt", String.valueOf(System.currentTimeMillis()));
@@ -265,6 +268,7 @@ public class MainActivity extends Activity {
                 LabelJob job = new LabelJob(
                     data.optString("style"),
                     data.optString("model"),
+                    data.optString("category"),
                     data.optString("colour"),
                     data.optString("size"),
                     data.optString("barcode"),
@@ -300,6 +304,7 @@ public class MainActivity extends Activity {
 
                 String style = data.optString("style");
                 String model = data.optString("model");
+                String category = data.optString("category");
                 String colour = data.optString("colour");
                 String barcode = data.optString("barcode");
 
@@ -328,7 +333,7 @@ public class MainActivity extends Activity {
 
                     for (int j = 0; j < quantity; j++) {
                         jobs.add(new LabelJob(
-                            style, model, colour, size,
+                            style, model, category, colour, size,
                             barcode, autoBarcode, design
                         ));
                     }
@@ -812,7 +817,8 @@ public class MainActivity extends Activity {
         boolean hasNotepadLines=notepadLines!=null&&notepadLines.length()>0;
         if(!hasNotepadLines){
             if(sty){c.drawText("STYLE: "+safe(job.style),x,detailsBaseY+detailStep,p);detailStep+=gap;}
-            if(model){c.drawText("MODEL: "+safe(job.model),x,detailsBaseY+detailStep,p);detailStep+=gap;}
+            if(model&&!safe(job.model).isEmpty()){c.drawText("MODEL: "+safe(job.model),x,detailsBaseY+detailStep,p);detailStep+=gap;}
+            if(!safe(job.category).isEmpty()){c.drawText("CATEGORY: "+safe(job.category),x,detailsBaseY+detailStep,p);detailStep+=gap;}
             if(col){c.drawText("COLOUR: "+safe(job.colour),x,detailsBaseY+detailStep,p);detailStep+=gap;}
         }else{
             p.setTextAlign(Paint.Align.LEFT);
