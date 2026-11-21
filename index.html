@@ -196,7 +196,20 @@ button{border:0;border-radius:7px;padding:11px 14px;font-size:13px;font-weight:b
 </section>
 
 <section class="panel">
-<h2>3. Select Sizes & Quantities</h2>
+<section class="panel">
+<h2>3. MyLabel-Style Custom Designer</h2>
+<p class="muted">Adjust the label yourself. Preview changes instantly. Save your settings for future labels.</p>
+<label>Brand name</label><input id="dBrand" value="PRASAD APPARELS" oninput="designerChanged()">
+<div class="grid2"><div><label>Text alignment</label><select id="dAlign" onchange="designerChanged()"><option value="left">Left</option><option value="center">Center</option></select></div><div><label>Border</label><select id="dBorder" onchange="designerChanged()"><option value="none">No border</option><option value="solid">Solid</option><option value="double">Double</option></select></div>
+<div><label>Brand size</label><input id="dBrandSize" type="range" min="12" max="30" value="18" oninput="designerChanged()"></div><div><label>Details size</label><input id="dTextSize" type="range" min="10" max="22" value="13" oninput="designerChanged()"></div>
+<div><label>Size number</label><input id="dSizeSize" type="range" min="20" max="48" value="34" oninput="designerChanged()"></div><div><label>Barcode height</label><input id="dBarcodeHeight" type="range" min="25" max="80" value="48" oninput="designerChanged()"></div>
+<div><label>Inner spacing</label><input id="dPadding" type="range" min="2" max="12" value="6" oninput="designerChanged()"></div><div><label>Layout</label><select id="dLayout" onchange="designerChanged()"><option value="standard">Details + large size</option><option value="stacked">Stacked details</option></select></div></div>
+<label>Show on label</label><div class="grid2">
+<label><input id="dShowBrand" type="checkbox" checked onchange="designerChanged()"> Brand</label><label><input id="dShowStyle" type="checkbox" checked onchange="designerChanged()"> Style</label>
+<label><input id="dShowModel" type="checkbox" checked onchange="designerChanged()"> Model</label><label><input id="dShowColour" type="checkbox" checked onchange="designerChanged()"> Colour</label>
+<label><input id="dShowSize" type="checkbox" checked onchange="designerChanged()"> Size</label><label><input id="dShowBarcode" type="checkbox" checked onchange="designerChanged()"> Barcode</label></div>
+<div class="buttons"><button class="primary" onclick="saveDesigner()">SAVE DESIGN</button><button class="secondary" onclick="resetDesigner()">RESET DESIGN</button></div><div id="designerStatus" class="muted"></div>
+</section><section class="panel"><h2>4. Select Sizes & Quantities</h2>
 
 <div class="buttons">
 <button class="secondary" onclick="selectAllSizes(true)">SELECT ALL</button>
@@ -652,7 +665,8 @@ function printBluetoothLabel(){
   colour:p.colour,
   size:size,
   barcode:(noBarcode||auto)?"":p.barcode,
-  autoBarcode:auto
+  autoBarcode:auto,
+  design:getDesignSettings()
  }));
 }
 
@@ -689,7 +703,8 @@ function printBulkBluetoothLabels(){
   colour:p.colour,
   barcode:(noBarcode||auto)?"":p.barcode,
   autoBarcode:auto,
-  items:items
+  items:items,
+  design:getDesignSettings()
  }));
 }
 
@@ -767,6 +782,7 @@ function printLabels(){
 /* INITIALIZE */
 
 makeSizeGrid();
+applyDesigner(getDesignSettings());
 showSavedProducts();
 barcodeModeChanged();
 updateBarcodeHistorySummary();
