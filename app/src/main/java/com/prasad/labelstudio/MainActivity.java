@@ -821,7 +821,7 @@ public class MainActivity extends Activity {
                 String text=line.optString("text","");if(text.isEmpty())continue;
                 float lineX=(float)Math.max(0,Math.min(width-4,line.optDouble("x",2)*7.68));
                 float lineSize=(float)Math.max(8,Math.min(28,line.optDouble("size",14)));
-                float lineY=(float)Math.max(lineSize*1.7,Math.min(height-2,line.optDouble("y",10)*8+lineSize*1.7));
+                float lineY=(float)Math.max(lineSize*2.34,Math.min(height-2,line.optDouble("y",10)*8+lineSize*2.34));
                 p.setTypeface(Typeface.create(family,line.optBoolean("bold",false)?Typeface.BOLD:(bold?Typeface.BOLD:Typeface.NORMAL)));
                 p.setTextSize(lineSize*2.0f);
                 c.drawText(text,lineX,lineY,p);
