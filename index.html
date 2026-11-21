@@ -228,7 +228,27 @@ body{padding-bottom:calc(62px + env(safe-area-inset-bottom))}
 <input id="model" placeholder="Enter model (optional)">
 
 <label>Category</label>
-<input id="category" placeholder="Example: Kurta Set / Indo Western">
+<select id="category" onchange="categoryChanged()">
+ <option value="">Select Category</option>
+ <option>Kurta Pyjama</option>
+ <option>Kurta Jacket Pyjama</option>
+ <option>Kurta Jacket Dhoti Pyjama</option>
+ <option>Indo Western</option>
+ <option>Jacket Dhoti</option>
+ <option>Coat Suit</option>
+ <option>Sherwani</option>
+ <option>Jodhpuri Suit</option>
+ <option>Pathani Suit</option>
+ <option>Nehru Jacket Set</option>
+ <option>Dhoti Kurta</option>
+ <option>Waistcoat Set</option>
+ <option>Bandhgala Suit</option>
+ <option>Achkan Set</option>
+ <option>Shirt Pant</option>
+ <option>Blazer Set</option>
+ <option value="Other">Other (enter category)</option>
+</select>
+<input id="categoryCustom" placeholder="Enter your category" style="display:none;margin-top:8px">
 
 <label>Colour</label>
 <input id="colour" placeholder="Example: White">
