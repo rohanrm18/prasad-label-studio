@@ -144,11 +144,14 @@ button{border:0;border-radius:7px;padding:11px 14px;font-size:13px;font-weight:b
  .grid2{grid-template-columns:1fr}
  .size-grid{grid-template-columns:repeat(4,1fr)}
 }
-.workflow-nav{position:sticky;top:0;z-index:20;display:grid;grid-template-columns:repeat(3,1fr);gap:7px;padding:10px max(14px,calc((100% - 850px)/2));background:#fff;border-bottom:1px solid #e7e7e7;box-shadow:0 2px 8px #0000000a}
-.workflow-tab{background:#f0f0f0;color:#555;padding:12px 5px;border-radius:9px;font-size:12px}
-.workflow-tab span{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:#ddd;margin-right:5px}
-.workflow-tab.active{background:#111;color:#fff}
-.workflow-tab.active span{background:#fff;color:#111}
+.workflow-nav{position:fixed;left:0;right:0;bottom:0;z-index:50;display:grid;grid-template-columns:repeat(3,1fr);gap:0;padding:6px max(18px,calc((100% - 520px)/2)) calc(6px + env(safe-area-inset-bottom));background:#fff;border-top:1px solid #e7e7e7;box-shadow:0 -3px 14px #0000000d}
+.workflow-tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:transparent;color:#777;padding:4px 5px;border-radius:8px;font-size:10px;font-weight:600;min-height:43px}
+.workflow-tab svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.workflow-tab span{display:block;margin:0;padding:0;background:none;font-size:10px;line-height:1.1}
+.workflow-tab.active{background:transparent;color:#111}
+.workflow-tab.active svg{stroke-width:2.2}
+body{padding-bottom:calc(62px + env(safe-area-inset-bottom))}
+.workflow-controls,.workflow-step-count{display:none!important}
 .workflow-panel{display:none}
 .workflow-panel.active{display:block}
 .workflow-controls{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:4px 0 20px}
@@ -176,10 +179,16 @@ button{border:0;border-radius:7px;padding:11px 14px;font-size:13px;font-weight:b
 <p>BY PRASAD APPARELS</p>
 </header>
 
-<nav class="workflow-nav" aria-label="Label workflow">
- <button type="button" class="workflow-tab active" data-step-button="1" onclick="showWorkflowStep(1)"><span>1</span> DESIGN</button>
- <button type="button" class="workflow-tab" data-step-button="2" onclick="showWorkflowStep(2)"><span>2</span> PRODUCT</button>
- <button type="button" class="workflow-tab" data-step-button="3" onclick="showWorkflowStep(3)"><span>3</span> PRINT</button>
+<nav class="workflow-nav" aria-label="Main sections">
+ <button type="button" class="workflow-tab active" data-step-button="1" onclick="showWorkflowStep(1)" aria-label="Design">
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18h1.2a2 2 0 0 0 1.5-3.3 1.5 1.5 0 0 1 1.1-2.5H18a3 3 0 0 0 3-3c0-5.1-4-9.2-9-9.2Z"/><circle cx="7.5" cy="10" r="1"/><circle cx="10" cy="6.8" r="1"/><circle cx="15" cy="7.5" r="1"/><circle cx="17.5" cy="11" r="1"/></svg><span>Design</span>
+ </button>
+ <button type="button" class="workflow-tab" data-step-button="2" onclick="showWorkflowStep(2)" aria-label="Product">
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 9 4.5v9L12 21l-9-4.5v-9L12 3Z"/><path d="m3.5 7.5 8.5 4 8.5-4M12 12v9"/></svg><span>Product</span>
+ </button>
+ <button type="button" class="workflow-tab" data-step-button="3" onclick="showWorkflowStep(3)" aria-label="Print">
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v7H6zM18 12h.01"/></svg><span>Print</span>
+ </button>
 </nav>
 
 <main>
@@ -345,11 +354,7 @@ button{border:0;border-radius:7px;padding:11px 14px;font-size:13px;font-weight:b
 <p class="muted">Browser printing uses your phone's print dialog. Select 50 × 30 mm paper if available and set scale to 100%.</p>
 </section>
 
-<div class="workflow-controls">
- <button type="button" id="workflowBack" class="secondary" onclick="showWorkflowStep(workflowStep-1)">BACK</button>
- <div class="workflow-step-count" id="workflowStepCount">STEP 1 OF 3</div>
- <button type="button" id="workflowNext" class="primary" onclick="showWorkflowStep(workflowStep+1)">NEXT</button>
-</div>
+
 
 </main>
 
@@ -362,11 +367,6 @@ function showWorkflowStep(step){
  workflowStep=Math.max(1,Math.min(3,Number(step)||1));
  document.querySelectorAll(".workflow-panel").forEach(panel=>panel.classList.toggle("active",Number(panel.dataset.step)===workflowStep));
  document.querySelectorAll("[data-step-button]").forEach(button=>button.classList.toggle("active",Number(button.dataset.stepButton)===workflowStep));
- const back=document.getElementById("workflowBack"),next=document.getElementById("workflowNext");
- if(back)back.disabled=workflowStep===1;
- if(next)next.textContent=workflowStep===3?"DONE":"NEXT";
- const count=document.getElementById("workflowStepCount");
- if(count)count.textContent="STEP "+workflowStep+" OF 3";
  window.scrollTo(0,0);
 }
 const sizes=["0","1","2","3","4","5","6","7","8","9","10","12","13"];
