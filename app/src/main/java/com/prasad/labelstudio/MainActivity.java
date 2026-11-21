@@ -799,7 +799,7 @@ public class MainActivity extends Activity {
         }else y=15;
 
         p.setTypeface(Typeface.create(family,bold?Typeface.BOLD:Typeface.NORMAL));
-        p.setTextSize(ts);
+        p.setTextSize(ts*detailsScale);
         Paint.Align a="center".equals(align)?Paint.Align.CENTER:("right".equals(align)?Paint.Align.RIGHT:Paint.Align.LEFT);
         p.setTextAlign(a);
         float x=a==Paint.Align.CENTER?width/2f+ox:(a==Paint.Align.RIGHT?width-pad+ox:pad+ox);
@@ -832,7 +832,7 @@ public class MainActivity extends Activity {
                 if("frame".equals(t)){p.setStyle(Paint.Style.STROKE);p.setStrokeWidth(2);c.drawRect(left,top,left+bw,top+bh2,p);p.setStyle(Paint.Style.FILL);}
                 else{c.drawRect(left,top,left+bw,top+bh2,p);p.setColor(Color.WHITE);}
                 p.setTextAlign(Paint.Align.CENTER);p.setTextSize(10);c.drawText("SIZE",left+bw/2,top+16,p);
-                p.setTextSize(ss);c.drawText(safe(job.size),left+bw/2,top+bh2-8,p);p.setColor(Color.BLACK);
+                p.setTextSize(ss*sizeScale);c.drawText(safe(job.size),left+bw/2,top+bh2-8,p);p.setColor(Color.BLACK);
             }else{
                 p.setTextSize(ss);p.setTextAlign(Paint.Align.RIGHT);
                 c.drawText(safe(job.size),width-pad+ox+sizeX,Math.min(164,Math.max(145,detailsY+ss/2f))+sizeY,p);
@@ -862,7 +862,12 @@ public class MainActivity extends Activity {
         out.write(raster);out.flush();
     }
 
-    private float scaleValue(JSONObject scales, String key) {\n        if (scales == null) return 1f;\n        return (float)Math.max(0.5, Math.min(1.8, scales.optDouble(key, 1.0)));\n    }\n\n    private String safe(String value) {
+    private float scaleValue(JSONObject scales, String key) {
+        if (scales == null) return 1f;
+        return (float)Math.max(0.5, Math.min(1.8, scales.optDouble(key, 1.0)));
+    }
+
+    private String safe(String value) {
         return value == null ? "" : value;
     }
 
