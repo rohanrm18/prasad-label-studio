@@ -964,6 +964,7 @@ function printLabels(){
 /* INITIALIZE */
 
 makeSizeGrid();
+try{const savedLabelDesign=JSON.parse(localStorage.getItem("prasadLabelDesign")||"{}");document.getElementById("dNotepadText").value=savedLabelDesign.notepadText||"";}catch(e){}
 applyDesigner(getDesignSettings());
 showSavedProducts();
 barcodeModeChanged();
