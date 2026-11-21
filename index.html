@@ -556,8 +556,11 @@ function updatePreview(){
  preview.style.setProperty("--designer-text-size",(d.textSize/2)+"pt");
  preview.style.setProperty("--designer-size-size",(d.sizeSize/2)+"pt");
  preview.style.setProperty("--designer-barcode-height",(d.barcodeHeight/6)+"mm");
- preview.style.padding=(d.padding/3)+"mm";
- preview.style.border=d.border==="none"?"0":d.border==="double"?"1px double #111":"1px solid #111";
+ // Let each selected template control its own padding and border.
+ // Only apply a designer border when the user explicitly chooses one.
+ preview.style.removeProperty("padding");
+ if(d.border==="none") preview.style.removeProperty("border");
+ else preview.style.border=d.border==="double"?"1px double #111":"1px solid #111";
  preview.innerHTML=labelHTML(size);
 
  renderBarcode(preview);
