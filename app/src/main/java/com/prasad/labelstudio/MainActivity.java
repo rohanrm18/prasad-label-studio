@@ -766,7 +766,7 @@ public class MainActivity extends Activity {
         String border=d.optString("border","none");
         if("double".equals(border)){
             p.setStyle(Paint.Style.STROKE);p.setStrokeWidth(1.5f);c.drawRect(8,8,width-9,height-9,p);p.setStyle(Paint.Style.FILL);
-        }else if("single".equals(border)){
+        }else if("solid".equals(border)){
             p.setStyle(Paint.Style.STROKE);p.setStrokeWidth(1.5f);c.drawRect(6,6,width-7,height-7,p);p.setStyle(Paint.Style.FILL);
         }
 
@@ -786,7 +786,6 @@ public class MainActivity extends Activity {
         p.setTypeface(Typeface.create(family,bold?Typeface.BOLD:Typeface.NORMAL));
         p.setTextSize(ts);
         Paint.Align a="center".equals(align)?Paint.Align.CENTER:("right".equals(align)?Paint.Align.RIGHT:Paint.Align.LEFT);
-        if("wholesale".equals(t))a=Paint.Align.LEFT;
         p.setTextAlign(a);
         float x=a==Paint.Align.CENTER?width/2f+ox:(a==Paint.Align.RIGHT?width-pad+ox:pad+ox);
         float gap=ts+7, detailsY=y;
@@ -802,7 +801,7 @@ public class MainActivity extends Activity {
                 float sy=Math.min(bar?150:210,detailsY+ss+5);
                 if(boxed){
                     float bw="sizefocus".equals(t)?126:105,bh2=58;
-                    float left=Math.max(8,Math.min(width-bw-8,width/2f-bw/2f+ox));
+                    float left=Math.max(8,Math.min(width-bw-8,width/2f-bw/2f));
                     float top=Math.max(y+4,sy-bh2+8);
                     if("frame".equals(t)){p.setStyle(Paint.Style.STROKE);p.setStrokeWidth(2);c.drawRect(left,top,left+bw,top+bh2,p);p.setStyle(Paint.Style.FILL);}
                     else{c.drawRect(left,top,left+bw,top+bh2,p);p.setColor(Color.WHITE);}
@@ -811,7 +810,7 @@ public class MainActivity extends Activity {
                 }else{p.setTextSize(Math.max(10,ss-4));c.drawText("SIZE  "+safe(job.size),width/2f+ox,sy,p);}
             }else if(boxed){
                 float bw="sizefocus".equals(t)?126:105,bh2="sizefocus".equals(t)?72:62;
-                float left=Math.max(8,Math.min(width-bw-8,width-pad-bw+ox));
+                float left=Math.max(8,Math.min(width-bw-8,width-pad-bw));
                 float top=Math.max(y+3,Math.min(130,detailsY-2));
                 if("frame".equals(t)){p.setStyle(Paint.Style.STROKE);p.setStrokeWidth(2);c.drawRect(left,top,left+bw,top+bh2,p);p.setStyle(Paint.Style.FILL);}
                 else{c.drawRect(left,top,left+bw,top+bh2,p);p.setColor(Color.WHITE);}
@@ -827,14 +826,14 @@ public class MainActivity extends Activity {
         if(bar){
             int bw="barcodefocus".equals(t)?350:("wholesale".equals(t)?285:320);
             int barcodeH=Math.min(bh,76);
-            int bx=Math.max(4,Math.min(width-bw-4,(width-bw)/2+ox));
+            int bx=Math.max(4,Math.min(width-bw-4,(width-bw)/2));
             int by=Math.max(100,height-15-barcodeH);
             BitMatrix matrix=new MultiFormatWriter().encode(job.barcode.trim(),BarcodeFormat.CODE_128,bw,barcodeH);
             for(int xx=0;xx<matrix.getWidth();xx++)for(int yy=0;yy<matrix.getHeight();yy++)
                 if(matrix.get(xx,yy))c.drawRect(bx+xx,by+yy,bx+xx+1,by+yy+1,p);
             p.setColor(Color.BLACK);p.setTypeface(Typeface.create("sans-serif",Typeface.BOLD));
             p.setTextSize(13);p.setTextAlign(Paint.Align.CENTER);
-            c.drawText(job.barcode.trim(),width/2f+ox,height-2,p);
+            c.drawText(job.barcode.trim(),width/2f,height-2,p);
         }
 
         int bpr=(width+7)/8;byte[] raster=new byte[bpr*height];
