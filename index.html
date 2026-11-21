@@ -515,6 +515,13 @@ function updatePreview(){
  const preview=document.getElementById("previewLabel");
 
  preview.className="label-preview "+selectedTemplate;
+ const d=getDesignSettings();
+ preview.style.setProperty("--designer-brand-size",(d.brandSize/2)+"pt");
+ preview.style.setProperty("--designer-text-size",(d.textSize/2)+"pt");
+ preview.style.setProperty("--designer-size-size",(d.sizeSize/2)+"pt");
+ preview.style.setProperty("--designer-barcode-height",(d.barcodeHeight/6)+"mm");
+ preview.style.padding=(d.padding/3)+"mm";
+ preview.style.border=d.border==="none"?"0":d.border==="double"?"1px double #111":"1px solid #111";
  preview.innerHTML=labelHTML(size);
 
  renderBarcode(preview);
