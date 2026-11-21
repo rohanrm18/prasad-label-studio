@@ -224,8 +224,11 @@ body{padding-bottom:calc(62px + env(safe-area-inset-bottom))}
 <label>Style Number</label>
 <input id="style" placeholder="Example: 8136">
 
-<label>Model / Category</label>
-<input id="model" placeholder="Enter model / category (optional)">
+<label>Model</label>
+<input id="model" placeholder="Enter model (optional)">
+
+<label>Category</label>
+<input id="category" placeholder="Example: Kurta Set / Indo Western">
 
 <label>Colour</label>
 <input id="colour" placeholder="Example: White">
@@ -583,7 +586,7 @@ function labelHTML(size,barcodeOverride){
  const p=productData(),barcode=barcodeOverride!==undefined?barcodeOverride:getBarcodeForPreview(),d=getDesignSettings();
  const pos=(key)=>{const v=d.positions?.[key]||{x:0,y:0},sc=d.scales?.[key]||1;return `transform:translate(${+v.x||0}mm,${+v.y||0}mm) scale(${sc})`;} ;
  const barcodeMarkup=barcode&&d.showBarcode?`<div class="barcode-area" style="${pos("barcode")}"><svg class="barcode" data-barcode="${escapeHTML(barcode)}"></svg><div class="barcode-number">${escapeHTML(barcode)}</div></div>`:"";
- const lines=[d.showStyle?`<div class="detail-line"><b>STYLE:</b> ${escapeHTML(p.style||"-")}</div>`:"",d.showModel?`<div class="detail-line"><b>MODEL:</b> ${escapeHTML(p.model)}</div>`:"",d.showColour?`<div class="detail-line"><b>COLOUR:</b> ${escapeHTML(p.colour||"-")}</div>`:""].filter(Boolean).join("");
+ const lines=[d.showStyle?`<div class="detail-line"><b>STYLE:</b> ${escapeHTML(p.style||"-")}</div>`:"",d.showModel&&p.model?`<div class="detail-line"><b>MODEL:</b> ${escapeHTML(p.model)}</div>`:"",p.category?`<div class="detail-line"><b>CATEGORY:</b> ${escapeHTML(p.category)}</div>`:"",d.showColour?`<div class="detail-line"><b>COLOUR:</b> ${escapeHTML(p.colour||"-")}</div>`:""].filter(Boolean).join("");
  const noteLines=(d.notepadLines||[]).map((line,i)=>`<div class="notepad-line" data-note-index="${i}" style="left:${Number(line.x)||0}mm;top:${Number(line.y)||0}mm;font-size:${Number(line.size)||14}px;font-weight:${line.bold?700:400}">${escapeHTML(line.text)}</div>`).join("");
  return `
  <div class="label-top" style="${pos("brand")}">
@@ -738,7 +741,7 @@ function showSavedProducts(){
   row.className="saved-row";
 
   const info=document.createElement("span");
-  info.textContent=p.style+" — "+p.model+" — "+p.colour;
+  info.textContent=p.style+" — "+(p.model||"")+" — "+(p.category||"")+" — "+p.colour;
 
   const actions=document.createElement("div");
   actions.className="buttons";
