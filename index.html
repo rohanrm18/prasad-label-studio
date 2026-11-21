@@ -90,6 +90,47 @@ button{border:0;border-radius:7px;padding:11px 14px;font-size:13px;font-weight:b
 .wholesale .size-value{font-size:21pt}
 .wholesale .barcode{height:7.5mm}
 
+/* DESIGNER EDIT — asymmetric fashion editorial */
+.editorial{border:0;border-left:1.1mm solid #111;padding:1.6mm 1.8mm 1.4mm 2.2mm}
+.editorial .label-top{justify-content:flex-start;border-bottom:.25mm solid #111!important;padding-bottom:1.2mm!important}
+.editorial .brand{font-family:Georgia,serif;font-size:10pt;letter-spacing:.6px}
+.editorial .label-info{padding-top:1.4mm}
+.editorial .details{border-left:.25mm solid #999;padding-left:1.5mm}
+.editorial .size-box{background:#111;color:#fff;min-width:12mm;min-height:11mm;padding:1mm}
+.editorial .size-caption{color:#ddd}
+.editorial .size-value{font-family:Georgia,serif;font-size:21pt}
+.editorial .barcode{height:6.8mm}
+
+/* SIZE FOCUS — prominent size block */
+.sizefocus{border:.45mm solid #111;padding:1.5mm}
+.sizefocus .label-top{justify-content:center;border-bottom:.3mm solid #111!important;padding-bottom:1mm!important}
+.sizefocus .brand{font-size:9pt;letter-spacing:.7px}
+.sizefocus .label-info{padding:1mm 0}
+.sizefocus .details{flex:1}
+.sizefocus .size-box{background:#111;color:white;min-width:15mm;min-height:14mm;padding:1mm}
+.sizefocus .size-caption{color:#ddd;font-size:5.5pt}
+.sizefocus .size-value{font-size:25pt}
+.sizefocus .barcode{height:6.5mm}
+
+/* DOUBLE FRAME — boutique presentation */
+.frame{border:1.2mm double #111;border-radius:1.2mm;padding:1.6mm}
+.frame .label-top{justify-content:center;border-bottom:.25mm solid #111!important;padding-bottom:1mm!important}
+.frame .brand{font-family:Georgia,serif;font-size:9.5pt;letter-spacing:.5px}
+.frame .label-info{padding-top:1mm}
+.frame .size-box{border: .35mm solid #111;border-radius:1mm;min-width:12mm;padding:.8mm}
+.frame .size-value{font-family:Georgia,serif;font-size:22pt}
+.frame .barcode{height:6.8mm}
+
+/* BARCODE PRO — inventory scanning priority */
+.barcodefocus{border:.4mm solid #111;padding:1.5mm}
+.barcodefocus .label-top{justify-content:flex-start;border-bottom:.4mm solid #111!important;padding-bottom:.8mm!important}
+.barcodefocus .brand{font-size:8.5pt;letter-spacing:.5px}
+.barcodefocus .label-info{padding:.7mm 0}
+.barcodefocus .size-box{border-left:.35mm solid #111;padding-left:2mm;min-width:11mm}
+.barcodefocus .size-value{font-size:21pt}
+.barcodefocus .barcode{height:9mm}
+.barcodefocus .barcode-area{margin-top:auto}
+
 .saved-row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid #eee}
 .saved-row span{font-size:13px;font-weight:bold}
 .muted{font-size:12px;color:#666}
@@ -180,18 +221,14 @@ button{border:0;border-radius:7px;padding:11px 14px;font-size:13px;font-weight:b
 <section class="panel">
 <h2>2. Choose Label Design</h2>
 <div class="template-grid">
-<button class="template-option active" data-template="classic" onclick="chooseTemplate('classic')">
-<strong>1. Premium Classic</strong><small>Clean professional design</small>
-</button>
-<button class="template-option" data-template="luxury" onclick="chooseTemplate('luxury')">
-<strong>2. Luxury Gold</strong><small>Elegant double border</small>
-</button>
-<button class="template-option" data-template="retail" onclick="chooseTemplate('retail')">
-<strong>3. Retail Pro</strong><small>Bold brand header</small>
-</button>
-<button class="template-option" data-template="wholesale" onclick="chooseTemplate('wholesale')">
-<strong>4. Wholesale Pro</strong><small>Structured product details</small>
-</button>
+<button class="template-option active" data-template="classic" onclick="chooseTemplate('classic')"><strong>1. Signature</strong><small>Premium framed brand label</small></button>
+<button class="template-option" data-template="luxury" onclick="chooseTemplate('luxury')"><strong>2. Heritage</strong><small>Elegant boutique style</small></button>
+<button class="template-option" data-template="retail" onclick="chooseTemplate('retail')"><strong>3. Bold Retail</strong><small>High-contrast shop label</small></button>
+<button class="template-option" data-template="wholesale" onclick="chooseTemplate('wholesale')"><strong>4. Wholesale</strong><small>Compact stock-room layout</small></button>
+<button class="template-option" data-template="editorial" onclick="chooseTemplate('editorial')"><strong>5. Designer Edit</strong><small>Editorial fashion-label look</small></button>
+<button class="template-option" data-template="sizefocus" onclick="chooseTemplate('sizefocus')"><strong>6. Size Focus</strong><small>Large, easy-to-read size</small></button>
+<button class="template-option" data-template="frame" onclick="chooseTemplate('frame')"><strong>7. Double Frame</strong><small>Luxury boxed composition</small></button>
+<button class="template-option" data-template="barcodefocus" onclick="chooseTemplate('barcodefocus')"><strong>8. Barcode Pro</strong><small>Barcode-first stock label</small></button>
 </div>
 </section>
 
