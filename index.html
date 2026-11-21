@@ -238,8 +238,9 @@ button{border:0;border-radius:7px;padding:11px 14px;font-size:13px;font-weight:b
 <div id="savedProducts"><p class="muted">No products saved yet.</p></div>
 </section>
 
+<section class="panel"><h2>Barcode History & Transfer</h2><p class="muted">Printed barcode records are saved on this device with style, model, colour, size and print date. Export the history to import it into Prasad Business Analyst.</p><div class="buttons"><button class="primary" onclick="exportBarcodeHistory()">EXPORT BARCODE HISTORY</button><button class="secondary" onclick="clearBarcodeHistory()">CLEAR HISTORY</button></div><div id="barcodeHistorySummary" class="muted" style="margin-top:10px">0 printed barcode records</div></section>
 <section class="panel">
-<h2>6. Print Labels</h2>
+<h2>7. Print Labels</h2>
 <p class="muted">Connect your P58D printer using the CONNECT P58D PRINTER button above.</p>
 
 <button class="primary" style="width:100%;padding:15px" onclick="printBluetoothLabel()">PRINT ONE LABEL</button>
@@ -600,6 +601,16 @@ function clearProduct(){
  updatePreview();
 }
 
+/* BARCODE HISTORY AND TRANSFER */
+const BARCODE_HISTORY_KEY="prasadBarcodeHistoryV1";
+function getBarcodeHistory(){try{return JSON.parse(localStorage.getItem(BARCODE_HISTORY_KEY)||"[]");}catch(e){return [];}}
+function saveBarcodeHistory(rows){localStorage.setItem(BARCODE_HISTORY_KEY,JSON.stringify(rows));updateBarcodeHistorySummary();}
+function recordPrintedBarcode(r){if(!r||!r.barcode)return;const rows=getBarcodeHistory();rows.push({barcode:String(r.barcode),style:String(r.style||""),model:String(r.model||""),colour:String(r.colour||""),size:String(r.size||""),printedAt:r.printedAt||new Date().toISOString(),source:r.source||"label-studio"});saveBarcodeHistory(rows);}
+window.onAndroidLabelPrinted=function(json){try{const r=typeof json==="string"?JSON.parse(json):json;r.source="android-bluetooth";recordPrintedBarcode(r);}catch(e){}};
+function updateBarcodeHistorySummary(){const el=document.getElementById("barcodeHistorySummary");if(el)el.textContent=getBarcodeHistory().length+" printed barcode records saved on this device";}
+function exportBarcodeHistory(){const payload={format:"prasad-barcode-history-v1",exportedAt:new Date().toISOString(),records:getBarcodeHistory()};const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});const url=URL.createObjectURL(blob);const link=document.createElement("a");link.href=url;link.download="prasad-barcode-history.json";link.click();URL.revokeObjectURL(url);}
+function clearBarcodeHistory(){if(!confirm("Clear all locally saved barcode history? Export it first if you need a backup."))return;saveBarcodeHistory([]);}
+
 /* PRINT VALIDATION */
 
 function validatePrintProduct(){
@@ -719,6 +730,7 @@ function printLabels(){
     barcode=productData().barcode||productData().style||"000000";
    }
 
+   recordPrintedBarcode({barcode:barcode,style:productData().style,model:productData().model,colour:productData().colour,size:size,source:"browser-print"});
    const label=document.createElement("div");
    label.className="print-label";
 
@@ -752,6 +764,7 @@ function printLabels(){
 makeSizeGrid();
 showSavedProducts();
 barcodeModeChanged();
+updateBarcodeHistorySummary();
 
 </script>
 </body>
