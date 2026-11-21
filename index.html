@@ -541,7 +541,7 @@ function getDesignSettings(){
  if(note){
   const previous=Array.isArray(d.notepadLines)?d.notepadLines:[];
   d.notepadText=note.value;
-  d.notepadLines=note.value.split(/\\r?\\n/).filter(v=>v.length>0).map((text,i)=>({...({x:2,y:10+i*4,size:14,bold:false}),...(previous[i]||{}),text}));
+  d.notepadLines=note.value.split(/\r?\n/).filter(v=>v.length>0).map((text,i)=>({...({x:2,y:10+i*4,size:14,bold:false}),...(previous[i]||{}),text}));
  }
  d.template=selectedTemplate;return d;
 }
