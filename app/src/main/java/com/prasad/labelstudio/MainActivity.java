@@ -745,7 +745,7 @@ public class MainActivity extends Activity {
         int brandX=brandPos==null?0:(int)Math.max(-128,Math.min(128,brandPos.optDouble("x",0)*12.8));
         int brandY=brandPos==null?0:(int)Math.max(-128,Math.min(128,brandPos.optDouble("y",0)*12.8));
         int detailsX=detailsPos==null?0:(int)Math.max(-128,Math.min(128,detailsPos.optDouble("x",0)*12.8));
-        int detailsY=detailsPos==null?0:(int)Math.max(-128,Math.min(128,detailsPos.optDouble("y",0)*12.8));
+        int detailsYOffset=detailsPos==null?0:(int)Math.max(-128,Math.min(128,detailsPos.optDouble("y",0)*12.8));
         int sizeX=sizePos==null?0:(int)Math.max(-128,Math.min(128,sizePos.optDouble("x",0)*12.8));
         int sizeY=sizePos==null?0:(int)Math.max(-128,Math.min(128,sizePos.optDouble("y",0)*12.8));
         int barcodeX=barcodePos==null?0:(int)Math.max(-128,Math.min(128,barcodePos.optDouble("x",0)*12.8));
@@ -801,12 +801,12 @@ public class MainActivity extends Activity {
         Paint.Align a="center".equals(align)?Paint.Align.CENTER:("right".equals(align)?Paint.Align.RIGHT:Paint.Align.LEFT);
         p.setTextAlign(a);
         float x=a==Paint.Align.CENTER?width/2f+ox:(a==Paint.Align.RIGHT?width-pad+ox:pad+ox);
-        float gap=ts+7, detailsBaseY=y, detailStep=0;
+        float gap=ts+7, detailsBaseY=y+detailsYOffset, detailStep=0;
         x+=detailsX;
-        if(sty){c.drawText("STYLE: "+safe(job.style),x,detailsBaseY+detailsY+detailStep,p);detailStep+=gap;}
+        if(sty){c.drawText("STYLE: "+safe(job.style),x,detailsBaseY+detailStep,p);detailStep+=gap;}
         if(model){c.drawText("MODEL: "+safe(job.model),x,detailsBaseY+detailsY+detailStep,p);detailStep+=gap;}
         if(col){c.drawText("COLOUR: "+safe(job.colour),x,detailsBaseY+detailsY+detailStep,p);detailStep+=gap;}
-        float detailsY=detailsBaseY+detailsY+detailStep;
+        float detailsY=detailsBaseY+detailStep;
 
         if(size){
             boolean boxed="editorial".equals(t)||"sizefocus".equals(t)||"frame".equals(t);
