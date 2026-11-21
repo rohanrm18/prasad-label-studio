@@ -121,6 +121,9 @@ button{border:0;border-radius:7px;padding:11px 14px;font-size:13px;font-weight:b
 .frame .size-value{font-family:Georgia,serif;font-size:22pt}
 .frame .barcode{height:6.8mm}
 
+.wholesale .brand,.editorial .brand,.barcodefocus .brand{text-align:left}
+.wholesale .details,.editorial .details,.barcodefocus .details{ text-align:left }
+
 /* BARCODE PRO — inventory scanning priority */
 .barcodefocus{border:.4mm solid #111;padding:1.5mm}
 .barcodefocus .label-top{justify-content:flex-start;border-bottom:.4mm solid #111!important;padding-bottom:.8mm!important}
@@ -571,7 +574,7 @@ function labelHTML(size,barcodeOverride){
   ${d.showBrand?`<div class="brand">${escapeHTML(d.brand)}</div>`:""}
  </div>
  <div class="label-info" style="padding:${d.padding/10}mm 0;flex-direction:${d.layout==="stacked"?"column":"row"};align-items:${d.layout==="stacked"?"flex-start":"center"}">
-  <div class="details" style="width:100%;text-align:var(--designer-align);transform:translate(${+d.positions.details.x||0}mm,${+d.positions.details.y||0}mm) translateX(var(--designer-offset-x,0px))">${lines}</div>
+  <div class="details" style="text-align:var(--designer-align);transform:translate(${+d.positions.details.x||0}mm,${+d.positions.details.y||0}mm) translateX(var(--designer-offset-x,0px))">${lines}</div>
   ${d.showSize?`<div class="size-box" style="${pos("size")}"><div class="size-caption">SIZE</div><div class="size-value">${escapeHTML(size)}</div></div>`:""}
  </div>
  ${barcodeMarkup}
