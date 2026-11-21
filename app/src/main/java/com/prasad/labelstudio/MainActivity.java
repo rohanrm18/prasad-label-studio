@@ -808,9 +808,28 @@ public class MainActivity extends Activity {
         float x=a==Paint.Align.CENTER?width/2f+ox:(a==Paint.Align.RIGHT?width-pad+ox:pad+ox);
         float gap=(ts+7)*detailsScale, detailsBaseY=y+detailsYOffset, detailStep=0;
         x+=detailsX;
-        if(sty){c.drawText("STYLE: "+safe(job.style),x,detailsBaseY+detailStep,p);detailStep+=gap;}
-        if(model){c.drawText("MODEL: "+safe(job.model),x,detailsBaseY+detailStep,p);detailStep+=gap;}
-        if(col){c.drawText("COLOUR: "+safe(job.colour),x,detailsBaseY+detailStep,p);detailStep+=gap;}
+        JSONArray notepadLines=d.optJSONArray("notepadLines");
+        boolean hasNotepadLines=notepadLines!=null&&notepadLines.length()>0;
+        if(!hasNotepadLines){
+            if(sty){c.drawText("STYLE: "+safe(job.style),x,detailsBaseY+detailStep,p);detailStep+=gap;}
+            if(model){c.drawText("MODEL: "+safe(job.model),x,detailsBaseY+detailStep,p);detailStep+=gap;}
+            if(col){c.drawText("COLOUR: "+safe(job.colour),x,detailsBaseY+detailStep,p);detailStep+=gap;}
+        }else{
+            p.setTextAlign(Paint.Align.LEFT);
+            for(int i=0;i<notepadLines.length();i++){
+                JSONObject line=notepadLines.optJSONObject(i);if(line==null)continue;
+                String text=line.optString("text","");if(text.isEmpty())continue;
+                float lineX=(float)Math.max(0,Math.min(width-4,line.optDouble("x",2)*7.68));
+                float lineSize=(float)Math.max(8,Math.min(28,line.optDouble("size",14)));
+                float lineY=(float)Math.max(lineSize*1.7,Math.min(height-2,line.optDouble("y",10)*8+lineSize*1.7));
+                p.setTypeface(Typeface.create(family,line.optBoolean("bold",false)?Typeface.BOLD:(bold?Typeface.BOLD:Typeface.NORMAL)));
+                p.setTextSize(lineSize*2.0f);
+                c.drawText(text,lineX,lineY,p);
+            }
+            p.setTypeface(Typeface.create(family,bold?Typeface.BOLD:Typeface.NORMAL));
+            p.setTextSize(ts*detailsScale);
+            p.setTextAlign(a);
+        }
         float detailsY=detailsBaseY+detailStep;
 
         if(size){
