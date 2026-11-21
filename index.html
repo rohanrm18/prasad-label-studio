@@ -583,8 +583,8 @@ function labelHTML(size,barcodeOverride){
  const p=productData(),barcode=barcodeOverride!==undefined?barcodeOverride:getBarcodeForPreview(),d=getDesignSettings();
  const pos=(key)=>{const v=d.positions?.[key]||{x:0,y:0},sc=d.scales?.[key]||1;return `transform:translate(${+v.x||0}mm,${+v.y||0}mm) scale(${sc})`;} ;
  const barcodeMarkup=barcode&&d.showBarcode?`<div class="barcode-area" style="${pos("barcode")}"><svg class="barcode" data-barcode="${escapeHTML(barcode)}"></svg><div class="barcode-number">${escapeHTML(barcode)}</div></div>`:"";
- const lines=[d.showStyle?\`<div class="detail-line"><b>STYLE:</b> \${escapeHTML(p.style||"-")}</div>\`:"",d.showModel?\`<div class="detail-line"><b>MODEL:</b> \${escapeHTML(p.model)}</div>\`:"",d.showColour?\`<div class="detail-line"><b>COLOUR:</b> \${escapeHTML(p.colour||"-")}</div>\`:""].filter(Boolean).join("");
- const noteLines=(d.notepadLines||[]).map((line,i)=>\`<div class="notepad-line" data-note-index="\${i}" style="left:\${Number(line.x)||0}mm;top:\${Number(line.y)||0}mm;font-size:\${Number(line.size)||14}px;font-weight:\${line.bold?700:400}">\${escapeHTML(line.text)}</div>\`).join("");
+ const lines=[d.showStyle?`<div class="detail-line"><b>STYLE:</b> ${escapeHTML(p.style||"-")}</div>`:"",d.showModel?`<div class="detail-line"><b>MODEL:</b> ${escapeHTML(p.model)}</div>`:"",d.showColour?`<div class="detail-line"><b>COLOUR:</b> ${escapeHTML(p.colour||"-")}</div>`:""].filter(Boolean).join("");
+ const noteLines=(d.notepadLines||[]).map((line,i)=>`<div class="notepad-line" data-note-index="${i}" style="left:${Number(line.x)||0}mm;top:${Number(line.y)||0}mm;font-size:${Number(line.size)||14}px;font-weight:${line.bold?700:400}">${escapeHTML(line.text)}</div>`).join("");
  return `
  <div class="label-top" style="${pos("brand")}">
   ${d.showBrand?`<div class="brand">${escapeHTML(d.brand)}</div>`:""}
