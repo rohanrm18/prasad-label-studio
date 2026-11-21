@@ -41,17 +41,17 @@ button{border:0;border-radius:7px;padding:11px 14px;font-size:13px;font-weight:b
 .auto-toggle input{width:20px;height:20px;margin:0}
 .auto-number{font-size:22px;font-weight:bold;letter-spacing:2px;margin-top:8px}
 #previewWrap{overflow:auto;background:#eee;padding:14px;border-radius:8px}
-.label-preview{width:50mm;height:30mm;background:white;color:#111;position:relative;overflow:hidden;padding:1.8mm;display:flex;flex-direction:column;font-family:Arial,sans-serif}
+.label-preview{width:50mm;height:30mm;background:white;color:#111;position:relative;overflow:hidden;padding:1.8mm;display:flex;flex-direction:column;font-family:Arial,sans-serif;--designer-align:left;--designer-brand-size:9pt;--designer-text-size:6.5pt;--designer-size-size:22pt;--designer-padding:1.8mm}
 .label-top{display:flex;justify-content:center;align-items:center;text-align:center}
-.brand{font-size:9pt;font-weight:900;letter-spacing:.35px;white-space:nowrap}
+.brand{font-size:var(--designer-brand-size);font-weight:900;letter-spacing:.2px;white-space:nowrap;text-align:var(--designer-align)}
 .label-info{display:flex;justify-content:space-between;align-items:center;flex:1;min-height:0}
 .details{min-width:0;flex:1}
-.detail-line{font-size:6.5pt;line-height:1.45;white-space:nowrap;overflow:hidden}
+.detail-line{font-size:var(--designer-text-size);line-height:1.35;white-space:nowrap;overflow:hidden;text-align:var(--designer-align)}
 .detail-line b{font-weight:800}
 .size-box{min-width:12mm;text-align:center;display:flex;flex-direction:column;justify-content:center;align-items:center}
 .size-caption{font-size:6pt;font-weight:bold;letter-spacing:.5px}
-.size-value{font-size:22pt;font-weight:900;line-height:1}
-.barcode{width:100%;height:8mm;display:block}
+.size-value{font-size:var(--designer-size-size);font-weight:900;line-height:1}
+.barcode{width:100%;height:var(--designer-barcode-height,8mm);display:block}
 .barcode-number{text-align:center;font-size:6pt;letter-spacing:1px;line-height:1}
 .barcode-area{width:100%;text-align:center;margin-top:auto}
 
@@ -226,7 +226,7 @@ button{border:0;border-radius:7px;padding:11px 14px;font-size:13px;font-weight:b
 </section>
 
 <section class="panel">
-<h2>4. Label Preview</h2>
+<h2>5. Label Preview</h2>
 <label>Preview Size</label>
 <select id="previewSize" onchange="updatePreview()"></select>
 <div id="previewWrap" style="margin-top:12px">
@@ -236,13 +236,13 @@ button{border:0;border-radius:7px;padding:11px 14px;font-size:13px;font-weight:b
 </section>
 
 <section class="panel">
-<h2>5. Saved Products</h2>
+<h2>6. Saved Products</h2>
 <div id="savedProducts"><p class="muted">No products saved yet.</p></div>
 </section>
 
 <section class="panel"><h2>Barcode History & Transfer</h2><p class="muted">Printed barcode records are saved on this device with style, model, colour, size and print date. Export the history to import it into Prasad Business Analyst.</p><div class="buttons"><button class="primary" onclick="exportBarcodeHistory()">EXPORT BARCODE HISTORY</button><button class="secondary" onclick="clearBarcodeHistory()">CLEAR HISTORY</button></div><div id="barcodeHistorySummary" class="muted" style="margin-top:10px">0 printed barcode records</div></section>
 <section class="panel">
-<h2>7. Print Labels</h2>
+<h2>8. Print Labels</h2>
 <p class="muted">Connect your P58D printer using the CONNECT P58D PRINTER button above.</p>
 
 <button class="primary" style="width:100%;padding:15px" onclick="printBluetoothLabel()">PRINT ONE LABEL</button>
@@ -430,6 +430,12 @@ function chooseTemplate(template){
 
 /* PRODUCT DATA */
 
+const DESIGN_DEFAULTS={brand:"PRASAD APPARELS",align:"left",border:"none",brandSize:18,textSize:13,sizeSize:34,barcodeHeight:48,padding:6,layout:"standard",showBrand:true,showStyle:true,showModel:true,showColour:true,showSize:true,showBarcode:true};
+function getDesignSettings(){const d={...DESIGN_DEFAULTS};try{Object.assign(d,JSON.parse(localStorage.getItem("prasadLabelDesign")||"{}"));}catch(e){}return d;}
+function designerChanged(){const d={brand:document.getElementById("dBrand").value,align:document.getElementById("dAlign").value,border:document.getElementById("dBorder").value,brandSize:+document.getElementById("dBrandSize").value,textSize:+document.getElementById("dTextSize").value,sizeSize:+document.getElementById("dSizeSize").value,barcodeHeight:+document.getElementById("dBarcodeHeight").value,padding:+document.getElementById("dPadding").value,layout:document.getElementById("dLayout").value,showBrand:document.getElementById("dShowBrand").checked,showStyle:document.getElementById("dShowStyle").checked,showModel:document.getElementById("dShowModel").checked,showColour:document.getElementById("dShowColour").checked,showSize:document.getElementById("dShowSize").checked,showBarcode:document.getElementById("dShowBarcode").checked};applyDesigner(d);updatePreview();}
+function applyDesigner(d){document.getElementById("dBrand").value=d.brand;["align","border","layout"].forEach(k=>document.getElementById("d"+k[0].toUpperCase()+k.slice(1)).value=d[k]);["brandSize","textSize","sizeSize","barcodeHeight","padding"].forEach(k=>document.getElementById("d"+k[0].toUpperCase()+k.slice(1)).value=d[k]);["showBrand","showStyle","showModel","showColour","showSize","showBarcode"].forEach(k=>document.getElementById("d"+k[0].toUpperCase()+k.slice(1)).checked=d[k]);}
+function saveDesigner(){const d={brand:document.getElementById("dBrand").value,align:document.getElementById("dAlign").value,border:document.getElementById("dBorder").value,brandSize:+document.getElementById("dBrandSize").value,textSize:+document.getElementById("dTextSize").value,sizeSize:+document.getElementById("dSizeSize").value,barcodeHeight:+document.getElementById("dBarcodeHeight").value,padding:+document.getElementById("dPadding").value,layout:document.getElementById("dLayout").value,showBrand:document.getElementById("dShowBrand").checked,showStyle:document.getElementById("dShowStyle").checked,showModel:document.getElementById("dShowModel").checked,showColour:document.getElementById("dShowColour").checked,showSize:document.getElementById("dShowSize").checked,showBarcode:document.getElementById("dShowBarcode").checked};localStorage.setItem("prasadLabelDesign",JSON.stringify(d));document.getElementById("designerStatus").textContent="Your custom label design is saved on this device.";}
+function resetDesigner(){localStorage.removeItem("prasadLabelDesign");applyDesigner(DESIGN_DEFAULTS);designerChanged();document.getElementById("designerStatus").textContent="Default design restored.";}
 function productData(){
  return {
   style:document.getElementById("style").value.trim(),
@@ -451,22 +457,16 @@ function escapeHTML(value){
 function labelHTML(size,barcodeOverride){
  const p=productData();
  const barcode=barcodeOverride!==undefined?barcodeOverride:getBarcodeForPreview();
- const barcodeMarkup=barcode?`<div class="barcode-area"><svg class="barcode" data-barcode="${escapeHTML(barcode)}"></svg><div class="barcode-number">${escapeHTML(barcode)}</div></div>`:"";
-
+ const d=getDesignSettings();
+ const barcodeMarkup=barcode&&d.showBarcode?`<div class="barcode-area"><svg class="barcode" data-barcode="${escapeHTML(barcode)}"></svg><div class="barcode-number">${escapeHTML(barcode)}</div></div>`:"";
+ const lines=[d.showStyle?`<div class="detail-line"><b>STYLE:</b> ${escapeHTML(p.style||"-")}</div>`:"",d.showModel?`<div class="detail-line"><b>MODEL:</b> ${escapeHTML(p.model)}</div>`:"",d.showColour?`<div class="detail-line"><b>COLOUR:</b> ${escapeHTML(p.colour||"-")}</div>`:""].filter(Boolean).join("");
  return `
- <div class="label-top">
-  <div class="brand">PRASAD APPARELS</div>
+ <div class="label-top" style="justify-content:${d.align==="center"?"center":"flex-start"};border-bottom:${d.border==="none"?"0":d.border==="double"?"1px double #111":"1px solid #111"};padding-bottom:1mm">
+  ${d.showBrand?`<div class="brand">${escapeHTML(d.brand)}</div>`:""}
  </div>
- <div class="label-info">
-  <div class="details">
-   <div class="detail-line"><b>STYLE:</b> ${escapeHTML(p.style||"-")}</div>
-   <div class="detail-line"><b>MODEL:</b> ${escapeHTML(p.model)}</div>
-   <div class="detail-line"><b>COLOUR:</b> ${escapeHTML(p.colour||"-")}</div>
-  </div>
-  <div class="size-box">
-   <div class="size-caption">SIZE</div>
-   <div class="size-value">${escapeHTML(size)}</div>
-  </div>
+ <div class="label-info" style="padding:${d.padding/10}mm 0;flex-direction:${d.layout==="stacked"?"column":"row"};align-items:${d.layout==="stacked"?"flex-start":"center"}">
+  <div class="details" style="width:100%;text-align:${d.align}">${lines}</div>
+  ${d.showSize?`<div class="size-box"><div class="size-caption">SIZE</div><div class="size-value">${escapeHTML(size)}</div></div>`:""}
  </div>
  ${barcodeMarkup}
  `;
