@@ -152,6 +152,8 @@ button{border:0;border-radius:7px;padding:11px 14px;font-size:13px;font-weight:b
 <input id="colour" placeholder="Example: White">
 
 <div class="auto-box">
+ <label class="auto-toggle"><input type="checkbox" id="noBarcode" onchange="barcodeModeChanged()"> PRINT WITHOUT BARCODE</label>
+ <p class="muted">Use this when a product does not need a barcode. The label will print without a barcode or barcode number.</p>
  <label class="auto-toggle">
   <input type="checkbox" id="autoBarcode" onchange="barcodeModeChanged()">
   AUTO BARCODE NUMBER
@@ -299,19 +301,14 @@ function refreshBarcodeDisplay(){
 }
 
 function barcodeModeChanged(){
- const auto=document.getElementById("autoBarcode").checked;
+ const noBarcode=document.getElementById("noBarcode").checked;
+ const auto=document.getElementById("autoBarcode");
  const input=document.getElementById("barcodeNumber");
-
- input.disabled=auto;
- input.placeholder=auto?"Automatic numbering is ON":"Enter your barcode number";
-
- document.getElementById("nextNumberArea").style.display=auto?"block":"none";
-
- if(auto){
-  refreshBarcodeDisplay();
- }else{
-  updatePreview();
- }
+ auto.disabled=noBarcode;
+ input.disabled=noBarcode||auto.checked;
+ input.placeholder=noBarcode?"Barcode is disabled":auto.checked?"Automatic numbering is ON":"Enter your barcode number";
+ document.getElementById("nextNumberArea").style.display=(!noBarcode&&auto.checked)?"block":"none";
+ if(!noBarcode&&auto.checked){refreshBarcodeDisplay();}else{updatePreview();}
 }
 
 window.onAndroidBarcodeUpdated=function(next){
@@ -327,6 +324,7 @@ window.onAndroidBarcodeUpdated=function(next){
 };
 
 function getBarcodeForPreview(){
+ if(document.getElementById("noBarcode").checked)return "";
  if(document.getElementById("autoBarcode").checked){
   return getAutoBarcode();
  }
@@ -437,7 +435,8 @@ function productData(){
   style:document.getElementById("style").value.trim(),
   model:document.getElementById("model").value,
   colour:document.getElementById("colour").value.trim(),
-  barcode:document.getElementById("barcodeNumber").value.trim()
+  barcode:document.getElementById("barcodeNumber").value.trim(),
+  noBarcode:document.getElementById("noBarcode").checked
  };
 }
 
@@ -451,7 +450,8 @@ function escapeHTML(value){
 
 function labelHTML(size,barcodeOverride){
  const p=productData();
- const barcode=barcodeOverride||getBarcodeForPreview();
+ const barcode=barcodeOverride!==undefined?barcodeOverride:getBarcodeForPreview();
+ const barcodeMarkup=barcode?`<div class="barcode-area"><svg class="barcode" data-barcode="${escapeHTML(barcode)}"></svg><div class="barcode-number">${escapeHTML(barcode)}</div></div>`:"";
 
  return `
  <div class="label-top">
@@ -468,10 +468,7 @@ function labelHTML(size,barcodeOverride){
    <div class="size-value">${escapeHTML(size)}</div>
   </div>
  </div>
- <div class="barcode-area">
-  <svg class="barcode" data-barcode="${escapeHTML(barcode)}"></svg>
-  <div class="barcode-number">${escapeHTML(barcode)}</div>
- </div>
+ ${barcodeMarkup}
  `;
 }
 
@@ -577,6 +574,8 @@ function loadProduct(key){
  document.getElementById("model").value=p.model||"Other";
  document.getElementById("colour").value=p.colour||"";
  document.getElementById("barcodeNumber").value=p.barcode||"";
+ document.getElementById("noBarcode").checked=!!p.noBarcode;
+ barcodeModeChanged();
 
  updatePreview();
  document.getElementById("status").textContent="Product loaded.";
@@ -622,6 +621,7 @@ function validatePrintProduct(){
  }
 
  const auto=document.getElementById("autoBarcode").checked;
+ if(p.noBarcode)return true;
 
  if(!auto&&!p.barcode){
   alert("Please enter Barcode Number or switch ON Auto Barcode.");
@@ -643,14 +643,15 @@ function printBluetoothLabel(){
 
  const p=productData();
  const size=document.getElementById("previewSize").value;
- const auto=document.getElementById("autoBarcode").checked;
+ const noBarcode=p.noBarcode;
+ const auto=document.getElementById("autoBarcode").checked&&!noBarcode;
 
  AndroidPrinter.printSingle(JSON.stringify({
   style:p.style,
   model:p.model,
   colour:p.colour,
   size:size,
-  barcode:auto?"":p.barcode,
+  barcode:(noBarcode||auto)?"":p.barcode,
   autoBarcode:auto
  }));
 }
@@ -666,7 +667,8 @@ function printBulkBluetoothLabels(){
  }
 
  const p=productData();
- const auto=document.getElementById("autoBarcode").checked;
+ const noBarcode=p.noBarcode;
+ const auto=document.getElementById("autoBarcode").checked&&!noBarcode;
  const items=[];
 
  sizes.forEach(size=>{
@@ -685,7 +687,7 @@ function printBulkBluetoothLabels(){
   style:p.style,
   model:p.model,
   colour:p.colour,
-  barcode:auto?"":p.barcode,
+  barcode:(noBarcode||auto)?"":p.barcode,
   autoBarcode:auto,
   items:items
  }));
@@ -704,7 +706,8 @@ function printLabels(){
  }
 
  const area=document.getElementById("printArea");
- const auto=document.getElementById("autoBarcode").checked;
+ const noBarcode=productData().noBarcode;
+ const auto=document.getElementById("autoBarcode").checked&&!noBarcode;
 
  area.innerHTML="";
  area.style.display="block";
@@ -717,7 +720,9 @@ function printLabels(){
 
    let barcode;
 
-   if(auto){
+   if(noBarcode){
+    barcode="";
+   }else if(auto){
     if(browserNext>999999){
      alert("Six-digit barcode limit reached.");
      area.innerHTML="";
@@ -730,7 +735,7 @@ function printLabels(){
     barcode=productData().barcode||productData().style||"000000";
    }
 
-   recordPrintedBarcode({barcode:barcode,style:productData().style,model:productData().model,colour:productData().colour,size:size,source:"browser-print"});
+   if(barcode)recordPrintedBarcode({barcode:barcode,style:productData().style,model:productData().model,colour:productData().colour,size:size,source:"browser-print"});
    const label=document.createElement("div");
    label.className="print-label";
 
