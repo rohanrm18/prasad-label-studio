@@ -721,119 +721,71 @@ public class MainActivity extends Activity {
         }).start();
     }
 
-    // PRINT ONE LABEL AS A SINGLE 50 x 30 mm RASTER IMAGE
-    // P58D printable area: 384 dots wide x 240 dots high at 203 dpi.
+    // PRINT ONE LABEL AS A SINGLE 50 x 30 MM RASTER IMAGE
     private void printOneLabel(LabelJob job) throws Exception {
-        BluetoothSocket socket = bluetoothSocket;
-        if (socket == null || !socket.isConnected()) throw new Exception("Printer disconnected");
-        final int width = 384, height = 240;
-        Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bitmap);
-        canvas.drawColor(Color.WHITE);
-        JSONObject d = job.design == null ? new JSONObject() : job.design;
-        Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        paint.setColor(Color.BLACK);
-        boolean centered = true; // Automatic alignment: brand centered, details left, size right.
-        float left = Math.max(4, Math.min(24, d.optInt("padding", 6) * 2));
-        String template = d.optString("template", "classic");
-        String border = d.optString("border", "none");
-        if ("frame".equals(template)) {
-            paint.setStyle(Paint.Style.STROKE);
-            paint.setStrokeWidth(4f);
-            canvas.drawRect(5, 5, width - 6, height - 6, paint);
-            paint.setStrokeWidth(1.5f);
-            canvas.drawRect(11, 11, width - 12, height - 12, paint);
-            paint.setStyle(Paint.Style.FILL);
-        } else if (!"none".equals(border)) {
-            paint.setStyle(Paint.Style.STROKE);
-            paint.setStrokeWidth("double".equals(border) ? 3 : 2);
-            canvas.drawRect(3, 3, width - 4, height - 4, paint);
-            paint.setStyle(Paint.Style.FILL);
+        BluetoothSocket socket=bluetoothSocket;
+        if(socket==null||!socket.isConnected()) throw new Exception("Printer disconnected");
+        final int width=384,height=240;
+        Bitmap bitmap=Bitmap.createBitmap(width,height,Bitmap.Config.ARGB_8888);
+        Canvas c=new Canvas(bitmap); c.drawColor(Color.WHITE);
+        JSONObject d=job.design==null?new JSONObject():job.design;
+        Paint p=new Paint(Paint.ANTI_ALIAS_FLAG); p.setColor(Color.BLACK);
+        String t=d.optString("template","classic"), f=d.optString("font","sans");
+        Typeface face=("serif".equals(f)||"luxury".equals(t)||"editorial".equals(t)||"frame".equals(t)||"wholesale".equals(t))?Typeface.SERIF:Typeface.SANS_SERIF;
+        int bs=Math.max(12,Math.min(30,d.optInt("brandSize",18)));
+        int ts=Math.max(10,Math.min(22,d.optInt("textSize",13)));
+        int ss=Math.max(20,Math.min(48,d.optInt("sizeSize",34)));
+        int bh=Math.max(25,Math.min(48,d.optInt("barcodeHeight",48)));
+        float pad=Math.max(5,Math.min(30,d.optInt("padding",6)*2+d.optInt("offsetX",0)));
+        boolean brand=d.optBoolean("showBrand",true),sty=d.optBoolean("showStyle",true),model=d.optBoolean("showModel",true),col=d.optBoolean("showColour",true),size=d.optBoolean("showSize",true),bar=d.optBoolean("showBarcode",true);
+        String name=d.optString("brand","PRASAD APPARELS");
+        if("frame".equals(t)){p.setStyle(Paint.Style.STROKE);p.setStrokeWidth(4);c.drawRect(4,4,width-5,height-5,p);p.setStrokeWidth(1.5f);c.drawRect(11,11,width-12,height-12,p);p.setStyle(Paint.Style.FILL);}
+        else if("editorial".equals(t)){p.setStrokeWidth(9);c.drawLine(7,5,7,height-5,p);}
+        else if("retail".equals(t)){c.drawRect(0,0,width,48,p);}
+        else if("sizefocus".equals(t)||"barcodefocus".equals(t)){p.setStyle(Paint.Style.STROKE);p.setStrokeWidth(2.5f);c.drawRect(4,4,width-5,height-5,p);p.setStyle(Paint.Style.FILL);}
+        else if("luxury".equals(t)){p.setStyle(Paint.Style.STROKE);p.setStrokeWidth(3);c.drawRoundRect(5,5,width-6,height-6,9,9,p);p.setStyle(Paint.Style.FILL);}
+        else {p.setStyle(Paint.Style.STROKE);p.setStrokeWidth(2);c.drawRect(4,4,width-5,height-5,p);p.setStyle(Paint.Style.FILL);}
+        float y="retail".equals(t)?34:27;
+        if(brand&&!name.trim().isEmpty()){
+            p.setColor("retail".equals(t)?Color.WHITE:Color.BLACK);
+            p.setTypeface(Typeface.create(face,Typeface.BOLD));
+            p.setTextSize("editorial".equals(t)?bs+2:("barcodefocus".equals(t)?bs-1:bs));
+            boolean leftBrand="wholesale".equals(t)||"editorial".equals(t);
+            p.setTextAlign(leftBrand?Paint.Align.LEFT:Paint.Align.CENTER);
+            c.drawText(name,leftBrand?pad+("editorial".equals(t)?9:0):width/2f,y,p);
+            y+=bs+("retail".equals(t)?19:12);p.setColor(Color.BLACK);
+            if(!"retail".equals(t)){p.setStrokeWidth("luxury".equals(t)?2:1);c.drawLine(pad,y-5,width-pad,y-5,p);}
         }
-        boolean showBrand=d.optBoolean("showBrand",true), showStyle=d.optBoolean("showStyle",true);
-        boolean showModel=d.optBoolean("showModel",true), showColour=d.optBoolean("showColour",true);
-        boolean showSize=d.optBoolean("showSize",true), showBarcode=d.optBoolean("showBarcode",true);
-        String brand=d.optString("brand","PRASAD APPARELS");
-        int brandSize=Math.max(12,Math.min(30,d.optInt("brandSize",18)));
-        int textSize=Math.max(10,Math.min(22,d.optInt("textSize",13)));
-        int sizeSize=Math.max(20,Math.min(48,d.optInt("sizeSize",34)));
-        int barcodeHeight=Math.max(25,Math.min(80,d.optInt("barcodeHeight",48)));
-        boolean stacked="stacked".equals(d.optString("layout","standard"));
-        float y=26;
-        if(showBrand && !brand.trim().isEmpty()){
-            paint.setTypeface(Typeface.create("frame".equals(template) ? "serif" : "sans-serif",Typeface.BOLD)); paint.setTextSize("frame".equals(template) ? brandSize+1 : brandSize);
-            paint.setTextAlign(centered?Paint.Align.CENTER:Paint.Align.LEFT);
-            canvas.drawText(brand,centered?width/2f:left,y,paint);
-            y+=brandSize+("frame".equals(template)?15:9);
-            if ("frame".equals(template)) {
-                paint.setStrokeWidth(1.5f);
-                canvas.drawLine(22, y-7, width-22, y-7, paint);
-            }
+        p.setTypeface(Typeface.create(face,Typeface.NORMAL));p.setTextSize(ts);
+        String al=d.optString("align","left");
+        p.setTextAlign("wholesale".equals(t)?Paint.Align.LEFT:("center".equals(al)?Paint.Align.CENTER:("right".equals(al)?Paint.Align.RIGHT:Paint.Align.LEFT)));
+        float tx=p.getTextAlign()==Paint.Align.CENTER?width/2f:(p.getTextAlign()==Paint.Align.RIGHT?width-pad:pad);
+        float gap=ts+7, top=y;
+        if(sty){c.drawText("STYLE: "+safe(job.style),tx,y,p);y+=gap;}
+        if(model){c.drawText("MODEL: "+safe(job.model),tx,y,p);y+=gap;}
+        if(col){c.drawText("COLOUR: "+safe(job.colour),tx,y,p);y+=gap;}
+        if(size){
+            boolean box="editorial".equals(t)||"sizefocus".equals(t)||"frame".equals(t);
+            if(box){
+                float w="sizefocus".equals(t)?126:105,h="sizefocus".equals(t)?92:78,l=width-pad-w,bt="sizefocus".equals(t)?72:88;
+                boolean dark=!"frame".equals(t);
+                if(dark){p.setColor(Color.BLACK);c.drawRect(l,bt,l+w,bt+h,p);p.setColor(Color.WHITE);}
+                else {p.setStyle(Paint.Style.STROKE);p.setStrokeWidth(2);c.drawRect(l,bt,l+w,bt+h,p);p.setStyle(Paint.Style.FILL);p.setColor(Color.BLACK);}
+                p.setTypeface(Typeface.create(face,Typeface.BOLD));p.setTextAlign(Paint.Align.CENTER);p.setTextSize(11);c.drawText("SIZE",l+w/2,bt+17,p);p.setTextSize(ss);c.drawText(safe(job.size),l+w/2,bt+65,p);p.setColor(Color.BLACK);
+            }else{p.setTypeface(Typeface.create(face,Typeface.BOLD));p.setTextSize(ss);p.setTextAlign(Paint.Align.RIGHT);c.drawText("stacked".equals(d.optString("layout"))?"SIZE "+safe(job.size):safe(job.size),width-pad,Math.min(166,Math.max(145,top+ss)),p);}
         }
-        paint.setTypeface(Typeface.create("sans-serif",Typeface.NORMAL)); paint.setTextSize(textSize);
-        paint.setTextAlign(Paint.Align.LEFT);
-        float x=left, gap=textSize+8;
-        if(showStyle){canvas.drawText("STYLE: "+safe(job.style),x,y,paint);y+=gap;}
-        if(showModel){canvas.drawText("MODEL: "+safe(job.model),x,y,paint);y+=gap;}
-        if(showColour){canvas.drawText("COLOUR: "+safe(job.colour),x,y,paint);y+=gap;}
-        if(showSize){
-            paint.setTypeface(Typeface.create("frame".equals(template) ? "serif" : "sans-serif",Typeface.BOLD)); paint.setTextSize("frame".equals(template) ? sizeSize+1 : sizeSize);
-            if ("frame".equals(template)) {
-                float boxW = 100f, boxH = 88f;
-                float boxLeft = width-left-boxW, boxTop = 86f;
-                paint.setStyle(Paint.Style.STROKE);
-                paint.setStrokeWidth(1.5f);
-                canvas.drawRoundRect(boxLeft, boxTop, boxLeft+boxW, boxTop+boxH, 5f, 5f, paint);
-                paint.setStyle(Paint.Style.FILL);
-                paint.setTextAlign(Paint.Align.CENTER);
-                paint.setTextSize(10f);
-                canvas.drawText("SIZE", boxLeft+boxW/2f, boxTop+18f, paint);
-                paint.setTextSize(sizeSize+1);
-                canvas.drawText(safe(job.size), boxLeft+boxW/2f, boxTop+65f, paint);
-            } else {
-                paint.setTextAlign(Paint.Align.RIGHT);
-                canvas.drawText(stacked?"SIZE "+safe(job.size):safe(job.size),
-                    width-left,stacked?Math.min(190,y+sizeSize):145,paint);
-            }
+        if(bar&&job.barcode!=null&&!job.barcode.trim().isEmpty()){
+            int bw="barcodefocus".equals(t)?350:("wholesale".equals(t)?285:320), bhh=Math.min(bh,"barcodefocus".equals(t)?45:36);
+            int bx0=(width-bw)/2,by0="barcodefocus".equals(t)?158:174;
+            BitMatrix m=new MultiFormatWriter().encode(job.barcode.trim(),BarcodeFormat.CODE_128,bw,bhh);
+            for(int x=0;x<m.getWidth();x++)for(int yy=0;yy<m.getHeight();yy++)if(m.get(x,yy))c.drawRect(bx0+x,by0+yy,bx0+x+1,by0+yy+1,p);
+            p.setTextAlign(Paint.Align.CENTER);p.setTypeface(Typeface.create("sans-serif",Typeface.BOLD));p.setTextSize(15);c.drawText(job.barcode.trim(),width/2f,230,p);
         }
-        if(showBarcode && job.barcode!=null && !job.barcode.trim().isEmpty()){
-            // Keep barcode and its human-readable number inside the 50 x 30 mm print area.
-            // A narrower centered symbol preserves quiet zones and avoids edge clipping.
-            int safeBarcodeHeight = Math.max(25, Math.min(36, barcodeHeight));
-            int barcodeWidth = 320;
-            int barcodeLeft = (width - barcodeWidth) / 2;
-            int barcodeTop = 174;
-            BitMatrix matrix = new MultiFormatWriter().encode(
-                job.barcode.trim(), BarcodeFormat.CODE_128,
-                barcodeWidth, safeBarcodeHeight
-            );
-            paint.setColor(Color.BLACK);
-            paint.setStyle(Paint.Style.FILL);
-            for(int bx=0;bx<matrix.getWidth();bx++) {
-                for(int by=0;by<matrix.getHeight();by++) {
-                    if(matrix.get(bx,by)) {
-                        canvas.drawRect(
-                            barcodeLeft+bx, barcodeTop+by,
-                            barcodeLeft+bx+1, barcodeTop+by+1, paint
-                        );
-                    }
-                }
-            }
-            // Print the exact barcode digits clearly below the bars, not on the paper edge.
-            paint.setColor(Color.BLACK);
-            paint.setTextAlign(Paint.Align.CENTER);
-            paint.setTypeface(Typeface.create("sans-serif",Typeface.BOLD));
-            paint.setTextSize(16);
-            canvas.drawText(job.barcode.trim(), width/2f, 230, paint);
-        }
-        int bytesPerRow=(width+7)/8; byte[] raster=new byte[bytesPerRow*height];
-        for(int py=0;py<height;py++) for(int px=0;px<width;px++)
-            if(Color.red(bitmap.getPixel(px,py))<160) raster[py*bytesPerRow+(px/8)]|=(byte)(0x80>>(px%8));
-        bitmap.recycle();
-        OutputStream out=socket.getOutputStream();
-        out.write(new byte[]{0x1B,0x40});
-        out.write(new byte[]{0x1D,0x76,0x30,0x00,(byte)(bytesPerRow&0xFF),(byte)((bytesPerRow>>8)&0xFF),(byte)(height&0xFF),(byte)((height>>8)&0xFF)});
-        out.write(raster); out.flush();
+        int bpr=(width+7)/8;byte[] raster=new byte[bpr*height];
+        for(int yy=0;yy<height;yy++)for(int x=0;x<width;x++)if(Color.red(bitmap.getPixel(x,yy))<160)raster[yy*bpr+(x/8)]|=(byte)(0x80>>(x%8));
+        bitmap.recycle();OutputStream out=socket.getOutputStream();out.write(new byte[]{0x1B,0x40});
+        out.write(new byte[]{0x1D,0x76,0x30,0x00,(byte)(bpr&255),(byte)((bpr>>8)&255),(byte)(height&255),(byte)((height>>8)&255)});
+        out.write(raster);out.flush();
     }
 
     private String safe(String value) {
