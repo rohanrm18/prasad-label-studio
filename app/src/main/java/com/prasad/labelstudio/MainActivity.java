@@ -6,6 +6,7 @@ import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -36,6 +37,11 @@ public class MainActivity extends Activity {
     private static final UUID PRINTER_UUID =
         UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
+    private static final String PREFS = "PrasadLabelSettings";
+    private static final String BARCODE_KEY = "next_barcode_number";
+
+    private static final int MAX_BARCODE = 999999;
+
     private BluetoothAdapter bluetoothAdapter;
     private volatile BluetoothSocket bluetoothSocket;
 
@@ -43,6 +49,8 @@ public class MainActivity extends Activity {
     private TextView statusText;
     private TextView progressText;
     private Button cancelButton;
+
+    private SharedPreferences preferences;
 
     private final ExecutorService printExecutor =
         Executors.newSingleThreadExecutor();
@@ -56,20 +64,29 @@ public class MainActivity extends Activity {
         String colour;
         String size;
         String barcode;
+        boolean autoBarcode;
 
         LabelJob(String style, String model, String colour,
-                 String size, String barcode) {
+                 String size, String barcode, boolean autoBarcode) {
+
             this.style = style;
             this.model = model;
             this.colour = colour;
             this.size = size;
             this.barcode = barcode;
+            this.autoBarcode = autoBarcode;
         }
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        preferences = getSharedPreferences(PREFS, MODE_PRIVATE);
+
+        if (!preferences.contains(BARCODE_KEY)) {
+            preferences.edit().putInt(BARCODE_KEY, 1).apply();
+        }
 
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
@@ -110,7 +127,6 @@ public class MainActivity extends Activity {
             new PrinterBridge(), "AndroidPrinter"
         );
 
-        // FIX: No handleUrl() call is needed.
         webView.setWebViewClient(new WebViewClient());
 
         root.addView(webView, new LinearLayout.LayoutParams(
@@ -131,9 +147,52 @@ public class MainActivity extends Activity {
         webView.loadUrl(WEBSITE);
     }
 
+    // BARCODE NUMBER MANAGEMENT
+
+    private synchronized int getNextBarcodeNumber() {
+        return preferences.getInt(BARCODE_KEY, 1);
+    }
+
+    private synchronized String getFormattedNextBarcode() {
+        int number = getNextBarcodeNumber();
+
+        if (number > MAX_BARCODE) return "LIMIT";
+
+        return String.format(java.util.Locale.US, "%06d", number);
+    }
+
+    private synchronized boolean advanceBarcodeNumber() {
+        int current = getNextBarcodeNumber();
+
+        if (current > MAX_BARCODE) return false;
+
+        return preferences.edit()
+            .putInt(BARCODE_KEY, current + 1)
+            .commit();
+    }
+
+    private void notifyWebBarcodeUpdated() {
+        String next = getFormattedNextBarcode();
+
+        runOnUiThread(() -> {
+            if (webView != null) {
+                webView.evaluateJavascript(
+                    "if(window.onAndroidBarcodeUpdated){" +
+                    "window.onAndroidBarcodeUpdated('" + next + "');}",
+                    null
+                );
+            }
+        });
+    }
+
     // ANDROID JAVASCRIPT BRIDGE
 
     private class PrinterBridge {
+
+        @JavascriptInterface
+        public String getNextBarcodeNumber() {
+            return getFormattedNextBarcode();
+        }
 
         @JavascriptInterface
         public void printSingle(String json) {
@@ -145,7 +204,8 @@ public class MainActivity extends Activity {
                     data.optString("model"),
                     data.optString("colour"),
                     data.optString("size"),
-                    data.optString("barcode")
+                    data.optString("barcode"),
+                    data.optBoolean("autoBarcode", false)
                 );
 
                 runOnUiThread(() -> {
@@ -179,6 +239,9 @@ public class MainActivity extends Activity {
                 String colour = data.optString("colour");
                 String barcode = data.optString("barcode");
 
+                boolean autoBarcode =
+                    data.optBoolean("autoBarcode", false);
+
                 JSONArray items = data.getJSONArray("items");
 
                 ArrayList<LabelJob> jobs = new ArrayList<>();
@@ -200,7 +263,8 @@ public class MainActivity extends Activity {
 
                     for (int j = 0; j < quantity; j++) {
                         jobs.add(new LabelJob(
-                            style, model, colour, size, barcode
+                            style, model, colour, size,
+                            barcode, autoBarcode
                         ));
                     }
                 }
@@ -220,8 +284,12 @@ public class MainActivity extends Activity {
 
                     if (!printerReady()) return;
 
+                    String mode = autoBarcode
+                        ? "Automatic barcode numbering ON"
+                        : "Manual barcode mode";
+
                     showFirstBulkConfirmation(
-                        jobs, summary.toString()
+                        jobs, summary.toString(), mode
                     );
                 });
 
@@ -236,12 +304,15 @@ public class MainActivity extends Activity {
     // FIRST BULK CONFIRMATION
 
     private void showFirstBulkConfirmation(
-        ArrayList<LabelJob> jobs, String summary) {
+        ArrayList<LabelJob> jobs,
+        String summary,
+        String mode) {
 
         new AlertDialog.Builder(this)
             .setTitle("Bulk print summary")
             .setMessage(
                 summary + "\nTotal labels: " + jobs.size()
+                + "\n\n" + mode
                 + "\n\nContinue to the final confirmation?"
             )
             .setNegativeButton("CANCEL", (d, w) ->
@@ -320,13 +391,39 @@ public class MainActivity extends Activity {
 
             int completed = 0;
             boolean failed = false;
+            boolean barcodeLimitReached = false;
 
             for (LabelJob job : jobs) {
 
                 if (cancelRequested) break;
 
                 try {
+                    if (job.autoBarcode) {
+                        int next = getNextBarcodeNumber();
+
+                        if (next > MAX_BARCODE) {
+                            barcodeLimitReached = true;
+                            break;
+                        }
+
+                        job.barcode = String.format(
+                            java.util.Locale.US,
+                            "%06d",
+                            next
+                        );
+                    }
+
                     printOneLabel(job);
+
+                    if (job.autoBarcode) {
+                        if (!advanceBarcodeNumber()) {
+                            failed = true;
+                            break;
+                        }
+
+                        notifyWebBarcodeUpdated();
+                    }
+
                     completed++;
 
                     final int done = completed;
@@ -334,7 +431,7 @@ public class MainActivity extends Activity {
 
                     runOnUiThread(() ->
                         progressText.setText(
-                            "Printed: " + done
+                            "Sent: " + done
                             + " / " + total
                             + "    Remaining: " + remaining
                         )
@@ -352,6 +449,7 @@ public class MainActivity extends Activity {
             final int finalRemaining = total - completed;
             final boolean wasCancelled = cancelRequested;
             final boolean hadFailure = failed;
+            final boolean limitReached = barcodeLimitReached;
 
             printing = false;
 
@@ -365,19 +463,31 @@ public class MainActivity extends Activity {
                     );
 
                     progressText.setText(
-                        "Printed: " + finalCompleted
+                        "Sent: " + finalCompleted
                         + "    Not completed: " + finalRemaining
                     );
 
                     showMessage(
-                        "Printing failed. Check printer connection."
+                        "Printing stopped. Check printer connection."
+                    );
+
+                } else if (limitReached) {
+                    statusText.setText("Barcode limit reached");
+
+                    progressText.setText(
+                        "Sent: " + finalCompleted
+                        + "    Remaining: " + finalRemaining
+                    );
+
+                    showMessage(
+                        "6-digit barcode limit reached. Change the sequence to continue."
                     );
 
                 } else if (wasCancelled) {
                     statusText.setText("Printing cancelled");
 
                     progressText.setText(
-                        "Printed: " + finalCompleted
+                        "Sent: " + finalCompleted
                         + "    Remaining: " + finalRemaining
                     );
 
