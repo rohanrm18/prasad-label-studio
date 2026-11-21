@@ -529,7 +529,7 @@ function chooseTemplate(template){
 const DESIGN_DEFAULTS={brand:"PRASAD APPARELS",align:"left",font:"sans",offsetX:0,positions:{brand:{x:0,y:0},details:{x:0,y:0},size:{x:0,y:0},barcode:{x:0,y:0}},scales:{brand:1,details:1,size:1,barcode:1},border:"none",brandSize:18,textSize:14,sizeSize:34,barcodeHeight:48,padding:6,layout:"standard",showBrand:true,showStyle:true,showModel:true,showColour:true,showSize:true,showBarcode:true,notepadText:"",notepadLines:[]};
 function getDesignSettings(){
  const d={...DESIGN_DEFAULTS,positions:JSON.parse(JSON.stringify(DESIGN_DEFAULTS.positions))};
- try{const saved=JSON.parse(localStorage.getItem("prasadLabelDesign")||"{}");Object.assign(d,saved);d.positions={...DESIGN_DEFAULTS.positions,...(saved.positions||{})};d.scales={...DESIGN_DEFAULTS.scales,...(saved.scales||{})};}catch(e){}
+ try{const saved=JSON.parse(localStorage.getItem("prasadLabelDesign")||"{}");if(saved.textSize===13){saved.textSize=14;localStorage.setItem("prasadLabelDesign",JSON.stringify(saved));}Object.assign(d,saved);d.positions={...DESIGN_DEFAULTS.positions,...(saved.positions||{})};d.scales={...DESIGN_DEFAULTS.scales,...(saved.scales||{})};}catch(e){}
  const read=(id,fn)=>{const el=document.getElementById(id);if(el)return fn?fn(el):el.value;return undefined;};
  if(read("dBrand")!==undefined)d.brand=read("dBrand");
  ["border","font","align","layout"].forEach(k=>{if(read("d"+k[0].toUpperCase()+k.slice(1))!==undefined)d[k]=read("d"+k[0].toUpperCase()+k.slice(1));});
