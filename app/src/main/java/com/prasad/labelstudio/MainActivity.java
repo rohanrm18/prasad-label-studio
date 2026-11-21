@@ -735,8 +735,16 @@ public class MainActivity extends Activity {
         paint.setColor(Color.BLACK);
         boolean centered = true; // Automatic alignment: brand centered, details left, size right.
         float left = Math.max(4, Math.min(24, d.optInt("padding", 6) * 2));
+        String template = d.optString("template", "classic");
         String border = d.optString("border", "none");
-        if (!"none".equals(border)) {
+        if ("frame".equals(template)) {
+            paint.setStyle(Paint.Style.STROKE);
+            paint.setStrokeWidth(4f);
+            canvas.drawRect(5, 5, width - 6, height - 6, paint);
+            paint.setStrokeWidth(1.5f);
+            canvas.drawRect(11, 11, width - 12, height - 12, paint);
+            paint.setStyle(Paint.Style.FILL);
+        } else if (!"none".equals(border)) {
             paint.setStyle(Paint.Style.STROKE);
             paint.setStrokeWidth("double".equals(border) ? 3 : 2);
             canvas.drawRect(3, 3, width - 4, height - 4, paint);
@@ -753,9 +761,14 @@ public class MainActivity extends Activity {
         boolean stacked="stacked".equals(d.optString("layout","standard"));
         float y=26;
         if(showBrand && !brand.trim().isEmpty()){
-            paint.setTypeface(Typeface.create("sans-serif",Typeface.BOLD)); paint.setTextSize(brandSize);
+            paint.setTypeface(Typeface.create("frame".equals(template) ? "serif" : "sans-serif",Typeface.BOLD)); paint.setTextSize("frame".equals(template) ? brandSize+1 : brandSize);
             paint.setTextAlign(centered?Paint.Align.CENTER:Paint.Align.LEFT);
-            canvas.drawText(brand,centered?width/2f:left,y,paint); y+=brandSize+9;
+            canvas.drawText(brand,centered?width/2f:left,y,paint);
+            y+=brandSize+("frame".equals(template)?15:9);
+            if ("frame".equals(template)) {
+                paint.setStrokeWidth(1.5f);
+                canvas.drawLine(22, y-7, width-22, y-7, paint);
+            }
         }
         paint.setTypeface(Typeface.create("sans-serif",Typeface.NORMAL)); paint.setTextSize(textSize);
         paint.setTextAlign(Paint.Align.LEFT);
@@ -764,10 +777,24 @@ public class MainActivity extends Activity {
         if(showModel){canvas.drawText("MODEL: "+safe(job.model),x,y,paint);y+=gap;}
         if(showColour){canvas.drawText("COLOUR: "+safe(job.colour),x,y,paint);y+=gap;}
         if(showSize){
-            paint.setTypeface(Typeface.create("sans-serif",Typeface.BOLD)); paint.setTextSize(sizeSize);
-            paint.setTextAlign(Paint.Align.RIGHT);
-            canvas.drawText(stacked?"SIZE "+safe(job.size):safe(job.size),
-                width-left,stacked?Math.min(190,y+sizeSize):145,paint);
+            paint.setTypeface(Typeface.create("frame".equals(template) ? "serif" : "sans-serif",Typeface.BOLD)); paint.setTextSize("frame".equals(template) ? sizeSize+1 : sizeSize);
+            if ("frame".equals(template)) {
+                float boxW = 100f, boxH = 88f;
+                float boxLeft = width-left-boxW, boxTop = 86f;
+                paint.setStyle(Paint.Style.STROKE);
+                paint.setStrokeWidth(1.5f);
+                canvas.drawRoundRect(boxLeft, boxTop, boxLeft+boxW, boxTop+boxH, 5f, 5f, paint);
+                paint.setStyle(Paint.Style.FILL);
+                paint.setTextAlign(Paint.Align.CENTER);
+                paint.setTextSize(10f);
+                canvas.drawText("SIZE", boxLeft+boxW/2f, boxTop+18f, paint);
+                paint.setTextSize(sizeSize+1);
+                canvas.drawText(safe(job.size), boxLeft+boxW/2f, boxTop+65f, paint);
+            } else {
+                paint.setTextAlign(Paint.Align.RIGHT);
+                canvas.drawText(stacked?"SIZE "+safe(job.size):safe(job.size),
+                    width-left,stacked?Math.min(190,y+sizeSize):145,paint);
+            }
         }
         if(showBarcode && job.barcode!=null && !job.barcode.trim().isEmpty()){
             int top=Math.max(150,height-barcodeHeight-30), barcodeWidth=width-(int)(left*2);
