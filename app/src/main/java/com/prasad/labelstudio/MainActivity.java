@@ -202,7 +202,7 @@ public class MainActivity extends Activity {
             record.put("model", job.model == null ? "" : job.model);
             record.put("colour", job.colour == null ? "" : job.colour);
             record.put("size", job.size == null ? "" : job.size);
-            record.put("printedAt", java.time.Instant.now().toString());
+            record.put("printedAt", String.valueOf(System.currentTimeMillis()));
             String argument = JSONObject.quote(record.toString());
             runOnUiThread(() -> {
                 if (webView != null) webView.evaluateJavascript(
