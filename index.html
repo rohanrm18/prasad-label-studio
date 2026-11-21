@@ -163,7 +163,10 @@ button{border:0;border-radius:7px;padding:11px 14px;font-size:13px;font-weight:b
  .print-label{width:50mm;height:30mm;page-break-after:always;break-after:page;overflow:hidden}
  .print-label:last-child{page-break-after:auto;break-after:auto}
 }
-\n/* CLEAN MOBILE-FIRST WORKFLOW: templates first, preview immediately below */\nmain{display:flex;flex-direction:column;gap:0}\n.template-grid{grid-template-columns:repeat(2,minmax(0,1fr))}\n.template-option{min-height:72px;touch-action:manipulation}\n#previewWrap{display:flex;justify-content:center;align-items:flex-start;min-height:150px;overflow-x:auto;overscroll-behavior-x:contain}\n.label-preview{flex:0 0 50mm}\n@media(max-width:360px){.template-grid{grid-template-columns:1fr 1fr}.template-option{padding:10px 8px}}\n</style>
+\n/* CLEAN MOBILE-FIRST WORKFLOW: templates first, preview immediately below */\nmain{display:flex;flex-direction:column;gap:0}\n.template-grid{grid-template-columns:repeat(2,minmax(0,1fr))}\n.template-option{min-height:72px;touch-action:manipulation}\n#previewWrap{display:flex;justify-content:center;align-items:flex-start;min-height:150px;overflow-x:auto;overscroll-behavior-x:contain}\n.label-preview{flex:0 0 50mm}\n@media(max-width:360px){.template-grid{grid-template-columns:1fr 1fr}.template-option{padding:10px 8px}}\n.label-preview .manual-selected{outline:1px dashed #1677ff!important;outline-offset:2px;touch-action:none;cursor:move;position:relative}
+.label-preview .manual-selected:after{content:"";position:absolute;right:-4px;bottom:-4px;width:9px;height:9px;border:1px solid #1677ff;background:#fff;border-radius:2px;pointer-events:none}
+@media print{.manual-selected{outline:none!important}}
+</style>
 </head>
 
 <body>
@@ -271,6 +274,14 @@ button{border:0;border-radius:7px;padding:11px 14px;font-size:13px;font-weight:b
 <div><label>Brand size</label><input id="dBrandSize" type="range" min="12" max="30" value="18" oninput="designerChanged()"></div><div><label>Details size</label><input id="dTextSize" type="range" min="10" max="22" value="13" oninput="designerChanged()"></div>
 <div><label>Size number</label><input id="dSizeSize" type="range" min="20" max="48" value="34" oninput="designerChanged()"></div><div><label>Barcode height</label><input id="dBarcodeHeight" type="range" min="25" max="80" value="48" oninput="designerChanged()"></div>
 <div><label>Inner spacing</label><input id="dPadding" type="range" min="2" max="12" value="6" oninput="designerChanged()"></div><div><label>Font style</label><select id="dFont" onchange="designerChanged()"><option value="sans">Modern Sans</option><option value="serif">Classic Serif</option><option value="bold">Bold Retail</option></select></div><div><label>Details alignment</label><select id="dAlign" onchange="designerChanged()"><option value="left">Left</option><option value="center">Center</option><option value="right">Right</option></select></div><div><label>Horizontal position (details)</label><input id="dOffsetX" type="range" min="-20" max="20" value="0" oninput="designerChanged()"></div><div><label>Move selected item</label><select id="dMoveTarget" onchange="loadMoveControls()"><option value="brand">Brand name</option><option value="details">Style / Model / Colour</option><option value="size">Size</option><option value="barcode">Barcode</option></select></div><div><label>Move left / right (mm)</label><input id="dMoveX" type="range" min="-10" max="10" value="0" oninput="moveSelectedItem()"></div><div><label>Move up / down (mm)</label><input id="dMoveY" type="range" min="-10" max="10" value="0" oninput="moveSelectedItem()"></div><div><label>Layout</label><select id="dLayout" onchange="designerChanged()"><option value="standard">Details + large size</option><option value="stacked">Stacked details</option></select></div></div>
+<div class="auto-box" style="margin-top:14px">
+<strong>MANUAL CANVAS EDITOR</strong>
+<p class="muted">Tap an item on the preview, then drag it with your finger. Use the size control to resize it.</p>
+<label>Selected item</label><select id="dCanvasTarget" onchange="loadCanvasControls()"><option value="brand">Brand</option><option value="details">Style / Model / Colour</option><option value="size">Size</option><option value="barcode">Barcode</option></select>
+<label>Item scale</label><input id="dCanvasScale" type="range" min="0.5" max="1.8" step="0.05" value="1" oninput="changeCanvasScale()">
+<div class="buttons"><button type="button" class="secondary" onclick="resetCanvasSelection()">RESET SELECTED ITEM</button></div>
+<div id="canvasEditorStatus" class="muted">Select an item in the label preview to begin.</div>
+</div>
 <label>Show on label</label><div class="grid2">
 <label><input id="dShowBrand" type="checkbox" checked onchange="designerChanged()"> Brand</label><label><input id="dShowStyle" type="checkbox" checked onchange="designerChanged()"> Style</label>
 <label><input id="dShowModel" type="checkbox" checked onchange="designerChanged()"> Model</label><label><input id="dShowColour" type="checkbox" checked onchange="designerChanged()"> Colour</label>
@@ -520,17 +531,17 @@ function chooseTemplate(template){
 
 /* PRODUCT DATA */
 
-const DESIGN_DEFAULTS={brand:"PRASAD APPARELS",align:"left",font:"sans",offsetX:0,positions:{brand:{x:0,y:0},details:{x:0,y:0},size:{x:0,y:0},barcode:{x:0,y:0}},border:"none",brandSize:18,textSize:13,sizeSize:34,barcodeHeight:48,padding:6,layout:"standard",showBrand:true,showStyle:true,showModel:true,showColour:true,showSize:true,showBarcode:true};
+const DESIGN_DEFAULTS={brand:"PRASAD APPARELS",align:"left",font:"sans",offsetX:0,positions:{brand:{x:0,y:0},details:{x:0,y:0},size:{x:0,y:0},barcode:{x:0,y:0}},scales:{brand:1,details:1,size:1,barcode:1},border:"none",brandSize:18,textSize:13,sizeSize:34,barcodeHeight:48,padding:6,layout:"standard",showBrand:true,showStyle:true,showModel:true,showColour:true,showSize:true,showBarcode:true};
 function getDesignSettings(){
  const d={...DESIGN_DEFAULTS,positions:JSON.parse(JSON.stringify(DESIGN_DEFAULTS.positions))};
- try{const saved=JSON.parse(localStorage.getItem("prasadLabelDesign")||"{}");Object.assign(d,saved);d.positions={...DESIGN_DEFAULTS.positions,...(saved.positions||{})};}catch(e){}
+ try{const saved=JSON.parse(localStorage.getItem("prasadLabelDesign")||"{}");Object.assign(d,saved);d.positions={...DESIGN_DEFAULTS.positions,...(saved.positions||{})};d.scales={...DESIGN_DEFAULTS.scales,...(saved.scales||{})};}catch(e){}
  const read=(id,fn)=>{const el=document.getElementById(id);if(el)return fn?fn(el):el.value;return undefined;};
  if(read("dBrand")!==undefined)d.brand=read("dBrand");
  ["border","font","align","layout"].forEach(k=>{if(read("d"+k[0].toUpperCase()+k.slice(1))!==undefined)d[k]=read("d"+k[0].toUpperCase()+k.slice(1));});
  if(read("dOffsetX")!==undefined)d.offsetX=+read("dOffsetX");
  ["brandSize","textSize","sizeSize","barcodeHeight","padding"].forEach(k=>{const v=read("d"+k[0].toUpperCase()+k.slice(1));if(v!==undefined)d[k]=+v;});
  ["showBrand","showStyle","showModel","showColour","showSize","showBarcode"].forEach(k=>{const v=read("d"+k[0].toUpperCase()+k.slice(1),e=>e.checked);if(v!==undefined)d[k]=v;});
- d.template=selectedTemplate;return d;
+ d.scales={...DESIGN_DEFAULTS.scales,...(d.scales||{})};d.template=selectedTemplate;return d;
 }
 function loadMoveControls(){
  const d=getDesignSettings(),target=document.getElementById("dMoveTarget").value,pos=d.positions[target]||{x:0,y:0};
@@ -566,7 +577,7 @@ function escapeHTML(value){
 
 function labelHTML(size,barcodeOverride){
  const p=productData(),barcode=barcodeOverride!==undefined?barcodeOverride:getBarcodeForPreview(),d=getDesignSettings();
- const pos=(key)=>{const v=d.positions?.[key]||{x:0,y:0};return `transform:translate(${+v.x||0}mm,${+v.y||0}mm)`;};
+ const pos=(key)=>{const v=d.positions?.[key]||{x:0,y:0},sc=d.scales?.[key]||1;return `transform:translate(${+v.x||0}mm,${+v.y||0}mm) scale(${sc})`;} ;
  const barcodeMarkup=barcode&&d.showBarcode?`<div class="barcode-area" style="${pos("barcode")}"><svg class="barcode" data-barcode="${escapeHTML(barcode)}"></svg><div class="barcode-number">${escapeHTML(barcode)}</div></div>`:"";
  const lines=[d.showStyle?`<div class="detail-line"><b>STYLE:</b> ${escapeHTML(p.style||"-")}</div>`:"",d.showModel?`<div class="detail-line"><b>MODEL:</b> ${escapeHTML(p.model)}</div>`:"",d.showColour?`<div class="detail-line"><b>COLOUR:</b> ${escapeHTML(p.colour||"-")}</div>`:""].filter(Boolean).join("");
  return `
@@ -574,7 +585,7 @@ function labelHTML(size,barcodeOverride){
   ${d.showBrand?`<div class="brand">${escapeHTML(d.brand)}</div>`:""}
  </div>
  <div class="label-info" style="padding:${d.padding/10}mm 0;flex-direction:${d.layout==="stacked"?"column":"row"};align-items:${d.layout==="stacked"?"flex-start":"center"}">
-  <div class="details" style="text-align:var(--designer-align);transform:translate(${+d.positions.details.x||0}mm,${+d.positions.details.y||0}mm) translateX(var(--designer-offset-x,0px))">${lines}</div>
+  <div class="details" style="text-align:var(--designer-align);transform:translate(${+d.positions.details.x||0}mm,${+d.positions.details.y||0}mm) scale(${d.scales.details||1}) translateX(var(--designer-offset-x,0px))">${lines}</div>
   ${d.showSize?`<div class="size-box" style="${pos("size")}"><div class="size-caption">SIZE</div><div class="size-value">${escapeHTML(size)}</div></div>`:""}
  </div>
  ${barcodeMarkup}
@@ -606,6 +617,13 @@ function renderBarcode(container){
  });
 }
 
+let canvasSelected="brand",canvasDrag=null;
+function canvasNode(key){const preview=document.getElementById("previewLabel");return ({brand:preview.querySelector(".label-top"),details:preview.querySelector(".details"),size:preview.querySelector(".size-box"),barcode:preview.querySelector(".barcode-area")})[key];}
+function loadCanvasControls(){const d=getDesignSettings();canvasSelected=document.getElementById("dCanvasTarget").value;document.getElementById("dCanvasScale").value=d.scales?.[canvasSelected]||1;document.getElementById("canvasEditorStatus").textContent="Selected: "+canvasSelected+". Drag it directly on the preview.";}
+function changeCanvasScale(){const d=getDesignSettings();d.scales=d.scales||{...DESIGN_DEFAULTS.scales};d.scales[canvasSelected]=+document.getElementById("dCanvasScale").value;localStorage.setItem("prasadLabelDesign",JSON.stringify(d));updatePreview();selectCanvasItem(canvasSelected);}
+function resetCanvasSelection(){const d=getDesignSettings();d.positions[canvasSelected]={x:0,y:0};d.scales[canvasSelected]=1;localStorage.setItem("prasadLabelDesign",JSON.stringify(d));updatePreview();selectCanvasItem(canvasSelected);loadCanvasControls();}
+function selectCanvasItem(key){const preview=document.getElementById("previewLabel");preview.querySelectorAll(".manual-selected").forEach(n=>n.classList.remove("manual-selected"));const node=canvasNode(key);if(!node)return;canvasSelected=key;document.getElementById("dCanvasTarget").value=key;node.classList.add("manual-selected");loadCanvasControls();}
+function enableCanvasEditing(){const preview=document.getElementById("previewLabel");preview.querySelectorAll(".label-top,.details,.size-box,.barcode-area").forEach(node=>{node.onpointerdown=(ev)=>{const key=node.classList.contains("label-top")?"brand":node.classList.contains("details")?"details":node.classList.contains("size-box")?"size":"barcode";ev.preventDefault();selectCanvasItem(key);const d=getDesignSettings(),p=d.positions[key]||{x:0,y:0};canvasDrag={key,startX:ev.clientX,startY:ev.clientY,x:+p.x||0,y:+p.y||0};node.setPointerCapture(ev.pointerId);};node.onpointermove=(ev)=>{if(!canvasDrag||canvasDrag.key!==(node.classList.contains("label-top")?"brand":node.classList.contains("details")?"details":node.classList.contains("size-box")?"size":"barcode"))return;const rect=preview.getBoundingClientRect(),mmX=(ev.clientX-canvasDrag.startX)/rect.width*50,mmY=(ev.clientY-canvasDrag.startY)/rect.height*30,d=getDesignSettings();d.positions[canvasDrag.key]={x:Math.max(-20,Math.min(20,canvasDrag.x+mmX)),y:Math.max(-12,Math.min(12,canvasDrag.y+mmY))};localStorage.setItem("prasadLabelDesign",JSON.stringify(d));const pos=d.positions[canvasDrag.key],sc=d.scales?.[canvasDrag.key]||1;node.style.transform="translate("+pos.x+"mm,"+pos.y+"mm) scale("+sc+")";};node.onpointerup=()=>{if(canvasDrag){canvasDrag=null;updatePreview();selectCanvasItem(canvasSelected);}};node.onpointercancel=()=>{canvasDrag=null;};});}
 function updatePreview(){
  const size=document.getElementById("previewSize").value||"0";
  const preview=document.getElementById("previewLabel");
@@ -630,6 +648,7 @@ function updatePreview(){
  const selected=document.getElementById("dMoveTarget");if(selected)loadMoveControls();
 
  renderBarcode(preview);
+ enableCanvasEditing();
 }
 
 /* SAVE PRODUCT */
