@@ -12,6 +12,12 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.SharedPreferences;
+import android.content.ContentValues;
+import android.net.Uri;
+import android.os.Environment;
+import android.provider.MediaStore;
+import java.io.File;
+import java.io.FileOutputStream;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -214,6 +220,35 @@ public class MainActivity extends Activity {
     // ANDROID JAVASCRIPT BRIDGE
 
     private class PrinterBridge {
+
+        @JavascriptInterface
+        public void saveBarcodeHistory(String json) {
+            try {
+                String filename = "prasad-barcode-history.json";
+                if (Build.VERSION.SDK_INT >= 29) {
+                    ContentValues values = new ContentValues();
+                    values.put(MediaStore.Downloads.DISPLAY_NAME, filename);
+                    values.put(MediaStore.Downloads.MIME_TYPE, "application/json");
+                    values.put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS);
+                    Uri uri = getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
+                    if (uri == null) throw new Exception("Could not create download file");
+                    try (java.io.OutputStream out = getContentResolver().openOutputStream(uri)) {
+                        if (out == null) throw new Exception("Could not open download file");
+                        out.write(json.getBytes(StandardCharsets.UTF_8));
+                    }
+                } else {
+                    File dir = getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS);
+                    if (dir == null) throw new Exception("Downloads folder unavailable");
+                    File file = new File(dir, filename);
+                    try (FileOutputStream out = new FileOutputStream(file)) {
+                        out.write(json.getBytes(StandardCharsets.UTF_8));
+                    }
+                }
+                runOnUiThread(() -> showMessage("Barcode history saved to Downloads"));
+            } catch (Exception e) {
+                runOnUiThread(() -> showMessage("Could not save barcode history"));
+            }
+        }
 
         @JavascriptInterface
         public String getNextBarcodeNumber() {
