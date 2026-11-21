@@ -733,7 +733,7 @@ public class MainActivity extends Activity {
         JSONObject d = job.design == null ? new JSONObject() : job.design;
         Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         paint.setColor(Color.BLACK);
-        boolean centered = "center".equals(d.optString("align", "left"));
+        boolean centered = true; // Automatic alignment: brand centered, details left, size right.
         float left = Math.max(4, Math.min(24, d.optInt("padding", 6) * 2));
         String border = d.optString("border", "none");
         if (!"none".equals(border)) {
@@ -758,16 +758,16 @@ public class MainActivity extends Activity {
             canvas.drawText(brand,centered?width/2f:left,y,paint); y+=brandSize+9;
         }
         paint.setTypeface(Typeface.create("sans-serif",Typeface.NORMAL)); paint.setTextSize(textSize);
-        paint.setTextAlign(centered?Paint.Align.CENTER:Paint.Align.LEFT);
-        float x=centered?width/2f:left, gap=textSize+8;
+        paint.setTextAlign(Paint.Align.LEFT);
+        float x=left, gap=textSize+8;
         if(showStyle){canvas.drawText("STYLE: "+safe(job.style),x,y,paint);y+=gap;}
         if(showModel){canvas.drawText("MODEL: "+safe(job.model),x,y,paint);y+=gap;}
         if(showColour){canvas.drawText("COLOUR: "+safe(job.colour),x,y,paint);y+=gap;}
         if(showSize){
             paint.setTypeface(Typeface.create("sans-serif",Typeface.BOLD)); paint.setTextSize(sizeSize);
-            paint.setTextAlign(centered||stacked?Paint.Align.CENTER:Paint.Align.RIGHT);
+            paint.setTextAlign(Paint.Align.RIGHT);
             canvas.drawText(stacked?"SIZE "+safe(job.size):safe(job.size),
-                centered||stacked?width/2f:width-left,stacked?Math.min(190,y+sizeSize):145,paint);
+                width-left,stacked?Math.min(190,y+sizeSize):145,paint);
         }
         if(showBarcode && job.barcode!=null && !job.barcode.trim().isEmpty()){
             int top=Math.max(150,height-barcodeHeight-30), barcodeWidth=width-(int)(left*2);
