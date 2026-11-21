@@ -80,9 +80,10 @@ public class MainActivity extends Activity {
         String size;
         String barcode;
         boolean autoBarcode;
+        JSONObject design;
 
         LabelJob(String style, String model, String colour,
-                 String size, String barcode, boolean autoBarcode) {
+                 String size, String barcode, boolean autoBarcode, JSONObject design) {
 
             this.style = style;
             this.model = model;
@@ -90,6 +91,7 @@ public class MainActivity extends Activity {
             this.size = size;
             this.barcode = barcode;
             this.autoBarcode = autoBarcode;
+            this.design = design == null ? new JSONObject() : design;
         }
     }
 
@@ -266,7 +268,8 @@ public class MainActivity extends Activity {
                     data.optString("colour"),
                     data.optString("size"),
                     data.optString("barcode"),
-                    data.optBoolean("autoBarcode", false)
+                    data.optBoolean("autoBarcode", false),
+                    data.optJSONObject("design")
                 );
 
                 runOnUiThread(() -> {
@@ -302,6 +305,7 @@ public class MainActivity extends Activity {
 
                 boolean autoBarcode =
                     data.optBoolean("autoBarcode", false);
+                JSONObject design = data.optJSONObject("design");
 
                 JSONArray items = data.getJSONArray("items");
 
@@ -325,7 +329,7 @@ public class MainActivity extends Activity {
                     for (int j = 0; j < quantity; j++) {
                         jobs.add(new LabelJob(
                             style, model, colour, size,
-                            barcode, autoBarcode
+                            barcode, autoBarcode, design
                         ));
                     }
                 }
