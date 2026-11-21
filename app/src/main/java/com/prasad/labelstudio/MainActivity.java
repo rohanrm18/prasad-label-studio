@@ -797,13 +797,34 @@ public class MainActivity extends Activity {
             }
         }
         if(showBarcode && job.barcode!=null && !job.barcode.trim().isEmpty()){
-            int top=Math.max(150,height-barcodeHeight-30), barcodeWidth=width-(int)(left*2);
-            BitMatrix matrix=new MultiFormatWriter().encode(job.barcode.trim(),BarcodeFormat.CODE_128,barcodeWidth,barcodeHeight);
+            // Keep barcode and its human-readable number inside the 50 x 30 mm print area.
+            // A narrower centered symbol preserves quiet zones and avoids edge clipping.
+            int safeBarcodeHeight = Math.max(25, Math.min(36, barcodeHeight));
+            int barcodeWidth = 320;
+            int barcodeLeft = (width - barcodeWidth) / 2;
+            int barcodeTop = 174;
+            BitMatrix matrix = new MultiFormatWriter().encode(
+                job.barcode.trim(), BarcodeFormat.CODE_128,
+                barcodeWidth, safeBarcodeHeight
+            );
             paint.setColor(Color.BLACK);
-            for(int bx=0;bx<matrix.getWidth();bx++) for(int by=0;by<matrix.getHeight();by++)
-                if(matrix.get(bx,by)) canvas.drawRect(left+bx,top+by,left+bx+1,top+by+1,paint);
-            paint.setTextAlign(Paint.Align.CENTER); paint.setTypeface(Typeface.create("sans-serif",Typeface.NORMAL));
-            paint.setTextSize(12); canvas.drawText(job.barcode.trim(),width/2f,height-5,paint);
+            paint.setStyle(Paint.Style.FILL);
+            for(int bx=0;bx<matrix.getWidth();bx++) {
+                for(int by=0;by<matrix.getHeight();by++) {
+                    if(matrix.get(bx,by)) {
+                        canvas.drawRect(
+                            barcodeLeft+bx, barcodeTop+by,
+                            barcodeLeft+bx+1, barcodeTop+by+1, paint
+                        );
+                    }
+                }
+            }
+            // Print the exact barcode digits clearly below the bars, not on the paper edge.
+            paint.setColor(Color.BLACK);
+            paint.setTextAlign(Paint.Align.CENTER);
+            paint.setTypeface(Typeface.create("sans-serif",Typeface.BOLD));
+            paint.setTextSize(16);
+            canvas.drawText(job.barcode.trim(), width/2f, 230, paint);
         }
         int bytesPerRow=(width+7)/8; byte[] raster=new byte[bytesPerRow*height];
         for(int py=0;py<height;py++) for(int px=0;px<width;px++)
