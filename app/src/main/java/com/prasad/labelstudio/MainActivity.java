@@ -194,6 +194,23 @@ public class MainActivity extends Activity {
         });
     }
 
+    private void notifyWebLabelPrinted(LabelJob job) {
+        try {
+            JSONObject record = new JSONObject();
+            record.put("barcode", job.barcode == null ? "" : job.barcode);
+            record.put("style", job.style == null ? "" : job.style);
+            record.put("model", job.model == null ? "" : job.model);
+            record.put("colour", job.colour == null ? "" : job.colour);
+            record.put("size", job.size == null ? "" : job.size);
+            record.put("printedAt", java.time.Instant.now().toString());
+            String argument = JSONObject.quote(record.toString());
+            runOnUiThread(() -> {
+                if (webView != null) webView.evaluateJavascript(
+                    "if(window.onAndroidLabelPrinted){window.onAndroidLabelPrinted(" + argument + ");}", null);
+            });
+        } catch (Exception ignored) { }
+    }
+
     // ANDROID JAVASCRIPT BRIDGE
 
     private class PrinterBridge {
@@ -423,6 +440,7 @@ public class MainActivity extends Activity {
                     }
 
                     printOneLabel(job);
+                    notifyWebLabelPrinted(job);
 
                     if (job.autoBarcode) {
                         if (!advanceBarcodeNumber()) {
