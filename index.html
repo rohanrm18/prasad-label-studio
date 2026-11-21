@@ -45,7 +45,7 @@ button{border:0;border-radius:7px;padding:11px 14px;font-size:13px;font-weight:b
 .label-top{display:flex;justify-content:center;align-items:center;text-align:center}
 .brand{font-size:var(--designer-brand-size);font-weight:900;letter-spacing:.2px;white-space:nowrap;text-align:center;width:100%}
 .label-info{display:flex;justify-content:space-between;align-items:center;flex:1;min-height:0}
-.details{min-width:0;flex:1}
+.details{min-width:0;flex:1}.details{transform:translateX(var(--designer-offset-x,0px))}
 .detail-line{font-size:var(--designer-text-size);line-height:1.35;white-space:nowrap;overflow:hidden;text-align:var(--designer-align)}
 .detail-line b{font-weight:800}
 .size-box{min-width:12mm;text-align:center;display:flex;flex-direction:column;justify-content:center;align-items:center}
@@ -596,6 +596,8 @@ function updatePreview(){
  preview.style.setProperty("--designer-barcode-height",(d.barcodeHeight/6)+"mm");
  preview.style.setProperty("--designer-font",d.font==="serif"?"Georgia,serif":"Arial,sans-serif");
  preview.style.setProperty("--designer-align",d.align||"left");
+ preview.style.fontFamily=d.font==="serif"?"Georgia,serif":"Arial,sans-serif";
+ preview.style.setProperty("--designer-offset-x",(d.offsetX||0)+"px");
  // Let each selected template control its own padding and border.
  // Only apply a designer border when the user explicitly chooses one.
  preview.style.removeProperty("padding");
