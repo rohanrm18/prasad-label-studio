@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#111111">
 <title>Prasad Label Studio</title>
-
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
 
 <style>
@@ -19,6 +18,7 @@ main{max-width:850px;margin:auto;padding:14px}
 h2{font-size:16px;margin:0 0 14px}
 label{display:block;font-size:12px;font-weight:bold;margin:10px 0 5px}
 input,select{width:100%;padding:11px;border:1px solid #ccc;border-radius:7px;font-size:15px;background:white}
+input:disabled{background:#eee;color:#555}
 button{border:0;border-radius:7px;padding:11px 14px;font-size:13px;font-weight:bold;cursor:pointer}
 .primary{background:#111;color:white}
 .secondary{background:#e9e9e9;color:#111}
@@ -36,13 +36,12 @@ button{border:0;border-radius:7px;padding:11px 14px;font-size:13px;font-weight:b
 .template-option.active{border:2px solid #111;background:#f4f4f4}
 .template-option strong{display:block;font-size:13px;margin-bottom:4px}
 .template-option small{font-size:11px;color:#666}
+.auto-box{border:1px solid #ddd;border-radius:9px;padding:13px;margin-top:12px;background:#fafafa}
+.auto-toggle{display:flex;align-items:center;gap:10px;font-weight:bold;font-size:14px}
+.auto-toggle input{width:20px;height:20px;margin:0}
+.auto-number{font-size:22px;font-weight:bold;letter-spacing:2px;margin-top:8px}
 #previewWrap{overflow:auto;background:#eee;padding:14px;border-radius:8px}
-.label-preview{
- width:50mm;height:30mm;background:white;color:#111;
- position:relative;overflow:hidden;padding:1.8mm;
- display:flex;flex-direction:column;
- font-family:Arial,sans-serif;
-}
+.label-preview{width:50mm;height:30mm;background:white;color:#111;position:relative;overflow:hidden;padding:1.8mm;display:flex;flex-direction:column;font-family:Arial,sans-serif}
 .label-top{display:flex;justify-content:center;align-items:center;text-align:center}
 .brand{font-size:9pt;font-weight:900;letter-spacing:.35px;white-space:nowrap}
 .label-info{display:flex;justify-content:space-between;align-items:center;flex:1;min-height:0}
@@ -101,7 +100,6 @@ button{border:0;border-radius:7px;padding:11px 14px;font-size:13px;font-weight:b
  .grid2{grid-template-columns:1fr}
  .size-grid{grid-template-columns:repeat(4,1fr)}
 }
-
 @media print{
  @page{size:50mm 30mm;margin:0}
  html,body{margin:0!important;padding:0!important;width:50mm!important;background:white!important}
@@ -153,8 +151,22 @@ button{border:0;border-radius:7px;padding:11px 14px;font-size:13px;font-weight:b
 <label>Colour</label>
 <input id="colour" placeholder="Example: White">
 
-<label>Barcode Number</label>
-<input id="barcodeNumber" placeholder="Example: 80508050" inputmode="numeric">
+<div class="auto-box">
+ <label class="auto-toggle">
+  <input type="checkbox" id="autoBarcode" onchange="barcodeModeChanged()">
+  AUTO BARCODE NUMBER
+ </label>
+
+ <p class="muted">ON: Automatically generate a different 6-digit barcode for every sticker. OFF: Enter your own barcode number.</p>
+
+ <div id="nextNumberArea">
+  <div class="muted">NEXT BARCODE NUMBER</div>
+  <div class="auto-number" id="nextBarcodeDisplay">000001</div>
+ </div>
+</div>
+
+<label>Manual Barcode Number</label>
+<input id="barcodeNumber" placeholder="Enter your barcode number" inputmode="numeric">
 
 <div class="buttons">
 <button class="primary" onclick="saveProduct()">SAVE PRODUCT</button>
@@ -166,27 +178,18 @@ button{border:0;border-radius:7px;padding:11px 14px;font-size:13px;font-weight:b
 <section class="panel">
 <h2>2. Choose Label Design</h2>
 <div class="template-grid">
-
 <button class="template-option active" data-template="classic" onclick="chooseTemplate('classic')">
-<strong>1. Premium Classic</strong>
-<small>Clean professional design</small>
+<strong>1. Premium Classic</strong><small>Clean professional design</small>
 </button>
-
 <button class="template-option" data-template="luxury" onclick="chooseTemplate('luxury')">
-<strong>2. Luxury Gold</strong>
-<small>Elegant double border</small>
+<strong>2. Luxury Gold</strong><small>Elegant double border</small>
 </button>
-
 <button class="template-option" data-template="retail" onclick="chooseTemplate('retail')">
-<strong>3. Retail Pro</strong>
-<small>Bold brand header</small>
+<strong>3. Retail Pro</strong><small>Bold brand header</small>
 </button>
-
 <button class="template-option" data-template="wholesale" onclick="chooseTemplate('wholesale')">
-<strong>4. Wholesale Pro</strong>
-<small>Structured product details</small>
+<strong>4. Wholesale Pro</strong><small>Structured product details</small>
 </button>
-
 </div>
 </section>
 
@@ -209,7 +212,6 @@ button{border:0;border-radius:7px;padding:11px 14px;font-size:13px;font-weight:b
 <button class="secondary" onclick="setQuick(15)">15</button>
 </div>
 </div>
-
 <div>
 <label>Custom quantity per selected size</label>
 <input type="number" id="customQty" min="1" value="10">
@@ -225,11 +227,9 @@ button{border:0;border-radius:7px;padding:11px 14px;font-size:13px;font-weight:b
 <h2>4. Label Preview</h2>
 <label>Preview Size</label>
 <select id="previewSize" onchange="updatePreview()"></select>
-
 <div id="previewWrap" style="margin-top:12px">
 <div id="previewLabel" class="label-preview classic"></div>
 </div>
-
 <p class="muted">Actual label size: 50 × 30 mm. Printer printable width: 48 mm.</p>
 </section>
 
@@ -240,34 +240,17 @@ button{border:0;border-radius:7px;padding:11px 14px;font-size:13px;font-weight:b
 
 <section class="panel">
 <h2>6. Print Labels</h2>
+<p class="muted">Connect your P58D printer using the CONNECT P58D PRINTER button above.</p>
 
-<p class="muted">
-Connect your P58D printer using the CONNECT P58D PRINTER button above.
-</p>
+<button class="primary" style="width:100%;padding:15px" onclick="printBluetoothLabel()">PRINT ONE LABEL</button>
 
-<button class="primary" style="width:100%;padding:15px"
-onclick="printBluetoothLabel()">
-PRINT ONE LABEL
-</button>
+<button class="primary" style="width:100%;padding:15px;margin-top:10px" onclick="printBulkBluetoothLabels()">PRINT BULK LABELS</button>
 
-<button class="primary" style="width:100%;padding:15px;margin-top:10px"
-onclick="printBulkBluetoothLabels()">
-PRINT BULK LABELS
-</button>
+<p class="muted">Bulk printing requires two confirmations before printing starts. You can cancel remaining labels while printing.</p>
 
-<p class="muted">
-Bulk printing requires two confirmations before printing starts.
-You can cancel remaining labels while printing.
-</p>
+<button class="secondary" style="width:100%;padding:15px;margin-top:10px" onclick="printLabels()">BROWSER PRINT</button>
 
-<button class="secondary" style="width:100%;padding:15px;margin-top:10px"
-onclick="printLabels()">
-BROWSER PRINT
-</button>
-
-<p class="muted">
-Browser printing uses your phone's print dialog. Select 50 × 30 mm paper if available and set scale to 100%.
-</p>
+<p class="muted">Browser printing uses your phone's print dialog. Select 50 × 30 mm paper if available and set scale to 100%.</p>
 </section>
 
 </main>
@@ -280,8 +263,78 @@ const sizes=["0","1","2","3","4","5","6","7","8","9","10","12","13"];
 
 let selectedTemplate="classic";
 let quantities={};
+let androidBarcodeAvailable=false;
+let currentNextBarcode=1;
 
 sizes.forEach(s=>quantities[s]=0);
+
+/* BARCODE NUMBER SETTINGS */
+
+function formatBarcode(number){
+ return String(number).padStart(6,"0");
+}
+
+function getAutoBarcode(){
+ if(window.AndroidPrinter){
+  try{
+   const value=AndroidPrinter.getNextBarcodeNumber();
+   if(value && value!=="LIMIT"){
+    currentNextBarcode=parseInt(value,10)||1;
+    androidBarcodeAvailable=true;
+    return value;
+   }
+  }catch(e){}
+ }
+
+ return formatBarcode(currentNextBarcode);
+}
+
+function refreshBarcodeDisplay(){
+ const value=getAutoBarcode();
+
+ document.getElementById("nextBarcodeDisplay").textContent=value;
+
+ updatePreview();
+}
+
+function barcodeModeChanged(){
+ const auto=document.getElementById("autoBarcode").checked;
+ const input=document.getElementById("barcodeNumber");
+
+ input.disabled=auto;
+ input.placeholder=auto?"Automatic numbering is ON":"Enter your barcode number";
+
+ document.getElementById("nextNumberArea").style.display=auto?"block":"none";
+
+ if(auto){
+  refreshBarcodeDisplay();
+ }else{
+  updatePreview();
+ }
+}
+
+window.onAndroidBarcodeUpdated=function(next){
+ if(next==="LIMIT"){
+  document.getElementById("nextBarcodeDisplay").textContent="LIMIT";
+  return;
+ }
+
+ currentNextBarcode=parseInt(next,10)||1;
+ document.getElementById("nextBarcodeDisplay").textContent=next;
+
+ updatePreview();
+};
+
+function getBarcodeForPreview(){
+ if(document.getElementById("autoBarcode").checked){
+  return getAutoBarcode();
+ }
+
+ const p=productData();
+ return p.barcode||p.style||"000000";
+}
+
+/* SIZE GRID */
 
 function makeSizeGrid(){
  const grid=document.getElementById("sizeGrid");
@@ -316,24 +369,20 @@ function makeSizeGrid(){
 
 function toggleSize(size){
  const checked=document.getElementById("check-"+size).checked;
-
  document.getElementById("item-"+size).classList.toggle("active",checked);
 
  if(!checked){
   quantities[size]=0;
   document.getElementById("qty-"+size).value=0;
  }
-
  updateTotal();
 }
 
 function changeQty(size){
  let qty=Math.max(0,parseInt(document.getElementById("qty-"+size).value)||0);
-
  quantities[size]=qty;
  document.getElementById("check-"+size).checked=qty>0;
  document.getElementById("item-"+size).classList.toggle("active",qty>0);
-
  updateTotal();
 }
 
@@ -347,7 +396,6 @@ function selectAllSizes(checked){
    document.getElementById("qty-"+size).value=0;
   }
  });
-
  updateTotal();
 }
 
@@ -358,7 +406,6 @@ function setQuick(qty){
    document.getElementById("qty-"+size).value=qty;
   }
  });
-
  updateTotal();
 }
 
@@ -382,6 +429,8 @@ function chooseTemplate(template){
  updatePreview();
 }
 
+/* PRODUCT DATA */
+
 function productData(){
  return {
   style:document.getElementById("style").value.trim(),
@@ -393,36 +442,31 @@ function productData(){
 
 function escapeHTML(value){
  return String(value).replace(/[&<>"']/g,c=>({
-  "&":"&amp;",
-  "<":"&lt;",
-  ">":"&gt;",
-  '"':"&quot;",
-  "'":"&#39;"
+  "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
  }[c]));
 }
 
-function labelHTML(size){
+/* LABEL DESIGN */
+
+function labelHTML(size,barcodeOverride){
  const p=productData();
- const barcode=p.barcode||p.style||"000000";
+ const barcode=barcodeOverride||getBarcodeForPreview();
 
  return `
  <div class="label-top">
   <div class="brand">PRASAD APPARELS</div>
  </div>
-
  <div class="label-info">
   <div class="details">
    <div class="detail-line"><b>STYLE:</b> ${escapeHTML(p.style||"-")}</div>
    <div class="detail-line"><b>MODEL:</b> ${escapeHTML(p.model)}</div>
    <div class="detail-line"><b>COLOUR:</b> ${escapeHTML(p.colour||"-")}</div>
   </div>
-
   <div class="size-box">
    <div class="size-caption">SIZE</div>
    <div class="size-value">${escapeHTML(size)}</div>
   </div>
  </div>
-
  <div class="barcode-area">
   <svg class="barcode" data-barcode="${escapeHTML(barcode)}"></svg>
   <div class="barcode-number">${escapeHTML(barcode)}</div>
@@ -476,13 +520,10 @@ function saveProduct(){
  }
 
  let products=JSON.parse(localStorage.getItem("prasadProducts")||"{}");
-
  products[p.style]=p;
-
  localStorage.setItem("prasadProducts",JSON.stringify(products));
 
  document.getElementById("status").textContent="Product saved successfully.";
-
  showSavedProducts();
 }
 
@@ -500,7 +541,6 @@ function showSavedProducts(){
 
  keys.forEach(key=>{
   const p=products[key];
-
   const row=document.createElement("div");
   row.className="saved-row";
 
@@ -523,7 +563,6 @@ function showSavedProducts(){
 
   actions.append(load,del);
   row.append(info,actions);
-
   box.appendChild(row);
  });
 }
@@ -531,7 +570,6 @@ function showSavedProducts(){
 function loadProduct(key){
  const products=JSON.parse(localStorage.getItem("prasadProducts")||"{}");
  const p=products[key];
-
  if(!p)return;
 
  document.getElementById("style").value=p.style||"";
@@ -540,9 +578,7 @@ function loadProduct(key){
  document.getElementById("barcodeNumber").value=p.barcode||"";
 
  updatePreview();
-
  document.getElementById("status").textContent="Product loaded.";
-
  window.scrollTo({top:0,behavior:"smooth"});
 }
 
@@ -550,11 +586,8 @@ function deleteProduct(key){
  if(!confirm("Delete product "+key+"?"))return;
 
  const products=JSON.parse(localStorage.getItem("prasadProducts")||"{}");
-
  delete products[key];
-
  localStorage.setItem("prasadProducts",JSON.stringify(products));
-
  showSavedProducts();
 }
 
@@ -564,73 +597,71 @@ function clearProduct(){
  document.getElementById("barcodeNumber").value="";
  document.getElementById("model").selectedIndex=0;
  document.getElementById("status").textContent="";
-
  updatePreview();
 }
 
-/* ANDROID SINGLE LABEL PRINTING */
+/* PRINT VALIDATION */
 
-function printBluetoothLabel(){
-
+function validatePrintProduct(){
  const p=productData();
 
  if(!p.style){
   alert("Please enter Style Number.");
-  return;
+  return false;
  }
 
- if(!p.barcode){
-  alert("Please enter Barcode Number.");
-  return;
+ const auto=document.getElementById("autoBarcode").checked;
+
+ if(!auto&&!p.barcode){
+  alert("Please enter Barcode Number or switch ON Auto Barcode.");
+  return false;
  }
+
+ return true;
+}
+
+/* ANDROID SINGLE LABEL */
+
+function printBluetoothLabel(){
+ if(!validatePrintProduct())return;
 
  if(!window.AndroidPrinter){
   alert("Please open Prasad Label Studio Android app to print.");
   return;
  }
 
+ const p=productData();
  const size=document.getElementById("previewSize").value;
+ const auto=document.getElementById("autoBarcode").checked;
 
  AndroidPrinter.printSingle(JSON.stringify({
   style:p.style,
   model:p.model,
   colour:p.colour,
   size:size,
-  barcode:p.barcode
+  barcode:auto?"":p.barcode,
+  autoBarcode:auto
  }));
 }
 
-/* ANDROID BULK LABEL PRINTING */
+/* ANDROID BULK LABELS */
 
 function printBulkBluetoothLabels(){
-
- const p=productData();
-
- if(!p.style){
-  alert("Please enter Style Number.");
-  return;
- }
-
- if(!p.barcode){
-  alert("Please enter Barcode Number.");
-  return;
- }
+ if(!validatePrintProduct())return;
 
  if(!window.AndroidPrinter){
   alert("Please open Prasad Label Studio Android app to print.");
   return;
  }
 
+ const p=productData();
+ const auto=document.getElementById("autoBarcode").checked;
  const items=[];
 
  sizes.forEach(size=>{
   const quantity=quantities[size]||0;
-
   if(quantity>0){
-   items.push({
-    size:size,
-    quantity:quantity
-   });
+   items.push({size:size,quantity:quantity});
   }
  });
 
@@ -643,21 +674,16 @@ function printBulkBluetoothLabels(){
   style:p.style,
   model:p.model,
   colour:p.colour,
-  barcode:p.barcode,
+  barcode:auto?"":p.barcode,
+  autoBarcode:auto,
   items:items
  }));
 }
 
-/* NORMAL BROWSER PRINTING - KEEP FOR IPHONE */
+/* BROWSER PRINTING */
 
 function printLabels(){
-
- const p=productData();
-
- if(!p.style){
-  alert("Please enter Style Number.");
-  return;
- }
+ if(!validatePrintProduct())return;
 
  const total=sizes.reduce((sum,s)=>sum+(quantities[s]||0),0);
 
@@ -667,24 +693,47 @@ function printLabels(){
  }
 
  const area=document.getElementById("printArea");
+ const auto=document.getElementById("autoBarcode").checked;
 
  area.innerHTML="";
  area.style.display="block";
 
+ let browserNext=parseInt(localStorage.getItem("prasadBrowserNextBarcode")||"1",10);
+ if(!Number.isFinite(browserNext)||browserNext<1)browserNext=1;
+
  sizes.forEach(size=>{
   for(let i=0;i<(quantities[size]||0);i++){
+
+   let barcode;
+
+   if(auto){
+    if(browserNext>999999){
+     alert("Six-digit barcode limit reached.");
+     area.innerHTML="";
+     area.style.display="none";
+     return;
+    }
+    barcode=formatBarcode(browserNext);
+    browserNext++;
+   }else{
+    barcode=productData().barcode||productData().style||"000000";
+   }
 
    const label=document.createElement("div");
    label.className="print-label";
 
    const inner=document.createElement("div");
    inner.className="label-preview "+selectedTemplate;
-   inner.innerHTML=labelHTML(size);
+   inner.innerHTML=labelHTML(size,barcode);
 
    label.appendChild(inner);
    area.appendChild(label);
   }
  });
+
+ if(auto){
+  localStorage.setItem("prasadBrowserNextBarcode",String(browserNext));
+ }
 
  renderBarcode(area);
 
@@ -695,7 +744,6 @@ function printLabels(){
  };
 
  window.addEventListener("afterprint",cleanup);
-
  setTimeout(()=>window.print(),500);
 }
 
@@ -703,7 +751,7 @@ function printLabels(){
 
 makeSizeGrid();
 showSavedProducts();
-updatePreview();
+barcodeModeChanged();
 
 </script>
 </body>
