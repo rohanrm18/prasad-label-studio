@@ -738,6 +738,8 @@ public class MainActivity extends Activity {
         int pad=Math.max(5,Math.min(30,d.optInt("padding",6)*2));
         int ox=Math.max(-40,Math.min(40,d.optInt("offsetX",0)*2));
         JSONObject positions=d.optJSONObject("positions");
+        JSONObject scales=d.optJSONObject("scales");
+        float brandScale=scaleValue(scales,"brand"), detailsScale=scaleValue(scales,"details"), sizeScale=scaleValue(scales,"size"), barcodeScale=scaleValue(scales,"barcode");
         JSONObject brandPos=positions==null?null:positions.optJSONObject("brand");
         JSONObject detailsPos=positions==null?null:positions.optJSONObject("details");
         JSONObject sizePos=positions==null?null:positions.optJSONObject("size");
@@ -789,7 +791,7 @@ public class MainActivity extends Activity {
         if(brand&&!name.trim().isEmpty()){
             p.setColor("retail".equals(t)?Color.WHITE:Color.BLACK);
             p.setTypeface(Typeface.create(family,Typeface.BOLD));
-            p.setTextSize("editorial".equals(t)?bs+2:("barcodefocus".equals(t)?bs-1:bs));
+            p.setTextSize(("editorial".equals(t)?bs+2:("barcodefocus".equals(t)?bs-1:bs))*brandScale);
             p.setTextAlign(brandLeft?Paint.Align.LEFT:Paint.Align.CENTER);
             c.drawText(name,(brandLeft?pad+("editorial".equals(t)?9:0):width/2f)+brandX,y+brandY,p);
             p.setColor(Color.BLACK);y+=bs+("retail".equals(t)?19:12);
@@ -801,7 +803,7 @@ public class MainActivity extends Activity {
         Paint.Align a="center".equals(align)?Paint.Align.CENTER:("right".equals(align)?Paint.Align.RIGHT:Paint.Align.LEFT);
         p.setTextAlign(a);
         float x=a==Paint.Align.CENTER?width/2f+ox:(a==Paint.Align.RIGHT?width-pad+ox:pad+ox);
-        float gap=ts+7, detailsBaseY=y+detailsYOffset, detailStep=0;
+        float gap=(ts+7)*detailsScale, detailsBaseY=y+detailsYOffset, detailStep=0;
         x+=detailsX;
         if(sty){c.drawText("STYLE: "+safe(job.style),x,detailsBaseY+detailStep,p);detailStep+=gap;}
         if(model){c.drawText("MODEL: "+safe(job.model),x,detailsBaseY+detailStep,p);detailStep+=gap;}
@@ -821,7 +823,7 @@ public class MainActivity extends Activity {
                     if("frame".equals(t)){p.setStyle(Paint.Style.STROKE);p.setStrokeWidth(2);c.drawRect(left,top,left+bw,top+bh2,p);p.setStyle(Paint.Style.FILL);}
                     else{c.drawRect(left,top,left+bw,top+bh2,p);p.setColor(Color.WHITE);}
                     p.setTextSize(10);c.drawText("SIZE",left+bw/2,top+14,p);
-                    p.setTextSize(ss);c.drawText(safe(job.size),left+bw/2,top+bh2-7,p);p.setColor(Color.BLACK);
+                    p.setTextSize(ss*sizeScale);c.drawText(safe(job.size),left+bw/2,top+bh2-7,p);p.setColor(Color.BLACK);
                 }else{p.setTextSize(Math.max(10,ss-4));c.drawText("SIZE  "+safe(job.size),width/2f+ox+sizeX,sy,p);}
             }else if(boxed){
                 float bw="sizefocus".equals(t)?126:105,bh2="sizefocus".equals(t)?72:62;
@@ -860,7 +862,7 @@ public class MainActivity extends Activity {
         out.write(raster);out.flush();
     }
 
-    private String safe(String value) {
+    private float scaleValue(JSONObject scales, String key) {\n        if (scales == null) return 1f;\n        return (float)Math.max(0.5, Math.min(1.8, scales.optDouble(key, 1.0)));\n    }\n\n    private String safe(String value) {
         return value == null ? "" : value;
     }
 
