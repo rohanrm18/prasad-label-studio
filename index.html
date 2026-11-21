@@ -164,7 +164,7 @@ button{border:0;border-radius:7px;padding:11px 14px;font-size:13px;font-weight:b
  .print-label:last-child{page-break-after:auto;break-after:auto}
 }
 \n/* CLEAN MOBILE-FIRST WORKFLOW: templates first, preview immediately below */\nmain{display:flex;flex-direction:column;gap:0}\n.template-grid{grid-template-columns:repeat(2,minmax(0,1fr))}\n.template-option{min-height:72px;touch-action:manipulation}\n#previewWrap{display:flex;justify-content:center;align-items:flex-start;min-height:150px;overflow-x:auto;overscroll-behavior-x:contain}\n.label-preview{flex:0 0 50mm}\n@media(max-width:360px){.template-grid{grid-template-columns:1fr 1fr}.template-option{padding:10px 8px}}\n.label-preview .manual-selected{outline:1px dashed #1677ff!important;outline-offset:2px;touch-action:none;cursor:move;position:relative}
-.label-preview .manual-selected:after{content:"";position:absolute;right:-4px;bottom:-4px;width:9px;height:9px;border:1px solid #1677ff;background:#fff;border-radius:2px;pointer-events:none}
+.label-preview .manual-selected:after{content:none}\n.manual-resize-handle{position:absolute;right:-4px;bottom:-4px;width:12px;height:12px;border:1px solid #1677ff;background:#fff;border-radius:2px;z-index:5;touch-action:none;cursor:nwse-resize}\n@media print{.manual-resize-handle{display:none!important}}
 @media print{.manual-selected{outline:none!important}}
 </style>
 </head>
@@ -623,7 +623,44 @@ function loadCanvasControls(){const d=getDesignSettings();canvasSelected=documen
 function changeCanvasScale(){const d=getDesignSettings();d.scales=d.scales||{...DESIGN_DEFAULTS.scales};d.scales[canvasSelected]=+document.getElementById("dCanvasScale").value;localStorage.setItem("prasadLabelDesign",JSON.stringify(d));updatePreview();selectCanvasItem(canvasSelected);}
 function resetCanvasSelection(){const d=getDesignSettings();d.positions[canvasSelected]={x:0,y:0};d.scales[canvasSelected]=1;localStorage.setItem("prasadLabelDesign",JSON.stringify(d));updatePreview();selectCanvasItem(canvasSelected);loadCanvasControls();}
 function selectCanvasItem(key){const preview=document.getElementById("previewLabel");preview.querySelectorAll(".manual-selected").forEach(n=>n.classList.remove("manual-selected"));const node=canvasNode(key);if(!node)return;canvasSelected=key;document.getElementById("dCanvasTarget").value=key;node.classList.add("manual-selected");loadCanvasControls();}
-function enableCanvasEditing(){const preview=document.getElementById("previewLabel");preview.querySelectorAll(".label-top,.details,.size-box,.barcode-area").forEach(node=>{node.onpointerdown=(ev)=>{const key=node.classList.contains("label-top")?"brand":node.classList.contains("details")?"details":node.classList.contains("size-box")?"size":"barcode";ev.preventDefault();selectCanvasItem(key);const d=getDesignSettings(),p=d.positions[key]||{x:0,y:0};canvasDrag={key,startX:ev.clientX,startY:ev.clientY,x:+p.x||0,y:+p.y||0};node.setPointerCapture(ev.pointerId);};node.onpointermove=(ev)=>{if(!canvasDrag||canvasDrag.key!==(node.classList.contains("label-top")?"brand":node.classList.contains("details")?"details":node.classList.contains("size-box")?"size":"barcode"))return;const rect=preview.getBoundingClientRect(),mmX=(ev.clientX-canvasDrag.startX)/rect.width*50,mmY=(ev.clientY-canvasDrag.startY)/rect.height*30,d=getDesignSettings();d.positions[canvasDrag.key]={x:Math.max(-20,Math.min(20,canvasDrag.x+mmX)),y:Math.max(-12,Math.min(12,canvasDrag.y+mmY))};localStorage.setItem("prasadLabelDesign",JSON.stringify(d));const pos=d.positions[canvasDrag.key],sc=d.scales?.[canvasDrag.key]||1;node.style.transform="translate("+pos.x+"mm,"+pos.y+"mm) scale("+sc+")";};node.onpointerup=()=>{if(canvasDrag){canvasDrag=null;updatePreview();selectCanvasItem(canvasSelected);}};node.onpointercancel=()=>{canvasDrag=null;};});}
+function enableCanvasEditing(){
+ const preview=document.getElementById("previewLabel");
+ const keys=[".label-top",".details",".size-box",".barcode-area"];
+ keys.forEach(selector=>{
+  const node=preview.querySelector(selector);
+  if(!node)return;
+  const key=selector===".label-top"?"brand":selector===".details"?"details":selector===".size-box"?"size":"barcode";
+  node.onpointerdown=(ev)=>{
+   const isHandle=ev.target.classList.contains("manual-resize-handle");
+   ev.preventDefault();selectCanvasItem(key);
+   const d=getDesignSettings(),p=d.positions[key]||{x:0,y:0};
+   canvasDrag={key,mode:isHandle?"resize":"move",startX:ev.clientX,startY:ev.clientY,x:+p.x||0,y:+p.y||0,scale:+(d.scales?.[key]||1),width:node.getBoundingClientRect().width};
+   try{node.setPointerCapture(ev.pointerId);}catch(e){}
+  };
+  node.onpointermove=(ev)=>{
+   if(!canvasDrag||canvasDrag.key!==key)return;
+   const rect=preview.getBoundingClientRect(),d=getDesignSettings();
+   if(canvasDrag.mode==="resize"){
+    const delta=(ev.clientX-canvasDrag.startX)/Math.max(1,canvasDrag.width);
+    const scale=Math.max(.5,Math.min(1.8,Math.round((canvasDrag.scale+delta)*20)/20));
+    d.scales=d.scales||{...DESIGN_DEFAULTS.scales};d.scales[key]=scale;
+    const slider=document.getElementById("dCanvasScale");if(slider&&canvasSelected===key)slider.value=scale;
+    document.getElementById("canvasEditorStatus").textContent="Resizing "+key+": "+Math.round(scale*100)+"%";
+    node.style.transform="translate("+canvasDrag.x+"mm,"+canvasDrag.y+"mm) scale("+scale+")";
+   }else{
+    const mmX=(ev.clientX-canvasDrag.startX)/rect.width*50,mmY=(ev.clientY-canvasDrag.startY)/rect.height*30;
+    d.positions[key]={x:Math.max(-20,Math.min(20,canvasDrag.x+mmX)),y:Math.max(-12,Math.min(12,canvasDrag.y+mmY))};
+    const pos=d.positions[key],sc=d.scales?.[key]||1;
+    node.style.transform="translate("+pos.x+"mm,"+pos.y+"mm) scale("+sc+")";
+   }
+   localStorage.setItem("prasadLabelDesign",JSON.stringify(d));
+  };
+  node.onpointerup=()=>{if(canvasDrag){canvasDrag=null;updatePreview();selectCanvasItem(canvasSelected);}};
+  node.onpointercancel=()=>{canvasDrag=null;};
+  let handle=node.querySelector(":scope > .manual-resize-handle");
+  if(!handle){handle=document.createElement("span");handle.className="manual-resize-handle";handle.setAttribute("aria-label","Resize item");node.appendChild(handle);}
+ });
+}
 function updatePreview(){
  const size=document.getElementById("previewSize").value||"0";
  const preview=document.getElementById("previewLabel");
