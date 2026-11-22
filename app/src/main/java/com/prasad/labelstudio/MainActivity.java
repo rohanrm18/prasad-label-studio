@@ -897,10 +897,10 @@ public class MainActivity extends Activity {
                 for (int oi=0; oi<editorObjects.length(); oi++) {
                     JSONObject obj=editorObjects.optJSONObject(oi); if(obj==null) continue;
                     String type=obj.optString("type","text");
-                    float x=(float)obj.optDouble("x",0)*sx, y=(float)obj.optDouble("y",0)*sy;
+                    float ex=(float)obj.optDouble("x",0)*sx, ey=(float)obj.optDouble("y",0)*sy;
                     float w=(float)obj.optDouble("w",100)*sx, h=(float)obj.optDouble("h",40)*sy;
                     float rotation=(float)obj.optDouble("rotation",0);
-                    c.save(); c.rotate(rotation,x+w/2f,y+h/2f);
+                    c.save(); c.rotate(rotation,ex+w/2f,ey+h/2f);
                     Paint ep=new Paint(Paint.ANTI_ALIAS_FLAG); ep.setColor(Color.BLACK);
                     ep.setStrokeWidth(Math.max(1.2f,(float)obj.optDouble("strokeWidth",2)*sx));
                     if ("text".equals(type) || "icon".equals(type)) {
@@ -909,11 +909,11 @@ public class MainActivity extends Activity {
                         String al=obj.optString("align","left");
                         ep.setTextAlign("center".equals(al)?Paint.Align.CENTER:("right".equals(al)?Paint.Align.RIGHT:Paint.Align.LEFT));
                         float tx="center".equals(al)?x+w/2f:("right".equals(al)?x+w:x);
-                        c.drawText(obj.optString("text",""),tx,y+Math.min(h,ep.getTextSize()+2),ep);
+                        c.drawText(obj.optString("text",""),tx,ey+Math.min(h,ep.getTextSize()+2),ep);
                     } else if ("rect".equals(type)) {
-                        ep.setStyle(Paint.Style.STROKE); c.drawRect(x,y,x+w,y+h,ep);
+                        ep.setStyle(Paint.Style.STROKE); c.drawRect(ex,ey,ex+w,ey+h,ep);
                     } else if ("line".equals(type)) {
-                        c.drawLine(x,y,x+w,y+h,ep);
+                        c.drawLine(ex,ey,ex+w,ey+h,ep);
                     } else if ("barcode".equals(type)) {
                         String value=job.barcode==null||job.barcode.trim().isEmpty()?obj.optString("text","123456"):job.barcode;
                         if(d.optBoolean("showBarcode",true) && !value.trim().isEmpty()){
@@ -921,9 +921,9 @@ public class MainActivity extends Activity {
                             Paint bp=new Paint();bp.setColor(Color.BLACK);
                             float cellW=w/bm.getWidth(),cellH=(h*.72f)/bm.getHeight();
                             for(int bx=0;bx<bm.getWidth();bx++)for(int by=0;by<bm.getHeight();by++)if(bm.get(bx,by))
-                                c.drawRect(x+bx*cellW,y+by*cellH,x+(bx+1)*cellW,y+(by+1)*cellH,bp);
+                                c.drawRect(ex+bx*cellW,ey+by*cellH,ex+(bx+1)*cellW,ey+(by+1)*cellH,bp);
                             bp.setTextSize(Math.max(8,10*sx));bp.setTextAlign(Paint.Align.CENTER);
-                            c.drawText(value,x+w/2f,y+h-1,bp);
+                            c.drawText(value,ex+w/2f,ey+h-1,bp);
                         }
                     } else if ("qr".equals(type)) {
                         String value=obj.optString("text","PRASAD APPARELS");
@@ -931,7 +931,7 @@ public class MainActivity extends Activity {
                         Paint qp=new Paint();qp.setColor(Color.BLACK);
                         float cellW=w/qm.getWidth(),cellH=h/qm.getHeight();
                         for(int qx=0;qx<qm.getWidth();qx++)for(int qy=0;qy<qm.getHeight();qy++)if(qm.get(qx,qy))
-                            c.drawRect(x+qx*cellW,y+qy*cellH,x+(qx+1)*cellW,y+(qy+1)*cellH,qp);
+                            c.drawRect(ex+qx*cellW,ey+qy*cellH,ex+(qx+1)*cellW,ey+(qy+1)*cellH,qp);
                     } else if ("image".equals(type)) {
                         String src=obj.optString("src","");
                         try {
@@ -939,7 +939,7 @@ public class MainActivity extends Activity {
                             if(comma>=0 && src.substring(0,comma).contains("base64")){
                                 byte[] raw=Base64.decode(src.substring(comma+1),Base64.DEFAULT);
                                 Bitmap image=BitmapFactory.decodeByteArray(raw,0,raw.length);
-                                if(image!=null){c.drawBitmap(image,null,new android.graphics.RectF(x,y,x+w,y+h),new Paint(Paint.FILTER_BITMAP_FLAG));image.recycle();}
+                                if(image!=null){c.drawBitmap(image,null,new android.graphics.RectF(ex,ey,ex+w,ey+h),new Paint(Paint.FILTER_BITMAP_FLAG));image.recycle();}
                             }
                         } catch(Exception ignored) {}
                     }
