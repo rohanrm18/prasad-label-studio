@@ -908,7 +908,7 @@ public class MainActivity extends Activity {
                         ep.setTextSize(Math.max(8f,(float)obj.optDouble("size",20)*sx));
                         String al=obj.optString("align","left");
                         ep.setTextAlign("center".equals(al)?Paint.Align.CENTER:("right".equals(al)?Paint.Align.RIGHT:Paint.Align.LEFT));
-                        float tx="center".equals(al)?x+w/2f:("right".equals(al)?x+w:x);
+                        float tx="center".equals(al)?ex+w/2f:("right".equals(al)?ex+w:ex);
                         c.drawText(obj.optString("text",""),tx,ey+Math.min(h,ep.getTextSize()+2),ep);
                     } else if ("rect".equals(type)) {
                         ep.setStyle(Paint.Style.STROKE); c.drawRect(ex,ey,ex+w,ey+h,ep);
