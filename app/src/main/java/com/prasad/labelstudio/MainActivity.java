@@ -3,6 +3,7 @@ package com.prasad.labelstudio;
 import android.Manifest;
 import android.app.Activity;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -38,6 +39,7 @@ import org.json.JSONObject;
 
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import android.util.Base64;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.UUID;
@@ -879,6 +881,71 @@ public class MainActivity extends Activity {
             p.setColor(Color.BLACK);p.setTypeface(Typeface.create("sans-serif",Typeface.BOLD));
             p.setTextSize(13);p.setTextAlign(Paint.Align.CENTER);
             c.drawText(job.barcode.trim(),width/2f,height-2,p);
+        }
+
+
+        // Shreyans-style editor artwork: render the exact saved editor objects to the
+        // same 384x240 raster sent to the P58D. Coordinates are stored in 0.1 mm units.
+        if (d.optBoolean("editorMode", false)) {
+            c.drawColor(Color.WHITE);
+            JSONArray editorObjects = d.optJSONArray("editorObjects");
+            JSONObject editorPage = d.optJSONObject("editorPage");
+            float pageW = editorPage == null ? 50f : (float)Math.max(10, editorPage.optDouble("w",50));
+            float pageH = editorPage == null ? 30f : (float)Math.max(10, editorPage.optDouble("h",30));
+            float sx = width / (pageW * 10f), sy = height / (pageH * 10f);
+            if (editorObjects != null) {
+                for (int oi=0; oi<editorObjects.length(); oi++) {
+                    JSONObject obj=editorObjects.optJSONObject(oi); if(obj==null) continue;
+                    String type=obj.optString("type","text");
+                    float x=(float)obj.optDouble("x",0)*sx, y=(float)obj.optDouble("y",0)*sy;
+                    float w=(float)obj.optDouble("w",100)*sx, h=(float)obj.optDouble("h",40)*sy;
+                    float rotation=(float)obj.optDouble("rotation",0);
+                    c.save(); c.rotate(rotation,x+w/2f,y+h/2f);
+                    Paint ep=new Paint(Paint.ANTI_ALIAS_FLAG); ep.setColor(Color.BLACK);
+                    ep.setStrokeWidth(Math.max(1.2f,(float)obj.optDouble("strokeWidth",2)*sx));
+                    if ("text".equals(type) || "icon".equals(type)) {
+                        ep.setTypeface(Typeface.create("sans-serif",obj.optBoolean("bold",false)?Typeface.BOLD:Typeface.NORMAL));
+                        ep.setTextSize(Math.max(8f,(float)obj.optDouble("size",20)*sx));
+                        String al=obj.optString("align","left");
+                        ep.setTextAlign("center".equals(al)?Paint.Align.CENTER:("right".equals(al)?Paint.Align.RIGHT:Paint.Align.LEFT));
+                        float tx="center".equals(al)?x+w/2f:("right".equals(al)?x+w:x);
+                        c.drawText(obj.optString("text",""),tx,y+Math.min(h,ep.getTextSize()+2),ep);
+                    } else if ("rect".equals(type)) {
+                        ep.setStyle(Paint.Style.STROKE); c.drawRect(x,y,x+w,y+h,ep);
+                    } else if ("line".equals(type)) {
+                        c.drawLine(x,y,x+w,y+h,ep);
+                    } else if ("barcode".equals(type)) {
+                        String value=job.barcode==null||job.barcode.trim().isEmpty()?obj.optString("text","123456"):job.barcode;
+                        if(d.optBoolean("showBarcode",true) && !value.trim().isEmpty()){
+                            BitMatrix bm=new MultiFormatWriter().encode(value,BarcodeFormat.CODE_128,Math.max(30,(int)w),Math.max(20,(int)(h*.72f)));
+                            Paint bp=new Paint();bp.setColor(Color.BLACK);
+                            float cellW=w/bm.getWidth(),cellH=(h*.72f)/bm.getHeight();
+                            for(int bx=0;bx<bm.getWidth();bx++)for(int by=0;by<bm.getHeight();by++)if(bm.get(bx,by))
+                                c.drawRect(x+bx*cellW,y+by*cellH,x+(bx+1)*cellW,y+(by+1)*cellH,bp);
+                            bp.setTextSize(Math.max(8,10*sx));bp.setTextAlign(Paint.Align.CENTER);
+                            c.drawText(value,x+w/2f,y+h-1,bp);
+                        }
+                    } else if ("qr".equals(type)) {
+                        String value=obj.optString("text","PRASAD APPARELS");
+                        BitMatrix qm=new MultiFormatWriter().encode(value,BarcodeFormat.QR_CODE,Math.max(24,(int)w),Math.max(24,(int)h));
+                        Paint qp=new Paint();qp.setColor(Color.BLACK);
+                        float cellW=w/qm.getWidth(),cellH=h/qm.getHeight();
+                        for(int qx=0;qx<qm.getWidth();qx++)for(int qy=0;qy<qm.getHeight();qy++)if(qm.get(qx,qy))
+                            c.drawRect(x+qx*cellW,y+qy*cellH,x+(qx+1)*cellW,y+(qy+1)*cellH,qp);
+                    } else if ("image".equals(type)) {
+                        String src=obj.optString("src","");
+                        try {
+                            int comma=src.indexOf(",");
+                            if(comma>=0 && src.substring(0,comma).contains("base64")){
+                                byte[] raw=Base64.decode(src.substring(comma+1),Base64.DEFAULT);
+                                Bitmap image=BitmapFactory.decodeByteArray(raw,0,raw.length);
+                                if(image!=null){c.drawBitmap(image,null,new android.graphics.RectF(x,y,x+w,y+h),new Paint(Paint.FILTER_BITMAP_FLAG));image.recycle();}
+                            }
+                        } catch(Exception ignored) {}
+                    }
+                    c.restore();
+                }
+            }
         }
 
         int bpr=(width+7)/8;byte[] raster=new byte[bpr*height];
