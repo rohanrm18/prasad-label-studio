@@ -51,7 +51,7 @@ root.innerHTML=\`<style>
 #pls-editor .modal-card .row{display:flex;gap:8px;margin-top:15px}
 @media(max-width:700px){#pls-editor .work{flex-direction:column}#pls-editor .canvas-area{flex:1;min-height:190px;padding:9px}#pls-editor .inspector{width:100%;max-height:38%;border-left:0;border-top:1px solid var(--line)}#pls-editor .inspect-head{padding:8px 12px}#pls-editor .inspect-body{padding:8px 12px}#pls-editor .inspect-body label{margin:7px 0 4px}#pls-editor .inspect-body .group-title{margin:10px 0 4px}#pls-editor .tools{padding:6px}#pls-editor .tool{min-width:61px;padding:5px 8px}#pls-editor .top{height:46px}}
 </style>
-<div class="top"><div class="brandmark">PRASAD LABEL STUDIO</div><div class="top-actions"><button id="pls-undo">↶</button><button id="pls-redo">↷</button><button id="pls-save" class="save">SAVE</button><button id="pls-close">✕</button></div></div>
+<div class="top"><div class="brandmark">PRASAD LABEL STUDIO</div><div class="top-actions"><button id="pls-undo">↶</button><button id="pls-redo">↷</button><button id="pls-print" class="save">PRINT ONE</button><button id="pls-save" class="save">SAVE</button><button id="pls-close">✕</button></div></div>
 <div class="formatbar"><select id="pls-page"><option value="50x30">50 × 30 mm</option><option value="50x25">50 × 25 mm</option><option value="40x30">40 × 30 mm</option><option value="60x40">60 × 40 mm</option><option value="custom">Custom size…</option></select><span class="dim" id="pls-dim">Label size: 50 × 30 mm</span><button id="pls-templates">TEMPLATES</button><button id="pls-new">NEW LABEL</button></div>
 <div class="tools">
 <button class="tool" data-add="text"><span class="ico">T</span><span>Text</span></button>
@@ -65,7 +65,7 @@ root.innerHTML=\`<style>
 </div>
 <div class="work"><div class="canvas-area"><div class="ruler" id="pls-ruler">0 ───── 10 ───── 20 ───── 30 ───── 40 ───── 50 mm</div><svg id="pls-canvas" viewBox="0 0 500 300" aria-label="Label design canvas"></svg><div class="canvas-hint">Tap an item to select · Drag to move · Drag blue corner to resize</div></div>
 <aside class="inspector"><div class="inspect-head"><span>Object Properties</span><span id="pls-selection-name">No selection</span></div><div class="inspect-body" id="pls-inspector"><div class="muted">Select an item on the label, or choose a tool above to add a new object.</div></div></aside></div>
-<div class="bottom"><button class="active" data-tab="object">OBJECT</button><button data-tab="text">TEXT STYLE</button><button data-tab="arrange">ARRANGE</button><button data-tab="page">PAGE SETUP</button><button id="pls-export">EXPORT</button><button id="pls-import">IMPORT</button><input id="pls-file" type="file" accept="image/*,.json" hidden></div>
+<div class="bottom"><button class="active" data-tab="object">OBJECT</button><button data-tab="text">TEXT STYLE</button><button data-tab="arrange">ARRANGE</button><button data-tab="page">PAGE SETUP</button><button id="pls-print-bulk">PRINT BULK</button><button id="pls-export">EXPORT</button><button id="pls-import">IMPORT</button><input id="pls-file" type="file" accept="image/*,.json" hidden></div>
 <div id="pls-modal" class="modal hidden"><div class="modal-card" id="pls-modal-card"></div></div>\`;
 document.body.appendChild(root);
 q("#pls-close").onclick=()=>root.style.display="none";
@@ -73,11 +73,11 @@ root.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>add(b.dataset.add))
 root.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{activeTab=b.dataset.tab;root.querySelectorAll("[data-tab]").forEach(x=>x.classList.toggle("active",x===b));renderInspector();});
 q("#pls-undo").onclick=()=>{if(undo.length){redo.push(JSON.stringify(objects));objects=JSON.parse(undo.pop());save();render();}};
 q("#pls-redo").onclick=()=>{if(redo.length){undo.push(JSON.stringify(objects));objects=JSON.parse(redo.pop());save();render();}};
-q("#pls-save").onclick=saveTemplate;q("#pls-templates").onclick=showTemplates;
+q("#pls-save").onclick=saveTemplate;q("#pls-templates").onclick=showTemplates;q("#pls-print").onclick=printEditorOne;
 q("#pls-new").onclick=()=>modal("Create new label",'<label>Label name</label><input id="pls-newname" value="My label"><div class="two"><div><label>Width (mm)</label><input id="pls-neww" type="number" value="'+page.w+'"></div><div><label>Height (mm)</label><input id="pls-newh" type="number" value="'+page.h+'"></div></div>','CREATE',()=>{let w=Number(q("#pls-neww").value),h=Number(q("#pls-newh").value);if(w<10||h<10||w>150||h>150)return alert("Enter a size between 10 and 150 mm.");checkpoint();page={w,h,name:q("#pls-newname").value||"My label"};objects=[];selected=null;save();render();closeModal();});
 q("#pls-page").onchange=()=>{let v=q("#pls-page").value;if(v==="custom"){q("#pls-new").click();q("#pls-page").value=page.w+"x"+page.h;return;}let [w,h]=v.split("x").map(Number);checkpoint();page={w,h,name:v};save();render();};
 q("#pls-delete-tool").onclick=removeSelected;
-q("#pls-export").onclick=exportData;q("#pls-import").onclick=()=>{q("#pls-file").accept=".json";q("#pls-file").click();};
+q("#pls-print-bulk").onclick=printEditorBulk;q("#pls-export").onclick=exportData;q("#pls-import").onclick=()=>{q("#pls-file").accept=".json";q("#pls-file").click();};
 q("#pls-file").onchange=e=>{let f=e.target.files[0];if(!f)return;if(f.type.startsWith("image/")){let r=new FileReader();r.onload=()=>add("image",r.result);r.readAsDataURL(f);}else importData(f);e.target.value="";};
 render();
 }
@@ -91,7 +91,7 @@ else if(o.type==="rect"){el=mk("rect",{x:0,y:0,width:o.w,height:o.h,fill:o.fill|
 else if(o.type==="line"){el=mk("line",{x1:0,y1:0,x2:o.w,y2:o.h,stroke:"#111","stroke-width":o.strokeWidth||3});}
 else if(o.type==="image"){el=mk("image",{x:0,y:0,width:o.w,height:o.h,href:o.src||"",preserveAspectRatio:"xMidYMid meet"});}
 else if(o.type==="barcode"){let group=mk("g");try{if(window.JsBarcode){let temp=document.createElementNS(NS,"svg");window.JsBarcode(temp,o.text||"123456789",{format:"CODE128",displayValue:true,fontSize:12,margin:0,height:Math.max(20,o.h-18),width:1.4,valid:true});let vb=temp.querySelector("svg")||temp;Array.from(vb.children).forEach(n=>group.appendChild(n.cloneNode(true)));group.setAttribute("transform","scale("+(o.w/Math.max(1,300))+" "+(o.h/Math.max(1,65))+")");}else{let t=mk("text",{x:o.w/2,y:o.h/2,"text-anchor":"middle","font-size":16});t.textContent="CODE 128 · "+(o.text||"");group.appendChild(t);}}catch(e){let t=mk("text",{x:4,y:24,"font-size":14});t.textContent="Invalid barcode data";group.appendChild(t);}el=group;}
-else if(o.type==="qr"){el=mk("g");let t=mk("text",{x:o.w/2,y:o.h/2,"text-anchor":"middle","font-size":13,fill:"#333"});t.textContent="QR CODE";el.appendChild(t);let sub=mk("text",{x:o.w/2,y:o.h/2+16,"text-anchor":"middle","font-size":8,fill:"#666"});sub.textContent="QR preview";el.appendChild(sub);}
+else if(o.type==="qr"){el=mk("image",{x:0,y:0,width:o.w,height:o.h,preserveAspectRatio:"none"});if(window.QRCode&&QRCode.toDataURL){QRCode.toDataURL(o.text||"PRASAD APPARELS",{width:256,margin:1,errorCorrectionLevel:"M"}).then(url=>{if(el.isConnected)el.setAttribute("href",url);}).catch(()=>{});}else{let t=mk("text",{x:o.w/2,y:o.h/2,"text-anchor":"middle","font-size":12});t.textContent="QR library unavailable";el= t;}}
 g.appendChild(el);
 if(o.id===selected){g.appendChild(mk("rect",{x:-3,y:-3,width:o.w+6,height:o.h+6,class:"selected-outline"}));g.appendChild(mk("rect",{x:o.w-6,y:o.h-6,width:13,height:13,rx:2,class:"handle","data-resize":"1"}));}
 g.addEventListener("pointerdown",e=>pointerStart(e,o));svg.appendChild(g);});
@@ -108,6 +108,30 @@ function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",
 function layer(d){let i=objects.findIndex(x=>x.id===selected);if(i<0)return;checkpoint();let j=Math.max(0,Math.min(objects.length-1,i+d));[objects[i],objects[j]]=[objects[j],objects[i]];save();render();}
 function duplicate(){let o=objects.find(x=>x.id===selected);if(!o)return;checkpoint();let n=JSON.parse(JSON.stringify(o));n.id="o"+Date.now();n.x+=12;n.y+=12;objects.push(n);selected=n.id;save();render();}
 function removeSelected(){if(!selected)return;checkpoint();objects=objects.filter(x=>x.id!==selected);selected=null;save();render();}
+function printEditorOne(){
+if(!window.AndroidPrinter){alert("Open this editor inside Prasad Label Studio Android app to print.");return;}
+const get=id=>document.getElementById(id);
+const style=get("style")?.value?.trim()||"";
+const model=get("model")?.value||"";
+const category=get("category")?.value||"";
+const colour=get("colour")?.value?.trim()||"";
+const size=get("previewSize")?.value||"28";
+const noBarcode=!!get("noBarcode")?.checked;
+const auto=!!get("autoBarcode")?.checked&&!noBarcode;
+if(!style){alert("Enter the style number in Product Details first.");return;}
+const design={editorMode:true,editorPage:page,editorObjects:objects,showBarcode:!noBarcode};
+AndroidPrinter.printSingle(JSON.stringify({style,model,category,colour,size,barcode:noBarcode||auto?"":(get("barcodeNumber")?.value||""),autoBarcode:auto,design}));
+}
+function printEditorBulk(){
+if(!window.AndroidPrinter){alert("Open this editor inside Prasad Label Studio Android app to print.");return;}
+if(typeof sizes==="undefined"||typeof quantities==="undefined"){alert("Bulk size quantities are unavailable.");return;}
+const get=id=>document.getElementById(id);
+const style=get("style")?.value?.trim()||"",model=get("model")?.value||"",category=get("category")?.value||"",colour=get("colour")?.value?.trim()||"";
+const noBarcode=!!get("noBarcode")?.checked,auto=!!get("autoBarcode")?.checked&&!noBarcode,items=[];
+sizes.forEach(size=>{if((quantities[size]||0)>0)items.push({size,quantity:quantities[size]});});
+if(!style||!items.length){alert("Enter a style and select size quantities first.");return;}
+AndroidPrinter.printBulk(JSON.stringify({style,model,category,colour,barcode:noBarcode||auto?"":(get("barcodeNumber")?.value||""),autoBarcode:auto,items,design:{editorMode:true,editorPage:page,editorObjects:objects,showBarcode:!noBarcode}}));
+}
 function saveTemplate(){let name=prompt("Enter template name");if(!name)return;let all=JSON.parse(localStorage.getItem(TMPL)||"{}");all[name]={page,objects};localStorage.setItem(TMPL,JSON.stringify(all));alert("Template saved on this device.");}
 function showTemplates(){let all=JSON.parse(localStorage.getItem(TMPL)||"{}"),names=Object.keys(all);let html=names.length?names.map((n,i)=>'<button data-template-index="'+i+'" style="width:100%;text-align:left;margin:4px 0">'+esc(n)+' · '+all[n].page.w+'×'+all[n].page.h+' mm</button>').join(""):'<p class="muted">No saved templates yet. Use SAVE to save this design.</p>';modal("My label templates",html,'CLOSE',closeModal);q("#pls-modal-card").querySelectorAll("[data-template-index]").forEach((b,i)=>b.onclick=()=>{let n=names[i];checkpoint();page=all[n].page||page;objects=all[n].objects||[];selected=null;save();render();closeModal();});}
 function exportData(){let blob=new Blob([JSON.stringify({format:"prasad-label-template-v2",page,objects},null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="prasad-label-template.json";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
