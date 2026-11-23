@@ -363,7 +363,7 @@ body{padding-bottom:calc(62px + env(safe-area-inset-bottom))}
 
 <div class="auto-box" style="margin-top:14px">
 <strong>PRINTER OPTIONS</strong>
-<p class="muted">These settings are saved on this phone and sent with Bluetooth print jobs. Start with the current values; adjust only after a test label.</p>
+<p class="muted">These settings are saved on this phone and applied to Bluetooth raster printing. Keep defaults until you test one label on your P58D.</p>
 <label>Paper type</label>
 <select id="printPaperType" onchange="savePrintOptions()"><option value="gap">Gap / sticker paper</option><option value="continuous">Continuous paper</option></select>
 <div class="grid2">
@@ -372,8 +372,8 @@ body{padding-bottom:calc(62px + env(safe-area-inset-bottom))}
 </div>
 <label>Print darkness</label>
 <input id="printDarkness" type="range" min="80" max="220" step="5" value="160" oninput="savePrintOptions()">
-<div class="muted">Current threshold: <span id="printDarknessValue">160</span>. Lower values print darker; higher values print lighter.</div>
-<div class="muted" style="margin-top:10px">Compression: printer raster mode (fixed). Cut and print-finished signals are not enabled because P58D support has not been verified.</div>
+<div class="muted">Current threshold: <span id="printDarknessValue">160</span>. Higher values generally print darker; lower values print lighter.</div>
+<div class="muted" style="margin-top:10px">Paper type is saved as a reminder; this raster driver does not change the printer's gap sensor mode. Compression is fixed to standard ESC/POS raster. Cut commands and true print-finished acknowledgements are not enabled until P58D support is confirmed.</div>
 <div id="printOptionsStatus" class="muted" style="margin-top:8px">Settings saved on this phone.</div>
 </div>
 <button class="secondary" style="width:100%;padding:15px;margin-top:10px" onclick="printLabels()">BROWSER PRINT</button>
