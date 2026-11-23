@@ -900,12 +900,21 @@ public class MainActivity extends Activity {
             JSONObject editorPage = d.optJSONObject("editorPage");
             float pageW = editorPage == null ? 50f : (float)Math.max(10, editorPage.optDouble("w",50));
             float pageH = editorPage == null ? 30f : (float)Math.max(10, editorPage.optDouble("h",30));
-            float sx = width / (pageW * 10f), sy = height / (pageH * 10f);
+            // Keep a 1 mm horizontal / approximately 1 mm vertical safe margin.
+            // Use one uniform scale on both axes so circles, frames and text proportions
+            // do not distort when the 50 mm page is reduced to the P58D's 384-dot head.
+            float safeInsetX = Math.min(8f, width * 0.04f);
+            float safeInsetY = Math.min(8f, height * 0.04f);
+            float sx = Math.min((width - 2f * safeInsetX) / (pageW * 10f),
+                                (height - 2f * safeInsetY) / (pageH * 10f));
+            float sy = sx;
+            float offsetX = (width - pageW * 10f * sx) / 2f;
+            float offsetY = (height - pageH * 10f * sy) / 2f;
             if (editorObjects != null) {
                 for (int oi=0; oi<editorObjects.length(); oi++) {
                     JSONObject obj=editorObjects.optJSONObject(oi); if(obj==null) continue;
                     String type=obj.optString("type","text");
-                    float ex=(float)obj.optDouble("x",0)*sx, ey=(float)obj.optDouble("y",0)*sy;
+                    float ex=offsetX+(float)obj.optDouble("x",0)*sx, ey=offsetY+(float)obj.optDouble("y",0)*sy;
                     float w=(float)obj.optDouble("w",100)*sx, h=(float)obj.optDouble("h",40)*sy;
                     float rotation=(float)obj.optDouble("rotation",0);
                     c.save(); c.rotate(rotation,ex+w/2f,ey+h/2f);
