@@ -319,19 +319,45 @@ public class MainActivity extends Activity {
                 ArrayList<LabelJob> jobs = new ArrayList<>();
                 StringBuilder summary = new StringBuilder();
 
+                final String[] allowedSizes = {
+                    "1", "2", "3", "4", "5", "6",
+                    "7", "8", "9", "10", "12", "14"
+                };
+
                 for (int i = 0; i < items.length(); i++) {
                     JSONObject item = items.getJSONObject(i);
 
-                    String size = item.optString("size");
+                    String size = item.optString("size", "").trim();
                     int quantity = item.optInt("quantity", 0);
 
-                    if (quantity <= 0) continue;
+                    if (quantity < 0 || quantity > 200) {
+                        throw new IllegalArgumentException(
+                            "Quantity for size " + size + " must be between 0 and 200"
+                        );
+                    }
+                    if (quantity == 0) continue;
+
+                    boolean validSize = false;
+                    for (String allowed : allowedSizes) {
+                        if (allowed.equals(size)) {
+                            validSize = true;
+                            break;
+                        }
+                    }
+                    if (!validSize) {
+                        throw new IllegalArgumentException("Invalid garment size: " + size);
+                    }
+                    if (jobs.size() + quantity > 500) {
+                        throw new IllegalArgumentException(
+                            "Bulk print is limited to 500 labels per batch"
+                        );
+                    }
 
                     summary.append("Size ")
                         .append(size)
                         .append(" - ")
                         .append(quantity)
-                        .append(" labels\n");
+                        .append(" labels\\n");
 
                     for (int j = 0; j < quantity; j++) {
                         jobs.add(new LabelJob(
@@ -366,8 +392,11 @@ public class MainActivity extends Activity {
                 });
 
             } catch (Exception e) {
+                final String error = e.getMessage();
                 runOnUiThread(() ->
-                    showMessage("Invalid bulk print information")
+                    showMessage(error == null
+                        ? "Invalid bulk print information"
+                        : error)
                 );
             }
         }
