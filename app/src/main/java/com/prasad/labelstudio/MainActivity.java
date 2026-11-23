@@ -956,13 +956,23 @@ public class MainActivity extends Activity {
             }
         }
 
+        JSONObject printOptions=d.optJSONObject("printOptions");
+        int darkness=printOptions==null?160:Math.max(80,Math.min(220,printOptions.optInt("darkness",160)));
+        int horizontalShift=printOptions==null?0:(int)Math.round(Math.max(-3,Math.min(3,printOptions.optDouble("alignMm",0)))*8f);
+        int feedDots=printOptions==null?0:(int)Math.round(Math.max(0,Math.min(10,printOptions.optDouble("feedMm",0)))*8f);
         int bpr=(width+7)/8;byte[] raster=new byte[bpr*height];
-        for(int yy=0;yy<height;yy++)for(int xx=0;xx<width;xx++)
-            if(Color.red(bitmap.getPixel(xx,yy))<160)raster[yy*bpr+(xx/8)]|=(byte)(0x80>>(xx%8));
+        for(int yy=0;yy<height;yy++)for(int xx=0;xx<width;xx++){
+            int targetX=xx+horizontalShift;
+            if(targetX>=0&&targetX<width&&Color.red(bitmap.getPixel(xx,yy))<darkness)
+                raster[yy*bpr+(targetX/8)]|=(byte)(0x80>>(targetX%8));
+        }
         bitmap.recycle();
         OutputStream out=socket.getOutputStream();out.write(new byte[]{0x1B,0x40});
         out.write(new byte[]{0x1D,0x76,0x30,0x00,(byte)(bpr&255),(byte)((bpr>>8)&255),(byte)(height&255),(byte)((height>>8)&255)});
-        out.write(raster);out.flush();
+        out.write(raster);
+        // ESC J feeds the requested additional paper distance after the raster.
+        if(feedDots>0)out.write(new byte[]{0x1B,0x4A,(byte)Math.min(255,feedDots)});
+        out.flush();
     }
 
     private float scaleValue(JSONObject scales, String key) {
