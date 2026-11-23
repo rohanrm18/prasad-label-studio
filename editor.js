@@ -1,11 +1,6 @@
 (()=>{if(window.__plsEditorLoaded)return;window.__plsEditorLoaded=true;
 const KEY="plsObjectsV1",TMPL="plsTemplatesV1",NS="http://www.w3.org/2000/svg",q=s=>document.querySelector("#pls-editor "+s);
-let objects=JSON.parse(localStorage.getItem(KEY)||"null")||[
-{id:"brand",type:"text",text:"PRASAD APPARELS",x:18,y:24,w:460,h:36,size:25,bold:true,align:"center"},
-{id:"style",type:"text",text:"STYLE: PA-102",x:22,y:95,w:235,h:30,size:19},
-{id:"size",type:"text",text:"28",x:350,y:112,w:115,h:65,size:52,bold:true,align:"center"},
-{id:"barcode",type:"barcode",text:"PA10228",x:75,y:220,w:350,h:55,size:16}
-];
+let objects=JSON.parse(localStorage.getItem(KEY)||"null")||[];
 let selected=null,selectedIds=new Set(),multiSelectMode=false,undo=[],redo=[],drag=null,activeTab="object",page={w:50,h:30,name:"Custom 50 × 30 mm"};
 const save=()=>localStorage.setItem(KEY,JSON.stringify(objects)),checkpoint=()=>{undo.push(JSON.stringify(objects));if(undo.length>40)undo.shift();redo=[];};
 const mk=(tag,attrs={})=>{let n=document.createElementNS(NS,tag);Object.entries(attrs).forEach(([k,v])=>n.setAttribute(k,v));return n;};
@@ -114,6 +109,92 @@ root.innerHTML=\`<style>
 #pls-editor #pls-print{bottom:calc(18% + 24px);right:22px;width:88px;height:88px}
 }
 
+/* Final screenshot match: Shreyans mobile label editor */
+@media(max-width:700px){
+  #pls-editor{background:#f0f1f5!important;color:#252932!important}
+  #pls-editor .top{
+    height:98px!important;min-height:98px!important;flex:none!important;
+    padding:5px 5px!important;gap:7px!important;justify-content:flex-start!important;
+    overflow-x:auto!important;background:#fff!important;border-bottom:1px solid #e8e9ed!important;
+    box-shadow:0 3px 9px #0000000b!important
+  }
+  #pls-editor .top-actions{gap:7px!important;align-items:center!important}
+  #pls-editor .top button{
+    min-width:88px!important;width:88px!important;height:84px!important;
+    padding:4px 5px!important;border:1px solid #e7e9ee!important;border-radius:17px!important;
+    background:#fff!important;color:#697382!important;display:flex!important;
+    flex-direction:column!important;align-items:center!important;justify-content:center!important;
+    gap:2px!important;font-size:0!important
+  }
+  #pls-editor .top button::before{font-size:39px!important;line-height:40px!important;color:#697382!important}
+  #pls-editor .top button::after{font-size:13px!important;line-height:16px!important;font-weight:500!important;color:#737b87!important}
+  #pls-editor #pls-close::before{content:"↶"} #pls-editor #pls-close::after{content:"Return"}
+  #pls-editor #pls-save::before{content:"▣"} #pls-editor #pls-save::after{content:"Save"}
+  #pls-editor #pls-select-all::before{content:"☷"} #pls-editor #pls-select-all::after{content:"Select All"}
+  #pls-editor #pls-single-select::before{content:"☑"} #pls-editor #pls-single-select::after{content:"Single Select"}
+  #pls-editor #pls-multiselect::before{content:"▦"} #pls-editor #pls-multiselect::after{content:"Multi Select"}
+  #pls-editor #pls-undo::before{content:"↶"} #pls-editor #pls-undo::after{content:"Undo"}
+  #pls-editor .tools{
+    height:98px!important;min-height:98px!important;flex:none!important;
+    padding:5px 5px!important;gap:7px!important;background:#fff!important;
+    border-bottom:1px solid #e6e8ed!important;overflow-x:auto!important
+  }
+  #pls-editor .tool{
+    min-width:86px!important;width:86px!important;height:84px!important;
+    padding:5px 6px!important;border:1px solid #eef0f3!important;border-radius:17px!important;
+    background:#fff!important;color:#697382!important;display:flex!important;
+    flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:3px!important
+  }
+  #pls-editor .tool.active-tool{background:#fff1f2!important;border-color:#f2cbd0!important;color:#d83240!important}
+  #pls-editor .tool .ico{font-size:36px!important;line-height:39px!important}
+  #pls-editor .tool span:last-child{font-size:14px!important;line-height:17px!important}
+  #pls-editor .work{position:relative!important;display:flex!important;flex:1 1 auto!important;
+    min-height:0!important;flex-direction:column!important;background:#f0f1f5!important;overflow:hidden!important}
+  #pls-editor .canvas-area{
+    flex:1 1 auto!important;min-height:0!important;justify-content:flex-start!important;
+    align-items:stretch!important;padding:0!important;overflow:auto!important;background:#f0f1f5!important
+  }
+  #pls-editor .ruler{
+    height:34px!important;min-height:34px!important;flex:none!important;
+    width:calc(100% - 34px)!important;margin:0 0 0 34px!important;padding:0!important;
+    background:repeating-linear-gradient(90deg,#7580b4 0 1px,transparent 1px 12px)!important;
+    background-position:left bottom!important;background-repeat:repeat-x!important;
+    color:#c32d3b!important;letter-spacing:0!important
+  }
+  #pls-editor .ruler span{bottom:13px!important;font-size:16px!important;color:#c32d3b!important}
+  #pls-editor .canvas-row{width:100%!important;flex:none!important;align-items:stretch!important}
+  #pls-editor .ruler-y{
+    width:34px!important;min-width:34px!important;position:relative!important;
+    background:repeating-linear-gradient(180deg,#7580b4 0 1px,transparent 1px 12px)!important
+  }
+  #pls-editor .ruler-y span{right:3px!important;font-size:16px!important;color:#c32d3b!important}
+  #pls-canvas{
+    display:block!important;flex:none!important;width:calc(100% - 34px)!important;
+    max-width:none!important;height:auto!important;margin:0!important;border:0!important;
+    box-shadow:none!important;background:#fff!important
+  }
+  #pls-editor .canvas-hint{display:none!important}
+  #pls-editor .inspector{
+    display:block!important;flex:0 0 12%!important;width:100%!important;height:12%!important;
+    min-height:150px!important;max-height:12%!important;border:0!important;
+    border-top:1px solid #e7e9ee!important;border-radius:19px 19px 0 0!important;
+    background:#fff!important;box-shadow:0 -4px 16px #00000008!important;overflow:auto!important
+  }
+  #pls-editor .inspect-head{display:none!important}
+  #pls-editor .inspect-body{
+    display:block!important;min-height:100%!important;padding:0!important;
+    border-radius:19px 19px 0 0!important;background:#fff!important
+  }
+  #pls-editor .bottom{display:none!important}
+  #pls-editor #pls-print{
+    position:absolute!important;z-index:10!important;right:22px!important;
+    bottom:calc(12% + 17px)!important;width:88px!important;height:88px!important;
+    border-radius:50%!important;background:#f32632!important;color:#fff!important;
+    border:6px solid #fff!important;box-shadow:0 6px 20px #0003!important;font-size:0!important
+  }
+  #pls-editor #pls-print::before{content:"▤"!important;font-size:35px!important;color:#fff!important}
+  #pls-editor #pls-print::after{content:""!important}
+}
 </style>
 <div class="top"><div class="brandmark">PRASAD LABEL STUDIO</div><div class="top-actions"><button id="pls-close">↶</button><button id="pls-save" class="save">▣</button><button id="pls-select-all">☷</button><button id="pls-single-select">☑</button><button id="pls-multiselect">▦</button><button id="pls-undo">↶</button><button id="pls-redo">↷</button><button id="pls-print" class="save">PRINT ONE</button></div></div>
 <div class="formatbar"><select id="pls-page"><option value="50x30">50 × 30 mm</option><option value="50x25">50 × 25 mm</option><option value="40x30">40 × 30 mm</option><option value="60x40">60 × 40 mm</option><option value="custom">Custom size…</option></select><span class="dim" id="pls-dim">Label size: 50 × 30 mm</span><button id="pls-templates">TEMPLATES</button><button id="pls-multiselect-format">MULTI-SELECT: OFF</button><button id="pls-new">NEW LABEL</button></div>
