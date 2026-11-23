@@ -50,8 +50,41 @@ root.innerHTML=\`<style>
 #pls-editor .modal-card h3{margin:0 0 12px;font-size:16px}
 #pls-editor .modal-card .row{display:flex;gap:8px;margin-top:15px}
 @media(max-width:700px){#pls-editor .work{flex-direction:column}#pls-editor .canvas-area{flex:1;min-height:190px;padding:9px}#pls-editor .inspector{width:100%;max-height:38%;border-left:0;border-top:1px solid var(--line)}#pls-editor .inspect-head{padding:8px 12px}#pls-editor .inspect-body{padding:8px 12px}#pls-editor .inspect-body label{margin:7px 0 4px}#pls-editor .inspect-body .group-title{margin:10px 0 4px}#pls-editor .tools{padding:6px}#pls-editor .tool{min-width:61px;padding:5px 8px}#pls-editor .top{height:46px}}
+
+/* Mobile editing workspace styled to match the supplied MyLabel reference */
+#pls-editor{background:#f0f1f5;color:#20242b;font-family:Arial,sans-serif}
+#pls-editor .top{height:76px;background:#fff;color:#20242b;padding:5px 6px;overflow-x:auto;justify-content:flex-start;gap:6px;border-bottom:1px solid #e4e6eb}
+#pls-editor .brandmark{display:none}
+#pls-editor .top-actions{display:flex;gap:6px;align-items:stretch}
+#pls-editor .top button{background:#fff;color:#697382;border:1px solid #e5e7eb;min-width:66px;height:64px;padding:5px 7px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:11px}
+#pls-editor .top button::after{font-size:10px;font-weight:500}
+#pls-editor #pls-close::after{content:"Return"}#pls-editor #pls-save::after{content:"Save"}#pls-editor #pls-select-all::after{content:"Select All"}#pls-editor #pls-single-select::after{content:"Single Select"}#pls-editor #pls-multiselect::after{content:"Multi Select"}#pls-editor #pls-undo::after{content:"Undo"}
+#pls-editor #pls-close{font-size:0}#pls-editor #pls-close::before{content:"↶";font-size:29px}
+#pls-editor #pls-save{font-size:0}#pls-editor #pls-save::before{content:"▣";font-size:29px}
+#pls-editor #pls-select-all,#pls-editor #pls-single-select,#pls-editor #pls-multiselect{font-size:0}
+#pls-editor #pls-select-all::before{content:"☷";font-size:29px}#pls-editor #pls-single-select::before{content:"☑";font-size:29px}#pls-editor #pls-multiselect::before{content:"▦";font-size:29px}
+#pls-editor #pls-undo{font-size:0}#pls-editor #pls-undo::before{content:"↶";font-size:29px}
+#pls-editor .formatbar{display:none}
+#pls-editor .tools{background:#fff;padding:5px 6px;gap:5px;border-bottom:1px solid #e6e8ed}
+#pls-editor .tool{min-width:65px;height:76px;border:1px solid #eef0f3;border-radius:14px;padding:6px 8px;color:#697382}
+#pls-editor .tool .ico{font-size:28px;line-height:32px}
+#pls-editor .work{position:relative;flex-direction:column;background:#f0f1f5}
+#pls-editor .canvas-area{flex:1;min-height:0;justify-content:flex-start;align-items:stretch;padding:0 0 10px;overflow:auto;background:#f0f1f5;background-image:none;position:relative}
+#pls-editor .ruler{height:30px;flex:none;margin:0;padding:3px 0 0 34px;background-color:#f7f8fb;background-image:repeating-linear-gradient(90deg,#6976b4 0 1px,transparent 1px 12px);background-size:auto 18px;background-repeat:repeat-x;background-position:left bottom;color:#c22b38;font-size:12px;letter-spacing:0;white-space:nowrap}
+#pls-editor .canvas-area::before{content:"";position:absolute;left:33px;top:30px;bottom:0;width:17px;background:repeating-linear-gradient(180deg,#6f7ab2 0 1px,transparent 1px 12px);pointer-events:none}
+#pls-canvas{width:calc(100% - 34px);max-width:none;margin-left:34px;margin-right:0;align-self:flex-start;height:auto;box-shadow:none;border:0;display:block}
+#pls-editor .canvas-hint{display:none}
+#pls-editor .inspector{width:100%;max-height:18%;min-height:100px;flex:none;border:0;border-top:1px solid #e2e5eb;border-radius:18px 18px 0 0;box-shadow:0 -4px 16px #00000008}
+#pls-editor .inspect-head{padding:8px 12px}
+#pls-editor .inspect-body{padding:7px 12px}
+#pls-editor .bottom{display:none}
+#pls-editor #pls-print{position:absolute;z-index:8;right:18px;bottom:calc(18% + 24px);width:82px;height:82px;border-radius:50%;background:#f32632;color:#fff;border:6px solid #fff;box-shadow:0 6px 20px #0003;font-size:0}
+#pls-editor #pls-print::before{content:"▤";font-size:34px;color:#fff}
+#pls-editor #pls-print::after{content:"Print";font-size:10px;color:#fff}
+#pls-editor .top-actions #pls-redo{display:none}
+@media(min-width:701px){#pls-editor .top{height:62px}#pls-editor .inspector{max-height:none;width:245px}#pls-editor .work{flex-direction:row}#pls-editor .canvas-area{padding:12px;align-items:center;justify-content:center}#pls-canvas{width:min(100%,650px);margin:0;border:1px solid #c9cdd4}#pls-editor .canvas-area::before{display:none}#pls-editor .ruler{height:auto;background:none;padding:0;margin-bottom:7px}#pls-editor .canvas-hint{display:block}#pls-editor .bottom{display:flex}#pls-editor #pls-print{position:static;width:auto;height:auto;border-radius:8px;border:1px solid var(--line);background:#fff;color:#222;box-shadow:none;font-size:12px}#pls-editor #pls-print::before,#pls-editor #pls-print::after{content:none}}
 </style>
-<div class="top"><div class="brandmark">PRASAD LABEL STUDIO</div><div class="top-actions"><button id="pls-undo">↶</button><button id="pls-redo">↷</button><button id="pls-print" class="save">PRINT ONE</button><button id="pls-save" class="save">SAVE</button><button id="pls-close">✕</button></div></div>
+<div class="top"><div class="brandmark">PRASAD LABEL STUDIO</div><div class="top-actions"><button id="pls-close">↶</button><button id="pls-save" class="save">▣</button><button id="pls-select-all">☷</button><button id="pls-single-select">☑</button><button id="pls-multiselect">▦</button><button id="pls-undo">↶</button><button id="pls-redo">↷</button><button id="pls-print" class="save">PRINT ONE</button></div></div>
 <div class="formatbar"><select id="pls-page"><option value="50x30">50 × 30 mm</option><option value="50x25">50 × 25 mm</option><option value="40x30">40 × 30 mm</option><option value="60x40">60 × 40 mm</option><option value="custom">Custom size…</option></select><span class="dim" id="pls-dim">Label size: 50 × 30 mm</span><button id="pls-templates">TEMPLATES</button><button id="pls-multiselect">MULTI-SELECT: OFF</button><button id="pls-new">NEW LABEL</button></div>
 <div class="tools">
 <button class="tool" data-add="text"><span class="ico">T</span><span>Text</span></button>
@@ -63,12 +96,14 @@ root.innerHTML=\`<style>
 <button class="tool" data-add="line"><span class="ico">／</span><span>Line</span></button>
 <button class="tool" id="pls-delete-tool"><span class="ico">⌫</span><span>Delete</span></button>
 </div>
-<div class="work"><div class="canvas-area"><div class="ruler" id="pls-ruler">0 ───── 10 ───── 20 ───── 30 ───── 40 ───── 50 mm</div><svg id="pls-canvas" viewBox="0 0 500 300" aria-label="Label design canvas"></svg><div class="canvas-hint">Tap an item to select · Drag to move · Drag blue corner to resize</div></div>
+<div class="work"><div class="canvas-area"><div class="ruler" id="pls-ruler">0　　　　 10　　　　 20　　　　 30　　　　 40　　　　 50</div><svg id="pls-canvas" viewBox="0 0 500 300" aria-label="Label design canvas"></svg><div class="canvas-hint">Tap an item to select · Drag to move · Drag blue corner to resize</div></div>
 <aside class="inspector"><div class="inspect-head"><span>Object Properties</span><span id="pls-selection-name">No selection</span></div><div class="inspect-body" id="pls-inspector"><div class="muted">Select an item on the label, or choose a tool above to add a new object.</div></div></aside></div>
 <div class="bottom"><button class="active" data-tab="object">OBJECT</button><button data-tab="text">TEXT STYLE</button><button data-tab="arrange">ARRANGE</button><button data-tab="page">PAGE SETUP</button><button id="pls-print-bulk">PRINT BULK</button><button id="pls-export">EXPORT</button><button id="pls-import">IMPORT</button><input id="pls-file" type="file" accept="image/*,.json" hidden></div>
 <div id="pls-modal" class="modal hidden"><div class="modal-card" id="pls-modal-card"></div></div>\`;
 document.body.appendChild(root);
 q("#pls-close").onclick=()=>root.style.display="none";
+q("#pls-select-all").onclick=()=>{multiSelectMode=true;selectedIds=new Set(objects.map(o=>o.id));selected=objects.length?objects[objects.length-1].id:null;q("#pls-multiselect").style.background="#fff0f1";q("#pls-multiselect").style.color="#e32e3a";render();};
+q("#pls-single-select").onclick=()=>{multiSelectMode=false;selectedIds.clear();if(selected)selectedIds.add(selected);q("#pls-multiselect").style.background="#fff";q("#pls-multiselect").style.color="#222";render();};
 root.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>add(b.dataset.add));
 root.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{activeTab=b.dataset.tab;root.querySelectorAll("[data-tab]").forEach(x=>x.classList.toggle("active",x===b));renderInspector();});
 q("#pls-undo").onclick=()=>{if(undo.length){redo.push(JSON.stringify(objects));objects=JSON.parse(undo.pop());save();render();}};
