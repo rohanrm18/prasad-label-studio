@@ -361,6 +361,21 @@ body{padding-bottom:calc(62px + env(safe-area-inset-bottom))}
 
 <p class="muted">Bulk printing requires two confirmations before printing starts. You can cancel remaining labels while printing.</p>
 
+<div class="auto-box" style="margin-top:14px">
+<strong>PRINTER OPTIONS</strong>
+<p class="muted">These settings are saved on this phone and sent with Bluetooth print jobs. Start with the current values; adjust only after a test label.</p>
+<label>Paper type</label>
+<select id="printPaperType" onchange="savePrintOptions()"><option value="gap">Gap / sticker paper</option><option value="continuous">Continuous paper</option></select>
+<div class="grid2">
+ <div><label>Horizontal alignment (mm)</label><input id="printAlignMm" type="number" min="-3" max="3" step="0.5" value="0" onchange="savePrintOptions()"></div>
+ <div><label>Extra feed after each label (mm)</label><input id="printFeedMm" type="number" min="0" max="10" step="0.5" value="0" onchange="savePrintOptions()"></div>
+</div>
+<label>Print darkness</label>
+<input id="printDarkness" type="range" min="80" max="220" step="5" value="160" oninput="savePrintOptions()">
+<div class="muted">Current threshold: <span id="printDarknessValue">160</span>. Lower values print darker; higher values print lighter.</div>
+<div class="muted" style="margin-top:10px">Compression: printer raster mode (fixed). Cut and print-finished signals are not enabled because P58D support has not been verified.</div>
+<div id="printOptionsStatus" class="muted" style="margin-top:8px">Settings saved on this phone.</div>
+</div>
 <button class="secondary" style="width:100%;padding:15px;margin-top:10px" onclick="printLabels()">BROWSER PRINT</button>
 
 <p class="muted">Browser printing uses your phone's print dialog. Select 50 × 30 mm paper if available and set scale to 100%.</p>
@@ -550,6 +565,32 @@ function chooseTemplate(template){
 /* PRODUCT DATA */
 
 const DESIGN_DEFAULTS={brand:"PRASAD APPARELS",align:"left",font:"sans",offsetX:0,positions:{brand:{x:0,y:0},details:{x:0,y:0},size:{x:0,y:0},barcode:{x:0,y:0}},scales:{brand:1,details:1,size:1,barcode:1},border:"none",brandSize:18,textSize:14,sizeSize:34,barcodeHeight:48,padding:6,layout:"standard",showBrand:true,showStyle:true,showModel:true,showColour:true,showSize:true,showBarcode:true,notepadText:"",notepadLines:[]};
+function readPrintOptions(){
+ const number=(id,fallback,min,max)=>{const el=document.getElementById(id);const n=el?Number(el.value):fallback;return Number.isFinite(n)?Math.max(min,Math.min(max,n)):fallback;};
+ return {
+  paperType:(document.getElementById("printPaperType")||{}).value||"gap",
+  alignMm:number("printAlignMm",0,-3,3),
+  feedMm:number("printFeedMm",0,0,10),
+  darkness:number("printDarkness",160,80,220)
+ };
+}
+function savePrintOptions(){
+ const options=readPrintOptions();
+ try{localStorage.setItem("prasadPrintOptions",JSON.stringify(options));}catch(e){}
+ const value=document.getElementById("printDarknessValue");if(value)value.textContent=String(options.darkness);
+ const status=document.getElementById("printOptionsStatus");if(status)status.textContent="Settings saved on this phone.";
+}
+function loadPrintOptions(){
+ let saved={};try{saved=JSON.parse(localStorage.getItem("prasadPrintOptions")||"{}")||{};}catch(e){}
+ const defaults={paperType:"gap",alignMm:0,feedMm:0,darkness:160};
+ const options={...defaults,...saved};
+ const set=(id,value)=>{const el=document.getElementById(id);if(el)el.value=String(value);};
+ set("printPaperType",options.paperType==="continuous"?"continuous":"gap");
+ set("printAlignMm",Math.max(-3,Math.min(3,Number(options.alignMm)||0)));
+ set("printFeedMm",Math.max(0,Math.min(10,Number(options.feedMm)||0)));
+ set("printDarkness",Math.max(80,Math.min(220,Number(options.darkness)||160)));
+ const value=document.getElementById("printDarknessValue");if(value)value.textContent=document.getElementById("printDarkness").value;
+}
 function getDesignSettings(){
  const d={...DESIGN_DEFAULTS,positions:JSON.parse(JSON.stringify(DESIGN_DEFAULTS.positions))};
  try{const saved=JSON.parse(localStorage.getItem("prasadLabelDesign")||"{}");if(saved.textSize===13){saved.textSize=14;localStorage.setItem("prasadLabelDesign",JSON.stringify(saved));}Object.assign(d,saved);d.positions={...DESIGN_DEFAULTS.positions,...(saved.positions||{})};d.scales={...DESIGN_DEFAULTS.scales,...(saved.scales||{})};}catch(e){}
@@ -566,7 +607,7 @@ function getDesignSettings(){
   d.notepadText=note.value;
   d.notepadLines=note.value.split(/\r?\n/).filter(v=>v.length>0).map((text,i)=>({...({x:2,y:10+i*4,size:14,bold:false}),...(previous[i]||{}),text}));
  }
- d.template=selectedTemplate;return d;
+ d.printOptions=readPrintOptions();d.template=selectedTemplate;return d;
 }
 function loadMoveControls(){
  const targetEl=document.getElementById("dMoveTarget");if(!targetEl)return;
@@ -987,6 +1028,7 @@ function printLabels(){
 
 /* INITIALIZE */
 
+loadPrintOptions();
 makeSizeGrid();
 try{const savedLabelDesign=JSON.parse(localStorage.getItem("prasadLabelDesign")||"{}");document.getElementById("dNotepadText").value=savedLabelDesign.notepadText||"";}catch(e){}
 applyDesigner(getDesignSettings());
