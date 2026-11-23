@@ -214,7 +214,6 @@ root.innerHTML=`<style>
 <button class="tool" data-add="barcode"><span class="ico">▥</span><span>Barcode</span></button>
 <button class="tool" data-add="image"><span class="ico">▤<i class="tool-plus">+</i></span><span>Insert</span></button>
 <button class="tool" data-add="qr"><span class="ico">▦</span><span>Qrcode</span></button>
-<button class="tool" id="pls-ai-scan"><span class="ico">⛶</span><span>AI Scan</span></button>
 <button class="tool" id="pls-edit-selected"><span class="ico">✎</span><span>Edit</span></button>
 <button class="tool" data-add="rect"><span class="ico">□</span><span>Rectangle</span></button>
 <button class="tool" data-add="line"><span class="ico">／</span><span>Line</span></button>
@@ -237,7 +236,6 @@ q("#pls-save").onclick=saveTemplate;q("#pls-templates-top").onclick=showTemplate
 q("#pls-new").onclick=()=>modal("Create new label",'<label>Label name</label><input id="pls-newname" value="My label"><div class="two"><div><label>Width (mm)</label><input id="pls-neww" type="number" value="'+page.w+'"></div><div><label>Height (mm)</label><input id="pls-newh" type="number" value="'+page.h+'"></div></div>','CREATE',()=>{let w=Number(q("#pls-neww").value),h=Number(q("#pls-newh").value);if(w<10||h<10||w>150||h>150)return alert("Enter a size between 10 and 150 mm.");checkpoint();page={w,h,name:q("#pls-newname").value||"My label"};objects=[];selected=null;save();render();closeModal();});
 q("#pls-page").onchange=()=>{let v=q("#pls-page").value;if(v==="custom"){q("#pls-new").click();q("#pls-page").value=page.w+"x"+page.h;return;}let [w,h]=v.split("x").map(Number);checkpoint();page={w,h,name:v};save();render();};
 q("#pls-delete-tool").onclick=removeSelected;
-q("#pls-ai-scan").onclick=()=>alert("AI Scan is shown in the reference toolbar. Its scanning service is not connected yet.");
 q("#pls-edit-selected").onclick=()=>{activeTab="object";root.querySelectorAll("[data-tab]").forEach(x=>x.classList.toggle("active",x.dataset.tab==="object"));renderInspector();};
 q("#pls-print-bulk").onclick=printEditorBulk;q("#pls-export").onclick=exportData;q("#pls-import").onclick=()=>{q("#pls-file").accept=".json";q("#pls-file").click();};
 q("#pls-file").onchange=e=>{let f=e.target.files[0];if(!f)return;if(f.type.startsWith("image/")){let r=new FileReader();r.onload=()=>add("image",r.result);r.readAsDataURL(f);}else importData(f);e.target.value="";};
