@@ -740,8 +740,10 @@ public class MainActivity extends Activity {
         float editorPageW = editorPageForSize == null ? 50f : (float)Math.max(10, editorPageForSize.optDouble("w", 50));
         float editorPageH = editorPageForSize == null ? 30f : (float)Math.max(10, editorPageForSize.optDouble("h", 30));
         boolean editorPrint = d.optBoolean("editorMode", false);
+        // P58D: 48 mm printable width = 384 dots; 30 mm label height = 240 dots.
+        // Keep the physical label height independent of the narrower printable width.
         final int width = editorPrint ? Math.max(1, Math.min(384, Math.round(editorPageW * 8f))) : 384;
-        final int height = editorPrint ? Math.max(1, Math.round(editorPageH * (width / editorPageW))) : 240;
+        final int height = editorPrint ? Math.max(1, Math.round(editorPageH * 8f)) : 240;
         Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         Canvas c = new Canvas(bitmap); c.drawColor(Color.WHITE);
         String t=d.optString("template","classic"), font=d.optString("font","sans");
@@ -900,16 +902,16 @@ public class MainActivity extends Activity {
             JSONObject editorPage = d.optJSONObject("editorPage");
             float pageW = editorPage == null ? 50f : (float)Math.max(10, editorPage.optDouble("w",50));
             float pageH = editorPage == null ? 30f : (float)Math.max(10, editorPage.optDouble("h",30));
-            // Keep a 1 mm horizontal / approximately 1 mm vertical safe margin.
-            // Use one uniform scale on both axes so circles, frames and text proportions
-            // do not distort when the 50 mm page is reduced to the P58D's 384-dot head.
+            // Map the 50 x 30 mm design independently to the P58D's
+            // 48 x 30 mm printable area, retaining an approximately 1 mm safe margin.
+            // X and Y scales differ slightly because the print head is narrower
+            // than the physical 50 mm sticker.
             float safeInsetX = Math.min(8f, width * 0.04f);
             float safeInsetY = Math.min(8f, height * 0.04f);
-            float sx = Math.min((width - 2f * safeInsetX) / (pageW * 10f),
-                                (height - 2f * safeInsetY) / (pageH * 10f));
-            float sy = sx;
-            float offsetX = (width - pageW * 10f * sx) / 2f;
-            float offsetY = (height - pageH * 10f * sy) / 2f;
+            float sx = (width - 2f * safeInsetX) / (pageW * 10f);
+            float sy = (height - 2f * safeInsetY) / (pageH * 10f);
+            float offsetX = safeInsetX;
+            float offsetY = safeInsetY;
             if (editorObjects != null) {
                 for (int oi=0; oi<editorObjects.length(); oi++) {
                     JSONObject obj=editorObjects.optJSONObject(oi); if(obj==null) continue;
