@@ -132,7 +132,7 @@ sizes.forEach(size=>{if((quantities[size]||0)>0)items.push({size,quantity:quanti
 if(!style||!items.length){alert("Enter a style and select size quantities first.");return;}
 AndroidPrinter.printBulk(JSON.stringify({style,model,category,colour,barcode:noBarcode||auto?"":(get("barcodeNumber")?.value||""),autoBarcode:auto,items,design:{editorMode:true,editorPage:page,editorObjects:objects,showBarcode:!noBarcode}}));
 }
-function saveTemplate(){let name=prompt("Enter template name");if(!name)return;let all=JSON.parse(localStorage.getItem(TMPL)||"{}");all[name]={page,objects};localStorage.setItem(TMPL,JSON.stringify(all));alert("Template saved on this device.");}
+function saveTemplate(){modal("Save this label template",'<label>Template name</label><input id="pls-template-name" maxlength="40" value="'+esc(page.name||"Prasad label")+'"><p class="muted">Saved templates stay on this phone.</p>',"SAVE",()=>{let name=q("#pls-template-name").value.trim();if(!name)return alert("Enter a template name.");let all=JSON.parse(localStorage.getItem(TMPL)||"{}");if(all[name]&&!confirm("A template with this name already exists. Replace it?"))return;all[name]={page:JSON.parse(JSON.stringify(page)),objects:JSON.parse(JSON.stringify(objects))};localStorage.setItem(TMPL,JSON.stringify(all));closeModal();alert("Template saved on this device.");});}
 function showTemplates(){
 let all=JSON.parse(localStorage.getItem(TMPL)||"{}");
 const presets=[
