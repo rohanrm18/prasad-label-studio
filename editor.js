@@ -92,6 +92,13 @@ root.innerHTML=\`<style>
 #pls-editor .canvas-area::before{display:none}
 #pls-canvas{margin:0!important;width:calc(100% - 34px)!important}
 @media(min-width:701px){#pls-editor .ruler{display:none}#pls-editor .ruler-y{display:none}#pls-editor .canvas-row{justify-content:center}#pls-canvas{width:min(100%,650px)!important;margin:0!important}}
+/* Final mobile layout overrides: keep inspector and editor tabs visible */
+@media(max-width:700px){
+#pls-editor .inspector{max-height:30%;min-height:142px;flex:none}
+#pls-editor .bottom{display:flex;gap:5px;padding:5px 7px}
+#pls-editor .bottom button{padding:7px 9px;font-size:10px}
+#pls-editor #pls-print{bottom:calc(30% + 24px)}
+}
 </style>
 <div class="top"><div class="brandmark">PRASAD LABEL STUDIO</div><div class="top-actions"><button id="pls-close">↶</button><button id="pls-save" class="save">▣</button><button id="pls-select-all">☷</button><button id="pls-single-select">☑</button><button id="pls-multiselect">▦</button><button id="pls-undo">↶</button><button id="pls-redo">↷</button><button id="pls-print" class="save">PRINT ONE</button></div></div>
 <div class="formatbar"><select id="pls-page"><option value="50x30">50 × 30 mm</option><option value="50x25">50 × 25 mm</option><option value="40x30">40 × 30 mm</option><option value="60x40">60 × 40 mm</option><option value="custom">Custom size…</option></select><span class="dim" id="pls-dim">Label size: 50 × 30 mm</span><button id="pls-templates">TEMPLATES</button><button id="pls-multiselect-format">MULTI-SELECT: OFF</button><button id="pls-new">NEW LABEL</button></div>
