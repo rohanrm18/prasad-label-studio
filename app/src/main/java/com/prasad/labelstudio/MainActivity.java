@@ -976,7 +976,7 @@ public class MainActivity extends Activity {
         JSONObject printOptions=d.optJSONObject("printOptions");
         int darkness=printOptions==null?160:Math.max(80,Math.min(220,printOptions.optInt("darkness",160)));
         int horizontalShift=printOptions==null?0:(int)Math.round(Math.max(-3,Math.min(3,printOptions.optDouble("alignMm",0)))*8f);
-        double feedMm=printOptions==null?0:printOptions.optDouble(isLastLabel?"lastFeedMm":"feedMm",0);
+        double feedMm=printOptions==null?2:printOptions.optDouble(isLastLabel?"lastFeedMm":"feedMm",2);
         int feedDots=(int)Math.round(Math.max(0,Math.min(10,feedMm))*8f);
         int bpr=(width+7)/8;byte[] raster=new byte[bpr*height];
         for(int yy=0;yy<height;yy++)for(int xx=0;xx<width;xx++){
