@@ -65,9 +65,12 @@ root.innerHTML=\`<style>
 #pls-editor #pls-select-all::before{content:"☷";font-size:29px}#pls-editor #pls-single-select::before{content:"☑";font-size:29px}#pls-editor #pls-multiselect::before{content:"▦";font-size:29px}
 #pls-editor #pls-undo{font-size:0}#pls-editor #pls-undo::before{content:"↶";font-size:29px}
 #pls-editor .formatbar{display:none}
-#pls-editor .tools{background:#fff;padding:5px 6px;gap:5px;border-bottom:1px solid #e6e8ed}
-#pls-editor .tool{min-width:65px;height:76px;border:1px solid #eef0f3;border-radius:14px;padding:6px 8px;color:#697382}
-#pls-editor .tool .ico{font-size:28px;line-height:32px}
+#pls-editor .tools{background:#fff;padding:5px 6px;gap:7px;border-bottom:1px solid #e6e8ed;min-height:88px}
+#pls-editor .tool{min-width:86px;height:82px;border:1px solid #eef0f3;border-radius:16px;padding:6px 8px;color:#697382;justify-content:center}
+#pls-editor .tool .ico{font-size:34px;line-height:37px;position:relative}
+#pls-editor .tool.active-tool{background:#fff1f2;border-color:#f5c9ce;color:#d83240}
+#pls-editor .tool-plus{position:absolute;right:-13px;top:-7px;width:22px;height:22px;border-radius:50%;background:#f32d3a;color:#fff;font-style:normal;font-size:17px;line-height:22px;text-align:center}
+#pls-editor .tool span:last-child{font-size:14px}
 #pls-editor .work{position:relative;flex-direction:column;background:#f0f1f5}
 #pls-editor .canvas-area{flex:1;min-height:0;justify-content:flex-start;align-items:stretch;padding:0 0 10px;overflow:auto;background:#f0f1f5;background-image:none;position:relative}
 #pls-editor .ruler{height:30px;flex:none;margin:0;padding:3px 0 0 34px;background-color:#f7f8fb;background-image:repeating-linear-gradient(90deg,#6976b4 0 1px,transparent 1px 12px);background-size:auto 18px;background-repeat:repeat-x;background-position:left bottom;color:#c22b38;font-size:12px;letter-spacing:0;white-space:nowrap}
@@ -92,22 +95,36 @@ root.innerHTML=\`<style>
 #pls-editor .canvas-area::before{display:none}
 #pls-canvas{margin:0!important;width:calc(100% - 34px)!important}
 @media(min-width:701px){#pls-editor .ruler{display:none}#pls-editor .ruler-y{display:none}#pls-editor .canvas-row{justify-content:center}#pls-canvas{width:min(100%,650px)!important;margin:0!important}}
-/* Final mobile layout overrides: keep inspector and editor tabs visible */
+/* Reference-matched mobile workspace: compact blank property tray */
 @media(max-width:700px){
-#pls-editor .inspector{max-height:30%;min-height:142px;flex:none}
-#pls-editor .bottom{display:flex;gap:5px;padding:5px 7px}
-#pls-editor .bottom button{padding:7px 9px;font-size:10px}
-#pls-editor #pls-print{bottom:calc(30% + 24px)}
+#pls-editor .top{height:94px;padding:5px 5px;gap:6px}
+#pls-editor .top button{min-width:88px;height:84px;border-radius:17px;font-size:12px}
+#pls-editor .top button::after{font-size:14px}
+#pls-editor .top button::before{font-size:40px!important;line-height:40px}
+#pls-editor .tools{min-height:91px;padding:5px 6px;gap:7px}
+#pls-editor .tool{min-width:86px;height:82px}
+#pls-editor .tool span:last-child{font-size:14px}
+#pls-editor .canvas-area{padding:0;background:#f0f1f5}
+#pls-editor .ruler{height:34px;background-size:auto 18px}
+#pls-editor .canvas-row{align-items:stretch}
+#pls-editor .inspector{max-height:18%;min-height:0;height:18%;flex:none;border:0;border-radius:18px 18px 0 0;box-shadow:0 -4px 16px #00000008}
+#pls-editor .inspect-head{display:none}
+#pls-editor .inspect-body{padding:0;min-height:100%;background:#fff;border-radius:18px 18px 0 0}
+#pls-editor .bottom{display:none}
+#pls-editor #pls-print{bottom:calc(18% + 24px);right:22px;width:88px;height:88px}
 }
+
 </style>
 <div class="top"><div class="brandmark">PRASAD LABEL STUDIO</div><div class="top-actions"><button id="pls-close">↶</button><button id="pls-save" class="save">▣</button><button id="pls-select-all">☷</button><button id="pls-single-select">☑</button><button id="pls-multiselect">▦</button><button id="pls-undo">↶</button><button id="pls-redo">↷</button><button id="pls-print" class="save">PRINT ONE</button></div></div>
 <div class="formatbar"><select id="pls-page"><option value="50x30">50 × 30 mm</option><option value="50x25">50 × 25 mm</option><option value="40x30">40 × 30 mm</option><option value="60x40">60 × 40 mm</option><option value="custom">Custom size…</option></select><span class="dim" id="pls-dim">Label size: 50 × 30 mm</span><button id="pls-templates">TEMPLATES</button><button id="pls-multiselect-format">MULTI-SELECT: OFF</button><button id="pls-new">NEW LABEL</button></div>
 <div class="tools">
-<button class="tool" data-add="text"><span class="ico">T</span><span>Text</span></button>
-<button class="tool" data-add="icon"><span class="ico">✦</span><span>Icon</span></button>
+<button class="tool" data-add="text"><span class="ico">Aa</span><span>Text</span></button>
+<button class="tool active-tool" data-add="icon"><span class="ico">▦</span><span>Icon</span></button>
 <button class="tool" data-add="barcode"><span class="ico">▥</span><span>Barcode</span></button>
-<button class="tool" data-add="image"><span class="ico">▧</span><span>Insert Image</span></button>
-<button class="tool" data-add="qr"><span class="ico">▦</span><span>QR Code</span></button>
+<button class="tool" data-add="image"><span class="ico">▤<i class="tool-plus">+</i></span><span>Insert</span></button>
+<button class="tool" data-add="qr"><span class="ico">▦</span><span>Qrcode</span></button>
+<button class="tool" id="pls-ai-scan"><span class="ico">⛶</span><span>AI Scan</span></button>
+<button class="tool" id="pls-edit-selected"><span class="ico">✎</span><span>Edit</span></button>
 <button class="tool" data-add="rect"><span class="ico">□</span><span>Rectangle</span></button>
 <button class="tool" data-add="line"><span class="ico">／</span><span>Line</span></button>
 <button class="tool" id="pls-delete-tool"><span class="ico">⌫</span><span>Delete</span></button>
@@ -128,6 +145,8 @@ q("#pls-save").onclick=saveTemplate;q("#pls-templates").onclick=showTemplates;q(
 q("#pls-new").onclick=()=>modal("Create new label",'<label>Label name</label><input id="pls-newname" value="My label"><div class="two"><div><label>Width (mm)</label><input id="pls-neww" type="number" value="'+page.w+'"></div><div><label>Height (mm)</label><input id="pls-newh" type="number" value="'+page.h+'"></div></div>','CREATE',()=>{let w=Number(q("#pls-neww").value),h=Number(q("#pls-newh").value);if(w<10||h<10||w>150||h>150)return alert("Enter a size between 10 and 150 mm.");checkpoint();page={w,h,name:q("#pls-newname").value||"My label"};objects=[];selected=null;save();render();closeModal();});
 q("#pls-page").onchange=()=>{let v=q("#pls-page").value;if(v==="custom"){q("#pls-new").click();q("#pls-page").value=page.w+"x"+page.h;return;}let [w,h]=v.split("x").map(Number);checkpoint();page={w,h,name:v};save();render();};
 q("#pls-delete-tool").onclick=removeSelected;
+q("#pls-ai-scan").onclick=()=>alert("AI Scan is shown in the reference toolbar. Its scanning service is not connected yet.");
+q("#pls-edit-selected").onclick=()=>{activeTab="object";root.querySelectorAll("[data-tab]").forEach(x=>x.classList.toggle("active",x.dataset.tab==="object"));renderInspector();};
 q("#pls-print-bulk").onclick=printEditorBulk;q("#pls-export").onclick=exportData;q("#pls-import").onclick=()=>{q("#pls-file").accept=".json";q("#pls-file").click();};
 q("#pls-file").onchange=e=>{let f=e.target.files[0];if(!f)return;if(f.type.startsWith("image/")){let r=new FileReader();r.onload=()=>add("image",r.result);r.readAsDataURL(f);}else importData(f);e.target.value="";};
 render();
