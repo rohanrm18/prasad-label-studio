@@ -109,6 +109,13 @@ root.innerHTML=\`<style>
 #pls-editor #pls-print{bottom:calc(18% + 24px);right:22px;width:88px;height:88px}
 }
 
+/* Print settings access and modal scrolling */
+#pls-editor .modal-card{max-height:82vh;overflow-y:auto}
+@media(max-width:700px){
+#pls-editor #pls-print-settings{font-size:0!important}
+#pls-editor #pls-print-settings::before{content:"⚙";font-size:31px!important;line-height:37px!important;color:#697382!important}
+#pls-editor #pls-print-settings::after{content:"Settings";font-size:13px!important;line-height:16px!important;color:#737b87!important}
+}
 /* Final screenshot match: Shreyans mobile label editor */
 @media(max-width:700px){
   #pls-editor{background:#f0f1f5!important;color:#252932!important}
