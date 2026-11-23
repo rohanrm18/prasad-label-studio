@@ -917,7 +917,8 @@ public class MainActivity extends Activity {
                         String al=obj.optString("align","left");
                         ep.setTextAlign("center".equals(al)?Paint.Align.CENTER:("right".equals(al)?Paint.Align.RIGHT:Paint.Align.LEFT));
                         float tx="center".equals(al)?ex+w/2f:("right".equals(al)?ex+w:ex);
-                        c.drawText(obj.optString("text",""),tx,ey+Math.min(h,ep.getTextSize()+2),ep);
+                        String labelText = resolveEditorText(obj.optString("text",""), job);
+                        c.drawText(labelText,tx,ey+Math.min(h,ep.getTextSize()+2),ep);
                     } else if ("rect".equals(type)) {
                         String fill=obj.optString("fill","none");
                         if(!"none".equalsIgnoreCase(fill) && !fill.isEmpty()) {
@@ -937,7 +938,9 @@ public class MainActivity extends Activity {
                     } else if ("barcode".equals(type)) {
                         String objectValue=obj.optString("text","").trim();
                         String jobValue=job.barcode==null?"":job.barcode.trim();
-                        String value=!objectValue.isEmpty()?objectValue:(!jobValue.isEmpty()?jobValue:"123456");
+                        // The job barcode must win when supplied (including generated sequence numbers).
+                        String value=!jobValue.isEmpty()?jobValue:resolveEditorText(objectValue,job);
+                        if(value.isEmpty()) value="123456";
                         if(d.optBoolean("showBarcode",true) && !value.trim().isEmpty()){
                             BitMatrix bm=new MultiFormatWriter().encode(value,BarcodeFormat.CODE_128,Math.max(80,(int)w),Math.max(24,(int)(h*.72f)));
                             Paint bp=new Paint();bp.setColor(Color.BLACK);
@@ -948,7 +951,7 @@ public class MainActivity extends Activity {
                             c.drawText(value,ex+w/2f,ey+h-1,bp);
                         }
                     } else if ("qr".equals(type)) {
-                        String value=obj.optString("text","PRASAD APPARELS");
+                        String value=resolveEditorText(obj.optString("text","PRASAD APPARELS"),job);
                         BitMatrix qm=new MultiFormatWriter().encode(value,BarcodeFormat.QR_CODE,Math.max(64,(int)w),Math.max(64,(int)h));
                         Paint qp=new Paint();qp.setColor(Color.BLACK);
                         float cellW=w/qm.getWidth(),cellH=h/qm.getHeight();
@@ -988,6 +991,20 @@ public class MainActivity extends Activity {
         // ESC J feeds the requested additional paper distance after the raster.
         if(feedDots>0)out.write(new byte[]{0x1B,0x4A,(byte)Math.min(255,feedDots)});
         out.flush();
+    }
+
+    // Resolve product fields at print time so one saved design works for every size/style.
+    private String resolveEditorText(String value, LabelJob job) {
+        if (value == null) return "";
+        String result = value;
+        result = result.replace("{STYLE}", safe(job.style));
+        result = result.replace("{MODEL}", safe(job.model));
+        result = result.replace("{CATEGORY}", safe(job.category));
+        result = result.replace("{COLOUR}", safe(job.colour));
+        result = result.replace("{COLOR}", safe(job.colour));
+        result = result.replace("{SIZE}", safe(job.size));
+        result = result.replace("{BARCODE}", safe(job.barcode));
+        return result;
     }
 
     private int parseDesignColor(String value, int fallback) {
