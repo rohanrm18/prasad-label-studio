@@ -485,7 +485,7 @@ public class MainActivity extends Activity {
                         );
                     }
 
-                    printOneLabel(job);
+                    printOneLabel(job, completed == total - 1);
                     notifyWebLabelPrinted(job);
 
                     if (job.autoBarcode) {
@@ -729,7 +729,7 @@ public class MainActivity extends Activity {
     }
 
     // PRINT ONE LABEL AS A SINGLE 50 x 30 MM RASTER IMAGE
-    private void printOneLabel(LabelJob job) throws Exception {
+    private void printOneLabel(LabelJob job, boolean isLastLabel) throws Exception {
         BluetoothSocket socket = bluetoothSocket;
         if (socket == null || !socket.isConnected()) throw new Exception("Printer disconnected");
         JSONObject d = job.design == null ? new JSONObject() : job.design;
@@ -959,7 +959,8 @@ public class MainActivity extends Activity {
         JSONObject printOptions=d.optJSONObject("printOptions");
         int darkness=printOptions==null?160:Math.max(80,Math.min(220,printOptions.optInt("darkness",160)));
         int horizontalShift=printOptions==null?0:(int)Math.round(Math.max(-3,Math.min(3,printOptions.optDouble("alignMm",0)))*8f);
-        int feedDots=printOptions==null?0:(int)Math.round(Math.max(0,Math.min(10,printOptions.optDouble("feedMm",0)))*8f);
+        double feedMm=printOptions==null?0:printOptions.optDouble(isLastLabel?"lastFeedMm":"feedMm",0);
+        int feedDots=(int)Math.round(Math.max(0,Math.min(10,feedMm))*8f);
         int bpr=(width+7)/8;byte[] raster=new byte[bpr*height];
         for(int yy=0;yy<height;yy++)for(int xx=0;xx<width;xx++){
             int targetX=xx+horizontalShift;
