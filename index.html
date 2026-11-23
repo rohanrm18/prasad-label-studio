@@ -324,7 +324,8 @@ body{padding-bottom:calc(62px + env(safe-area-inset-bottom))}
 <div>
 <label>Custom quantity per selected size</label>
 <input type="number" id="customQty" min="1" value="10">
-<button class="primary" style="width:100%;margin-top:8px" onclick="applyCustom()">APPLY QUANTITY</button>
+<button class="primary" style="width:100%;margin-top:8px" onclick="applyCustom()">APPLY TO SELECTED SIZES</button>
+<button class="secondary" style="width:100%;margin-top:8px" onclick="applyToAllSizes()">SELECT ALL + APPLY TO ALL</button>
 </div>
 </div>
 
@@ -385,7 +386,7 @@ function showWorkflowStep(step){
  document.querySelectorAll("[data-step-button]").forEach(button=>button.classList.toggle("active",Number(button.dataset.stepButton)===workflowStep));
  window.scrollTo(0,0);
 }
-const sizes=["0","1","2","3","4","5","6","7","8","9","10","12","13"];
+const sizes=["1","2","3","4","5","6","7","8","9","10","12","14"];
 
 let selectedTemplate="classic";
 let quantities={};
@@ -533,6 +534,12 @@ function setQuick(qty){
 
 function applyCustom(){
  const qty=Math.max(1,parseInt(document.getElementById("customQty").value)||1);
+ setQuick(qty);
+}
+
+function applyToAllSizes(){
+ const qty=Math.max(1,parseInt(document.getElementById("customQty").value)||1);
+ selectAllSizes(true);
  setQuick(qty);
 }
 
