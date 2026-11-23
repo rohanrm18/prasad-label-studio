@@ -25,6 +25,9 @@ jobs:
         with:
           gradle-version: '8.9'
 
+      - name: Validate label editor JavaScript
+        run: node --check editor.js
+
       - name: Build Android APK
         run: gradle assembleDebug
 
