@@ -169,7 +169,6 @@ body{padding-bottom:calc(62px + env(safe-area-inset-bottom))}
 \n/* CLEAN MOBILE-FIRST WORKFLOW: templates first, preview immediately below */\nmain{display:flex;flex-direction:column;gap:0}\n.template-grid{grid-template-columns:repeat(2,minmax(0,1fr))}\n.template-option{min-height:72px;touch-action:manipulation}\n#previewWrap{display:flex;justify-content:center;align-items:flex-start;min-height:150px;overflow-x:auto;overscroll-behavior-x:contain}\n.label-preview{flex:0 0 50mm}\n@media(max-width:360px){.template-grid{grid-template-columns:1fr 1fr}.template-option{padding:10px 8px}}\n.label-preview .label-top,.label-preview .details,.label-preview .size-box,.label-preview .barcode-area{touch-action:none;cursor:grab;position:relative}\n.label-preview .manual-selected{outline:1px dashed #1677ff!important;outline-offset:2px;touch-action:none;cursor:grabbing;position:relative}
 .label-preview .manual-selected:after{content:none}\n.manual-resize-handle{position:absolute;right:-4px;bottom:-4px;width:12px;height:12px;border:1px solid #1677ff;background:#fff;border-radius:2px;z-index:5;touch-action:none;cursor:nwse-resize}\n@media print{.manual-resize-handle{display:none!important}}
 @media print{.manual-selected{outline:none!important}}
-.notepad-line{position:absolute;left:0;top:0;white-space:pre;max-width:48mm;z-index:4;padding:0 .3mm;touch-action:none;cursor:grab;line-height:1.15;color:#111}.notepad-line.selected{outline:1px dashed #1677ff;outline-offset:1px;cursor:grabbing}@media print{.notepad-line.selected{outline:none!important}}
 </style>
 </head>
 
@@ -282,16 +281,6 @@ body{padding-bottom:calc(62px + env(safe-area-inset-bottom))}
 
 
 <section class="panel workflow-panel" data-step="1">
-<div class="auto-box notepad-editor">
-<strong>FREE TEXT NOTEPAD</strong>
-<p class="muted">Type anything. Each new row becomes its own movable text line on the label.</p>
-<label>Write your label text</label>
-<textarea id="dNotepadText" rows="5" placeholder="PRASAD APPARELS&#10;STYLE: PA-102&#10;COLOUR: PEACH&#10;SIZE: 28" oninput="notepadChanged()" style="width:100%;min-height:120px;padding:12px;border:1px solid #ccc;border-radius:8px;font:15px/1.5 Arial;resize:vertical"></textarea>
-<div class="grid2">
-<div><label>Selected line font size</label><input id="dNotepadSize" type="range" min="8" max="28" value="14" oninput="changeNotepadStyle()"></div>
-<div><label>Text style</label><label class="auto-toggle"><input id="dNotepadBold" type="checkbox" onchange="changeNotepadStyle()"> Bold selected line</label></div>
-</div>
-<p class="muted" id="notepadStatus">Tap a line on the preview, then drag it wherever you want.</p>
 </div>
 <h2>Edit Label Design</h2>
 <p class="muted">Adjust the label yourself. Preview changes instantly. Save your settings for future labels.</p>
@@ -564,7 +553,7 @@ function chooseTemplate(template){
 
 /* PRODUCT DATA */
 
-const DESIGN_DEFAULTS={brand:"PRASAD APPARELS",align:"left",font:"sans",offsetX:0,positions:{brand:{x:0,y:0},details:{x:0,y:0},size:{x:0,y:0},barcode:{x:0,y:0}},scales:{brand:1,details:1,size:1,barcode:1},border:"none",brandSize:18,textSize:14,sizeSize:34,barcodeHeight:48,padding:6,layout:"standard",showBrand:true,showStyle:true,showModel:true,showColour:true,showSize:true,showBarcode:true,notepadText:"",notepadLines:[]};
+const DESIGN_DEFAULTS={brand:"PRASAD APPARELS",align:"left",font:"sans",offsetX:0,positions:{brand:{x:0,y:0},details:{x:0,y:0},size:{x:0,y:0},barcode:{x:0,y:0}},scales:{brand:1,details:1,size:1,barcode:1},border:"none",brandSize:18,textSize:14,sizeSize:34,barcodeHeight:48,padding:6,layout:"standard",showBrand:true,showStyle:true,showModel:true,showColour:true,showSize:true,showBarcode:true};
 function readPrintOptions(){
  const number=(id,fallback,min,max)=>{const el=document.getElementById(id);const n=el?Number(el.value):fallback;return Number.isFinite(n)?Math.max(min,Math.min(max,n)):fallback;};
  return {
@@ -603,12 +592,6 @@ function getDesignSettings(){
  ["brandSize","textSize","sizeSize","barcodeHeight","padding"].forEach(k=>{const v=read("d"+k[0].toUpperCase()+k.slice(1));if(v!==undefined)d[k]=+v;});
  ["showBrand","showStyle","showModel","showColour","showSize","showBarcode"].forEach(k=>{const v=read("d"+k[0].toUpperCase()+k.slice(1),e=>e.checked);if(v!==undefined)d[k]=v;});
  d.scales={...DESIGN_DEFAULTS.scales,...(d.scales||{})};
- const note=document.getElementById("dNotepadText");
- if(note){
-  const previous=Array.isArray(d.notepadLines)?d.notepadLines:[];
-  d.notepadText=note.value;
-  d.notepadLines=note.value.split(/\r?\n/).filter(v=>v.length>0).map((text,i)=>({...({x:2,y:10+i*4,size:14,bold:false}),...(previous[i]||{}),text}));
- }
  d.printOptions=readPrintOptions();d.template=selectedTemplate;return d;
 }
 function loadMoveControls(){
@@ -624,7 +607,7 @@ function moveSelectedItem(){
  updatePreview();
 }
 function designerChanged(){const d=getDesignSettings();applyDesigner(d);updatePreview();}
-function applyDesigner(d){document.getElementById("dBrand").value=d.brand??DESIGN_DEFAULTS.brand;const note=document.getElementById("dNotepadText");if(note)note.value=d.notepadText||"";["border","layout","font","align"].forEach(k=>{const el=document.getElementById("d"+k[0].toUpperCase()+k.slice(1));if(el)el.value=d[k]??DESIGN_DEFAULTS[k];});["brandSize","textSize","sizeSize","barcodeHeight","padding","offsetX"].forEach(k=>{const el=document.getElementById("d"+k[0].toUpperCase()+k.slice(1));if(el)el.value=d[k]??DESIGN_DEFAULTS[k];});["showBrand","showStyle","showModel","showColour","showSize","showBarcode"].forEach(k=>document.getElementById("d"+k[0].toUpperCase()+k.slice(1)).checked=d[k]??true);loadMoveControls();}
+function applyDesigner(d){document.getElementById("dBrand").value=d.brand??DESIGN_DEFAULTS.brand;["border","layout","font","align"].forEach(k=>{const el=document.getElementById("d"+k[0].toUpperCase()+k.slice(1));if(el)el.value=d[k]??DESIGN_DEFAULTS[k];});["brandSize","textSize","sizeSize","barcodeHeight","padding","offsetX"].forEach(k=>{const el=document.getElementById("d"+k[0].toUpperCase()+k.slice(1));if(el)el.value=d[k]??DESIGN_DEFAULTS[k];});["showBrand","showStyle","showModel","showColour","showSize","showBarcode"].forEach(k=>document.getElementById("d"+k[0].toUpperCase()+k.slice(1)).checked=d[k]??true);loadMoveControls();}
 function saveDesigner(){const d=getDesignSettings();delete d.template;localStorage.setItem("prasadLabelDesign",JSON.stringify(d));document.getElementById("designerStatus").textContent="Your custom label design is saved on this device.";}
 function resetDesigner(){localStorage.removeItem("prasadLabelDesign");applyDesigner(DESIGN_DEFAULTS);designerChanged();document.getElementById("designerStatus").textContent="Default design restored.";}
 function productData(){
@@ -650,17 +633,15 @@ function labelHTML(size,barcodeOverride){
  const pos=(key)=>{const v=d.positions?.[key]||{x:0,y:0},sc=d.scales?.[key]||1;return `transform:translate(${+v.x||0}mm,${+v.y||0}mm) scale(${sc})`;} ;
  const barcodeMarkup=barcode&&d.showBarcode?`<div class="barcode-area" style="${pos("barcode")}"><svg class="barcode" data-barcode="${escapeHTML(barcode)}"></svg><div class="barcode-number">${escapeHTML(barcode)}</div></div>`:"";
  const lines=[d.showStyle?`<div class="detail-line"><b>STYLE:</b> ${escapeHTML(p.style||"-")}</div>`:"",d.showModel&&p.model?`<div class="detail-line"><b>MODEL:</b> ${escapeHTML(p.model)}</div>`:"",p.category?`<div class="detail-line"><b>CATEGORY:</b> ${escapeHTML(p.category)}</div>`:"",d.showColour?`<div class="detail-line"><b>COLOUR:</b> ${escapeHTML(p.colour||"-")}</div>`:""].filter(Boolean).join("");
- const noteLines=(d.notepadLines||[]).map((line,i)=>`<div class="notepad-line" data-note-index="${i}" style="left:${Number(line.x)||0}mm;top:${Number(line.y)||0}mm;font-size:${Number(line.size)||14}px;font-weight:${line.bold?700:400}">${escapeHTML(line.text)}</div>`).join("");
  return `
  <div class="label-top" style="${pos("brand")}">
   ${d.showBrand?`<div class="brand">${escapeHTML(d.brand)}</div>`:""}
  </div>
  <div class="label-info" style="padding:${d.padding/10}mm 0;flex-direction:${d.layout==="stacked"?"column":"row"};align-items:${d.layout==="stacked"?"flex-start":"center"}">
-  <div class="details" style="text-align:var(--designer-align);transform:translate(${(+d.positions.details.x||0)+(+d.groupOffset?.x||0)}mm,${(+d.positions.details.y||0)+(+d.groupOffset?.y||0)}mm) scale(${d.scales.details||1}) translateX(var(--designer-offset-x,0px))">${d.notepadText? "":lines}</div>
+  <div class="details" style="text-align:var(--designer-align);transform:translate(${(+d.positions.details.x||0)+(+d.groupOffset?.x||0)}mm,${(+d.positions.details.y||0)+(+d.groupOffset?.y||0)}mm) scale(${d.scales.details||1}) translateX(var(--designer-offset-x,0px))">${lines}</div>
   ${d.showSize?`<div class="size-box" style="${pos("size")}"><div class="size-caption">SIZE</div><div class="size-value">${escapeHTML(size)}</div></div>`:""}
  </div>
  ${barcodeMarkup}
- ${noteLines}
  `;
 }
 
@@ -697,11 +678,6 @@ function nudgeCanvas(dx,dy){const d=getDesignSettings(),p=canvasSelected==="all"
 function changeCanvasScale(){if(canvasSelected==="all")return;const d=getDesignSettings();d.scales=d.scales||{...DESIGN_DEFAULTS.scales};d.scales[canvasSelected]=+document.getElementById("dCanvasScale").value;document.getElementById("dCanvasScaleValue").textContent=Math.round(d.scales[canvasSelected]*100)+"%";localStorage.setItem("prasadLabelDesign",JSON.stringify(d));const node=canvasNode(canvasSelected);if(node){const p=d.positions?.[canvasSelected]||{x:0,y:0};node.style.transform="translate("+p.x+"mm,"+p.y+"mm) scale("+d.scales[canvasSelected]+")";}}
 function resetCanvasSelection(){const d=getDesignSettings();if(canvasSelected==="all")d.groupOffset={x:0,y:0};else{d.positions[canvasSelected]={x:0,y:0};d.scales[canvasSelected]=1;}localStorage.setItem("prasadLabelDesign",JSON.stringify(d));updatePreview();selectCanvasItem(canvasSelected);loadCanvasControls();}
 function selectCanvasItem(key){const preview=document.getElementById("previewLabel");preview.querySelectorAll(".manual-selected").forEach(n=>n.classList.remove("manual-selected"));canvasSelected=key;document.getElementById("dCanvasTarget").value=key;if(key==="all"){preview.querySelectorAll(".label-top,.details,.size-box,.barcode-area").forEach(n=>n.classList.add("manual-selected"));}else{const node=canvasNode(key);if(node)node.classList.add("manual-selected");}loadCanvasControls();}
-let selectedNoteLine=0,noteDrag=null;
-function notepadChanged(){const d=getDesignSettings();localStorage.setItem("prasadLabelDesign",JSON.stringify({...d,template:undefined}));updatePreview();document.getElementById("notepadStatus").textContent=(d.notepadLines||[]).length+" text lines. Tap and drag each line on the label.";}
-function changeNotepadStyle(){const d=getDesignSettings(),line=d.notepadLines?.[selectedNoteLine];if(!line)return;line.size=+document.getElementById("dNotepadSize").value;line.bold=document.getElementById("dNotepadBold").checked;localStorage.setItem("prasadLabelDesign",JSON.stringify({...d,template:undefined}));updatePreview();selectNotepadLine(selectedNoteLine);}
-function selectNotepadLine(i){selectedNoteLine=i;const d=getDesignSettings(),line=d.notepadLines?.[i];if(!line)return;document.querySelectorAll(".notepad-line").forEach(n=>n.classList.toggle("selected",Number(n.dataset.noteIndex)===i));document.getElementById("dNotepadSize").value=line.size||14;document.getElementById("dNotepadBold").checked=!!line.bold;document.getElementById("notepadStatus").textContent="Selected line "+(i+1)+". Drag it on the label to position it.";}
-function enableNotepadLineEditing(){document.querySelectorAll("#previewLabel .notepad-line").forEach(node=>{node.onpointerdown=ev=>{ev.preventDefault();const i=Number(node.dataset.noteIndex);selectNotepadLine(i);const d=getDesignSettings(),line=d.notepadLines[i];noteDrag={i,startX:ev.clientX,startY:ev.clientY,x:+line.x||0,y:+line.y||0};try{node.setPointerCapture(ev.pointerId)}catch(e){}};node.onpointermove=ev=>{if(!noteDrag||noteDrag.i!==Number(node.dataset.noteIndex))return;const rect=document.getElementById("previewLabel").getBoundingClientRect(),d=getDesignSettings(),line=d.notepadLines[noteDrag.i];line.x=Math.max(0,Math.min(48,noteDrag.x+(ev.clientX-noteDrag.startX)/rect.width*50));line.y=Math.max(0,Math.min(28,noteDrag.y+(ev.clientY-noteDrag.startY)/rect.height*30));node.style.left=line.x+"mm";node.style.top=line.y+"mm";localStorage.setItem("prasadLabelDesign",JSON.stringify({...d,template:undefined}));};node.onpointerup=()=>{if(noteDrag){noteDrag=null;updatePreview();selectNotepadLine(selectedNoteLine);}};node.onpointercancel=()=>{noteDrag=null;};});}
 function enableCanvasEditing(){
  const preview=document.getElementById("previewLabel");
  const keys=[".label-top",".details",".size-box",".barcode-area"];
@@ -765,7 +741,7 @@ function updatePreview(){
 
  renderBarcode(preview);
  enableCanvasEditing();
- enableNotepadLineEditing();
+ 
 }
 
 /* SAVE PRODUCT */
@@ -1032,7 +1008,6 @@ function printLabels(){
 
 loadPrintOptions();
 makeSizeGrid();
-try{const savedLabelDesign=JSON.parse(localStorage.getItem("prasadLabelDesign")||"{}");document.getElementById("dNotepadText").value=savedLabelDesign.notepadText||"";}catch(e){}
 applyDesigner(getDesignSettings());
 showSavedProducts();
 barcodeModeChanged();
