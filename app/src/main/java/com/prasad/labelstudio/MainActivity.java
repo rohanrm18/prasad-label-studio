@@ -935,9 +935,11 @@ public class MainActivity extends Activity {
                         ep.setColor(parseDesignColor(obj.optString("stroke","#111111"),Color.BLACK));
                         c.drawLine(ex,ey,ex+w,ey+h,ep);
                     } else if ("barcode".equals(type)) {
-                        String value=job.barcode==null||job.barcode.trim().isEmpty()?obj.optString("text","123456"):job.barcode;
+                        String objectValue=obj.optString("text","").trim();
+                        String jobValue=job.barcode==null?"":job.barcode.trim();
+                        String value=!objectValue.isEmpty()?objectValue:(!jobValue.isEmpty()?jobValue:"123456");
                         if(d.optBoolean("showBarcode",true) && !value.trim().isEmpty()){
-                            BitMatrix bm=new MultiFormatWriter().encode(value,BarcodeFormat.CODE_128,Math.max(30,(int)w),Math.max(20,(int)(h*.72f)));
+                            BitMatrix bm=new MultiFormatWriter().encode(value,BarcodeFormat.CODE_128,Math.max(80,(int)w),Math.max(24,(int)(h*.72f)));
                             Paint bp=new Paint();bp.setColor(Color.BLACK);
                             float cellW=w/bm.getWidth(),cellH=(h*.72f)/bm.getHeight();
                             for(int bx=0;bx<bm.getWidth();bx++)for(int by=0;by<bm.getHeight();by++)if(bm.get(bx,by))
@@ -947,7 +949,7 @@ public class MainActivity extends Activity {
                         }
                     } else if ("qr".equals(type)) {
                         String value=obj.optString("text","PRASAD APPARELS");
-                        BitMatrix qm=new MultiFormatWriter().encode(value,BarcodeFormat.QR_CODE,Math.max(24,(int)w),Math.max(24,(int)h));
+                        BitMatrix qm=new MultiFormatWriter().encode(value,BarcodeFormat.QR_CODE,Math.max(64,(int)w),Math.max(64,(int)h));
                         Paint qp=new Paint();qp.setColor(Color.BLACK);
                         float cellW=w/qm.getWidth(),cellH=h/qm.getHeight();
                         for(int qx=0;qx<qm.getWidth();qx++)for(int qy=0;qy<qm.getHeight();qy++)if(qm.get(qx,qy))
