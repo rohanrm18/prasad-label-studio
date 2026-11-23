@@ -732,10 +732,18 @@ public class MainActivity extends Activity {
     private void printOneLabel(LabelJob job) throws Exception {
         BluetoothSocket socket = bluetoothSocket;
         if (socket == null || !socket.isConnected()) throw new Exception("Printer disconnected");
-        final int width = 384, height = 240;
+        JSONObject d = job.design == null ? new JSONObject() : job.design;
+        // Editor labels keep the same dot density on both axes. The P58D raster
+        // is limited to 384 dots across; shorter/narrower label formats use
+        // their proportional physical dimensions instead of being stretched.
+        JSONObject editorPageForSize = d.optJSONObject("editorPage");
+        float editorPageW = editorPageForSize == null ? 50f : (float)Math.max(10, editorPageForSize.optDouble("w", 50));
+        float editorPageH = editorPageForSize == null ? 30f : (float)Math.max(10, editorPageForSize.optDouble("h", 30));
+        boolean editorPrint = d.optBoolean("editorMode", false);
+        final int width = editorPrint ? Math.max(1, Math.min(384, Math.round(editorPageW * 8f))) : 384;
+        final int height = editorPrint ? Math.max(1, Math.round(editorPageH * (width / editorPageW))) : 240;
         Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         Canvas c = new Canvas(bitmap); c.drawColor(Color.WHITE);
-        JSONObject d = job.design == null ? new JSONObject() : job.design;
         String t=d.optString("template","classic"), font=d.optString("font","sans");
         String align=d.optString("align","left"), layout=d.optString("layout","standard");
         int bs=Math.max(12,Math.min(30,d.optInt("brandSize",18)));
