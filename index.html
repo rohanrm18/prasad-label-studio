@@ -368,7 +368,7 @@ body{padding-bottom:calc(62px + env(safe-area-inset-bottom))}
 <select id="printPaperType" onchange="savePrintOptions()"><option value="gap">Gap / sticker paper</option><option value="continuous">Continuous paper</option></select>
 <div class="grid2">
  <div><label>Horizontal alignment (mm)</label><input id="printAlignMm" type="number" min="-3" max="3" step="0.5" value="0" onchange="savePrintOptions()"></div>
- <div><label>Extra feed after each label (mm)</label><input id="printFeedMm" type="number" min="0" max="10" step="0.5" value="0" onchange="savePrintOptions()"></div>
+ <div><label>Middle-page feed (mm)</label><input id="printFeedMm" type="number" min="0" max="10" step="0.5" value="0" onchange="savePrintOptions()"></div><div><label>Last-page feed (mm)</label><input id="printLastFeedMm" type="number" min="0" max="10" step="0.5" value="0" onchange="savePrintOptions()"></div>
 </div>
 <label>Print darkness</label>
 <input id="printDarkness" type="range" min="80" max="220" step="5" value="160" oninput="savePrintOptions()">
@@ -571,6 +571,7 @@ function readPrintOptions(){
   paperType:(document.getElementById("printPaperType")||{}).value||"gap",
   alignMm:number("printAlignMm",0,-3,3),
   feedMm:number("printFeedMm",0,0,10),
+  lastFeedMm:number("printLastFeedMm",0,0,10),
   darkness:number("printDarkness",160,80,220)
  };
 }
@@ -582,12 +583,13 @@ function savePrintOptions(){
 }
 function loadPrintOptions(){
  let saved={};try{saved=JSON.parse(localStorage.getItem("prasadPrintOptions")||"{}")||{};}catch(e){}
- const defaults={paperType:"gap",alignMm:0,feedMm:0,darkness:160};
+ const defaults={paperType:"gap",alignMm:0,feedMm:0,lastFeedMm:0,darkness:160};
  const options={...defaults,...saved};
  const set=(id,value)=>{const el=document.getElementById(id);if(el)el.value=String(value);};
  set("printPaperType",options.paperType==="continuous"?"continuous":"gap");
  set("printAlignMm",Math.max(-3,Math.min(3,Number(options.alignMm)||0)));
  set("printFeedMm",Math.max(0,Math.min(10,Number(options.feedMm)||0)));
+ set("printLastFeedMm",Math.max(0,Math.min(10,Number(options.lastFeedMm)||0)));
  set("printDarkness",Math.max(80,Math.min(220,Number(options.darkness)||160)));
  const value=document.getElementById("printDarknessValue");if(value)value.textContent=document.getElementById("printDarkness").value;
 }
