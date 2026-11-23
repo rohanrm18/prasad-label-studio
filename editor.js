@@ -1,8 +1,8 @@
 (()=>{if(window.__plsEditorLoaded)return;window.__plsEditorLoaded=true;
 const KEY="plsObjectsV1",TMPL="plsTemplatesV1",NS="http://www.w3.org/2000/svg",q=s=>document.querySelector("#pls-editor "+s);
 let objects=JSON.parse(localStorage.getItem(KEY)||"null")||[];
-let selected=null,selectedIds=new Set(),multiSelectMode=false,undo=[],redo=[],drag=null,activeTab="object",page={w:50,h:30,name:"Custom 50 × 30 mm"};
-const save=()=>localStorage.setItem(KEY,JSON.stringify(objects)),checkpoint=()=>{undo.push(JSON.stringify(objects));if(undo.length>40)undo.shift();redo=[];};
+let selected=null,selectedIds=new Set(),multiSelectMode=false,undo=[],redo=[],drag=null,activeTab="object",page=JSON.parse(localStorage.getItem("plsPageV1")||"null")||{w:50,h:30,name:"Custom 50 × 30 mm"};
+const save=()=>{localStorage.setItem(KEY,JSON.stringify(objects));localStorage.setItem("plsPageV1",JSON.stringify(page));},checkpoint=()=>{undo.push(JSON.stringify(objects));if(undo.length>40)undo.shift();redo=[];};
 const mk=(tag,attrs={})=>{let n=document.createElementNS(NS,tag);Object.entries(attrs).forEach(([k,v])=>n.setAttribute(k,v));return n;};
 function launch(){if(document.querySelector("#pls-launch"))return;let b=document.createElement("button");b.id="pls-launch";b.className="primary";b.textContent="CREATE LABEL  ·  OPEN EDITOR";b.style.cssText="width:100%;padding:16px;margin:12px 0;font-size:15px";let host=document.querySelector(".workflow-panel[data-step='1']");if(host){host.appendChild(b);b.onclick=open;}}
 function open(){let root=document.querySelector("#pls-editor");if(root){root.style.display="flex";render();return;}
