@@ -79,7 +79,10 @@ root.innerHTML=`<style>
 #pls-editor #pls-print{position:absolute;z-index:8;right:18px;bottom:calc(18% + 24px);width:82px;height:82px;border-radius:50%;background:#f32632;color:#fff;border:6px solid #fff;box-shadow:0 6px 20px #0003;font-size:0}
 #pls-editor #pls-print::before{content:"▤";font-size:34px;color:#fff}
 #pls-editor #pls-print::after{content:"Print";font-size:10px;color:#fff}
-#pls-editor .top-actions #pls-redo{display:none}
+/* Keep Redo accessible on phones as well as desktop. */
+#pls-editor #pls-redo{font-size:0!important}
+#pls-editor #pls-redo::before{content:"↷";font-size:29px!important;line-height:32px}
+#pls-editor #pls-redo::after{content:"Redo";font-size:10px!important;font-weight:500}
 @media(min-width:701px){#pls-editor .top{height:62px}#pls-editor .inspector{max-height:none;width:245px}#pls-editor .work{flex-direction:row}#pls-editor .canvas-area{padding:12px;align-items:center;justify-content:center}#pls-canvas{width:min(100%,650px);margin:0;border:1px solid #c9cdd4}#pls-editor .canvas-area::before{display:none}#pls-editor .ruler{height:auto;background:none;padding:0;margin-bottom:7px}#pls-editor .canvas-hint{display:block}#pls-editor .bottom{display:flex}#pls-editor #pls-print{position:static;width:auto;height:auto;border-radius:8px;border:1px solid var(--line);background:#fff;color:#222;box-shadow:none;font-size:12px}#pls-editor #pls-print::before,#pls-editor #pls-print::after{content:none}}
 
 #pls-editor .ruler{position:relative;width:calc(100% - 34px);height:30px;margin-left:34px;padding:0;background:repeating-linear-gradient(90deg,#7580b4 0 1px,transparent 1px 12px);background-position:left bottom;background-repeat:repeat-x;color:#c32d3b;letter-spacing:0}
