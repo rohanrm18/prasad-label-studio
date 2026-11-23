@@ -909,7 +909,7 @@ public class MainActivity extends Activity {
                     float w=(float)obj.optDouble("w",100)*sx, h=(float)obj.optDouble("h",40)*sy;
                     float rotation=(float)obj.optDouble("rotation",0);
                     c.save(); c.rotate(rotation,ex+w/2f,ey+h/2f);
-                    Paint ep=new Paint(Paint.ANTI_ALIAS_FLAG); ep.setColor(Color.BLACK);
+                    Paint ep=new Paint(Paint.ANTI_ALIAS_FLAG); ep.setColor(parseDesignColor(obj.optString("color","#000000"),Color.BLACK));
                     ep.setStrokeWidth(Math.max(1.2f,(float)obj.optDouble("strokeWidth",2)*sx));
                     if ("text".equals(type) || "icon".equals(type)) {
                         ep.setTypeface(Typeface.create("sans-serif",obj.optBoolean("bold",false)?Typeface.BOLD:Typeface.NORMAL));
@@ -919,8 +919,20 @@ public class MainActivity extends Activity {
                         float tx="center".equals(al)?ex+w/2f:("right".equals(al)?ex+w:ex);
                         c.drawText(obj.optString("text",""),tx,ey+Math.min(h,ep.getTextSize()+2),ep);
                     } else if ("rect".equals(type)) {
-                        ep.setStyle(Paint.Style.STROKE); c.drawRect(ex,ey,ex+w,ey+h,ep);
+                        String fill=obj.optString("fill","none");
+                        if(!"none".equalsIgnoreCase(fill) && !fill.isEmpty()) {
+                            ep.setColor(parseDesignColor(fill,Color.WHITE));
+                            ep.setStyle(Paint.Style.FILL);
+                            float radius=(float)Math.max(0,Math.min(40,obj.optDouble("radius",0)))*sx;
+                            c.drawRoundRect(new android.graphics.RectF(ex,ey,ex+w,ey+h),radius,radius,ep);
+                        }
+                        ep.setColor(parseDesignColor(obj.optString("stroke","#111111"),Color.BLACK));
+                        ep.setStyle(Paint.Style.STROKE);
+                        float radius=(float)Math.max(0,Math.min(40,obj.optDouble("radius",0)))*sx;
+                        c.drawRoundRect(new android.graphics.RectF(ex,ey,ex+w,ey+h),radius,radius,ep);
+                        ep.setStyle(Paint.Style.FILL);
                     } else if ("line".equals(type)) {
+                        ep.setColor(parseDesignColor(obj.optString("stroke","#111111"),Color.BLACK));
                         c.drawLine(ex,ey,ex+w,ey+h,ep);
                     } else if ("barcode".equals(type)) {
                         String value=job.barcode==null||job.barcode.trim().isEmpty()?obj.optString("text","123456"):job.barcode;
@@ -974,6 +986,11 @@ public class MainActivity extends Activity {
         // ESC J feeds the requested additional paper distance after the raster.
         if(feedDots>0)out.write(new byte[]{0x1B,0x4A,(byte)Math.min(255,feedDots)});
         out.flush();
+    }
+
+    private int parseDesignColor(String value, int fallback) {
+        try { return Color.parseColor(value); }
+        catch (Exception ignored) { return fallback; }
     }
 
     private float scaleValue(JSONObject scales, String key) {
