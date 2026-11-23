@@ -320,8 +320,8 @@ public class MainActivity extends Activity {
                 StringBuilder summary = new StringBuilder();
 
                 final String[] allowedSizes = {
-                    "1", "2", "3", "4", "5", "6",
-                    "7", "8", "9", "10", "12", "14"
+                    "0", "1", "2", "3", "4", "5",
+                    "6", "7", "8", "9", "10", "12", "14"
                 };
 
                 for (int i = 0; i < items.length(); i++) {
