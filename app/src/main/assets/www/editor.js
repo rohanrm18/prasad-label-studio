@@ -89,9 +89,11 @@ function buildObj(o, sc, ctx) {
 
   if (o.type === 'text' || o.type === 'icon') {
     const raw = o.text || '', val = A.tokens(raw, ctx);
+    const noCode = /\{BARCODE\}/i.test(raw) && !String(ctx.barcode || '').trim();
+    if (noCode && !ctx.edit) { d.style.display = 'none'; return d; }
     const t = document.createElement('div');
-    t.className = 't' + (!val && raw ? ' ph' : '');
-    t.textContent = val || raw;
+    t.className = 't' + ((!val || noCode) && raw ? ' ph' : '');
+    t.textContent = noCode ? raw : (val || raw);
     t.style.cssText += ';font-size:' + (o.size * sc) + 'px;font-family:' + fam(o.font) + ';font-weight:' + (o.bold ? 700 : 400) + ';font-style:' + (o.italic ? 'italic' : 'normal') + ';text-align:' + (o.align || 'left') + ';color:' + (o.color || '#000');
     d.appendChild(t);
   } else if (o.type === 'barcode' || o.type === 'qr') {
@@ -166,7 +168,7 @@ function layout() {
   rt.innerHTML = a; rl.innerHTML = b;
 }
 function drawLabel() {
-  const lab = $('#edLabel'), ctx = A.previewCtx();
+  const lab = $('#edLabel'), ctx = Object.assign({ edit: true }, A.previewCtx());
   lab.innerHTML = '';
   D().objects.forEach(o => lab.appendChild(buildObj(o, E.scale, ctx)));
   decorate();

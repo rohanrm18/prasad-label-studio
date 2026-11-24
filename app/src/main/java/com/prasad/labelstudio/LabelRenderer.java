@@ -75,13 +75,21 @@ final class LabelRenderer implements PrintCoordinator.Rasterizer {
                 feedMm = options == null ? 0 : options.optDouble(lastLabel ? "lastFeedMm" : "feedMm", 0);
             }
             int feedDots = (int) Math.round(clampD(feedMm, 0, 10) * 8.0);
+            // Gap paper: the gap is sent as blank raster rows (every printer obeys these), not
+            // as a separate feed command that some firmware ignores.
+            int gapRows = 0;
+            if ("gap".equalsIgnoreCase(paperType)) {
+                gapRows = feedDots;
+                feedDots = 0;
+            }
 
             int[] pixels = new int[width * height];
             bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
-            int[] luminance = new int[pixels.length];
+            int[] luminance = new int[width * (height + gapRows)];
+            java.util.Arrays.fill(luminance, 255);
             for (int i = 0; i < pixels.length; i++) luminance[i] = Color.red(pixels[i]);
 
-            return RasterCodec.encode(width, height, luminance, darkness, shiftDots, feedDots);
+            return RasterCodec.encode(width, height + gapRows, luminance, darkness, shiftDots, feedDots);
         } finally {
             bitmap.recycle();
         }
@@ -125,7 +133,10 @@ final class LabelRenderer implements PrintCoordinator.Rasterizer {
 
     private void drawText(Canvas c, Paint p, JSONObject obj, LabelJob job,
                           float ex, float ey, float w, float h, float sx) {
-        String text = Tokens.resolve(obj.optString("text", ""), job);
+        String raw = obj.optString("text", "");
+        // A line that shows the barcode number (e.g. "No. {BARCODE}") is left out when the label has no barcode.
+        if (raw.toUpperCase(java.util.Locale.US).contains("{BARCODE}") && (job.barcode == null || job.barcode.trim().length() == 0)) return;
+        String text = Tokens.resolve(raw, job);
         if (text.length() == 0) return;
 
         p.setTypeface(Typeface.create(
