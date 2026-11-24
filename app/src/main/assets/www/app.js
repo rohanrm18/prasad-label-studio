@@ -271,7 +271,16 @@ function openSettings() {
     '<label>Feed after label (mm, continuous)<input id="oFeed" type="number" step="1" min="0" max="10"></label>' +
     '<label>Feed after last label (mm)<input id="oLast" type="number" step="1" min="0" max="10"></label></div>' +
     '<p class="hint">Gap paper: the printer moves on by the gap after each label. If labels creep UP the roll, increase the gap by 0.5 mm; if they creep DOWN, decrease it. Feed fields below are for continuous paper only.</p>' +
-    '<div class="btns"><button class="btn" id="oOk" type="button">Done</button></div>');
+    '<div class="btns"><button class="btn ghost" id="oTest" type="button">Gap test (3 methods × 2 labels)</button><button class="btn" id="oOk" type="button">Done</button></div>');
+  $('#oTest', s.el).onclick = () => {
+    const cur = { paperType: $('#oPaper', s.el).value, gapMode: $('#oMode', s.el).value, gapMm: n2('#oGap', 3), alignMm: n2('#oAlign', 0), darkness: n2('#oDark', 160), feedMm: 0, lastFeedMm: 0 };
+    s.close();
+    if (!checkBarcodeReady()) return;
+    S.gapTest = { queue: ['rows', 'gsff', 'ff'], restore: S.options };
+    S.options = Object.assign({}, cur, { paperType: 'gap' });
+    nextGapTest();
+  };
+  function n2(id, d) { const v = parseFloat($(id, s.el).value); return isFinite(v) ? v : d; }
   $('#oPaper', s.el).value = o.paperType; $('#oMode', s.el).value = o.gapMode || 'rows'; $('#oGap', s.el).value = o.gapMm; $('#oAlign', s.el).value = o.alignMm; $('#oDark', s.el).value = o.darkness;
   $('#oFeed', s.el).value = o.feedMm; $('#oLast', s.el).value = o.lastFeedMm;
   $('#oOk', s.el).onclick = () => {
@@ -328,6 +337,16 @@ function drawBarcodeManager() {
 /* ---------- printing ---------- */
 function request(mode, items, extra) {
   return Object.assign({ mode, product: S.product, barcodeMode: S.barcodeMode, manualBarcode: S.manual, items, design: S.design, options: S.options }, extra || {});
+}
+function nextGapTest() {
+  const t = S.gapTest;
+  if (!t) return;
+  const mode = t.queue.shift();
+  if (!mode) { S.options = t.restore; persist(); S.gapTest = null; toast('Gap test finished. Options restored.'); return; }
+  S.options.gapMode = mode; persist();
+  toast('Gap test: ' + ({ rows: 'fixed gap', gsff: 'GS FF', ff: 'FF' })[mode] + ' — 2 labels');
+  const res = B.print(request('bulk', [{ size: '0', quantity: 2 }]));
+  if (res !== 'ok') { S.gapTest = null; S.options = t.restore; persist(); ask({ title: 'Gap test stopped', body: String(res), ok: 'OK', cancel: false }); }
 }
 function send(r) {
   const res = B.print(r);
@@ -407,6 +426,7 @@ function onProgress(d) {
     return;
   }
   $('#progress').hidden = true;
+  if (d.state === 'done' && S.gapTest) { setTimeout(nextGapTest, 1200); return; }
   if (d.state === 'done') toast('Printed ' + d.sent + (d.sent === 1 ? ' label' : ' labels'));
   else if (d.state === 'cancelled') toast('Cancelled after ' + d.sent + ' of ' + d.total);
   else if (d.state === 'uncertain') ask({ title: 'Check the last label', body: d.message + ' Open the barcode manager to say whether it printed.', ok: 'Open manager', cancel: 'Later' }).then(ok => { if (ok) openBarcodeManager(); });
