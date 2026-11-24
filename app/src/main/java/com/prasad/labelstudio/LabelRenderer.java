@@ -78,8 +78,13 @@ final class LabelRenderer implements PrintCoordinator.Rasterizer {
             // Gap paper: the gap is sent as blank raster rows (every printer obeys these), not
             // as a separate feed command that some firmware ignores.
             int gapRows = 0;
+            // gapMode: "rows" (default, blank rows), "gsff" (printer finds the gap: GS FF) or "ff" (FF)
+            String gapMode = options == null ? "rows" : options.optString("gapMode", "rows");
+            byte[] gapCommand = null;
             if ("gap".equalsIgnoreCase(paperType)) {
-                gapRows = feedDots;
+                if ("gsff".equals(gapMode)) gapCommand = new byte[]{0x1D, 0x0C};
+                else if ("ff".equals(gapMode)) gapCommand = new byte[]{0x0C};
+                else gapRows = feedDots;
                 feedDots = 0;
             }
 
@@ -89,7 +94,12 @@ final class LabelRenderer implements PrintCoordinator.Rasterizer {
             java.util.Arrays.fill(luminance, 255);
             for (int i = 0; i < pixels.length; i++) luminance[i] = Color.red(pixels[i]);
 
-            return RasterCodec.encode(width, height + gapRows, luminance, darkness, shiftDots, feedDots);
+            byte[] data = RasterCodec.encode(width, height + gapRows, luminance, darkness, shiftDots, feedDots);
+            if (gapCommand == null) return data;
+            byte[] withGap = new byte[data.length + gapCommand.length];
+            System.arraycopy(data, 0, withGap, 0, data.length);
+            System.arraycopy(gapCommand, 0, withGap, data.length, gapCommand.length);
+            return withGap;
         } finally {
             bitmap.recycle();
         }

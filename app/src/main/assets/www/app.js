@@ -141,7 +141,7 @@ const S = {
   sizes: store.get('pls2Sizes', {}),
   barcodeMode: store.get('pls2BarcodeMode', 'auto'),
   manual: store.get('pls2Manual', ''),
-  options: Object.assign({ paperType: 'gap', gapMm: 3, alignMm: 0, darkness: 160, feedMm: 0, lastFeedMm: 0 }, store.get('pls2Options', {})),
+  options: Object.assign({ paperType: 'gap', gapMode: 'rows', gapMm: 3, alignMm: 0, darkness: 160, feedMm: 0, lastFeedMm: 0 }, store.get('pls2Options', {})),
   design: store.get('pls2Design', null),
   saved: store.get('pls2Products', []),
   history: store.get('pls2History', []),
@@ -264,18 +264,19 @@ function openSettings() {
   const o = S.options;
   const s = sheet('<h3>Print settings</h3>' +
     '<label>Paper<select id="oPaper"><option value="gap">Gap labels (die-cut)</option><option value="continuous">Continuous paper</option></select></label>' +
-    '<div class="fields"><label>Gap between labels (mm) — gap paper<input id="oGap" type="number" step="0.5" min="0" max="10"></label>' +
+    '<label>Gap method (gap paper)<select id="oMode"><option value="rows">Fixed gap — blank rows (default)</option><option value="gsff">Printer finds the gap — command GS FF</option><option value="ff">Printer finds the gap — command FF</option></select></label>' +
+    '<div class="fields"><label>Gap between labels (mm) — fixed gap only<input id="oGap" type="number" step="0.5" min="0" max="10"></label>' +
     '<label>Shift left/right (mm)<input id="oAlign" type="number" step="0.5" min="-3" max="3"></label>' +
     '<label>Darkness (80–220)<input id="oDark" type="number" step="10" min="80" max="220"></label>' +
     '<label>Feed after label (mm, continuous)<input id="oFeed" type="number" step="1" min="0" max="10"></label>' +
     '<label>Feed after last label (mm)<input id="oLast" type="number" step="1" min="0" max="10"></label></div>' +
     '<p class="hint">Gap paper: the printer moves on by the gap after each label. If labels creep UP the roll, increase the gap by 0.5 mm; if they creep DOWN, decrease it. Feed fields below are for continuous paper only.</p>' +
     '<div class="btns"><button class="btn" id="oOk" type="button">Done</button></div>');
-  $('#oPaper', s.el).value = o.paperType; $('#oGap', s.el).value = o.gapMm; $('#oAlign', s.el).value = o.alignMm; $('#oDark', s.el).value = o.darkness;
+  $('#oPaper', s.el).value = o.paperType; $('#oMode', s.el).value = o.gapMode || 'rows'; $('#oGap', s.el).value = o.gapMm; $('#oAlign', s.el).value = o.alignMm; $('#oDark', s.el).value = o.darkness;
   $('#oFeed', s.el).value = o.feedMm; $('#oLast', s.el).value = o.lastFeedMm;
   $('#oOk', s.el).onclick = () => {
     const n = (id, lo, hi, d) => { const v = parseFloat($(id, s.el).value); return isFinite(v) ? Math.max(lo, Math.min(hi, v)) : d; };
-    S.options = { paperType: $('#oPaper', s.el).value, gapMm: n('#oGap', 0, 10, 3), alignMm: n('#oAlign', -3, 3, 0), darkness: n('#oDark', 80, 220, 160), feedMm: n('#oFeed', 0, 10, 0), lastFeedMm: n('#oLast', 0, 10, 0) };
+    S.options = { paperType: $('#oPaper', s.el).value, gapMode: $('#oMode', s.el).value, gapMm: n('#oGap', 0, 10, 3), alignMm: n('#oAlign', -3, 3, 0), darkness: n('#oDark', 80, 220, 160), feedMm: n('#oFeed', 0, 10, 0), lastFeedMm: n('#oLast', 0, 10, 0) };
     persist(); s.close(); toast('Settings saved');
   };
 }
