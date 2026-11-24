@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Prasad Label Studio</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ============ HOME ============ -->
+<div id="home">
+  <header class="top">
+    <div class="brand">Prasad Label Studio</div>
+    <button id="printerChip" class="chip" type="button"><span class="dot"></span><span id="printerChipText">No printer</span></button>
+  </header>
+
+  <main>
+    <div id="pendingBanner" class="banner warn" hidden>
+      <div id="pendingBannerText"></div>
+      <button id="pendingBannerBtn" type="button" class="btn small">Resolve</button>
+    </div>
+
+    <section class="card">
+      <h2>Product</h2>
+      <div class="grid2">
+        <label>Style<input id="fStyle" type="text" maxlength="40" autocomplete="off"></label>
+        <label>Model<input id="fModel" type="text" maxlength="40" autocomplete="off"></label>
+        <label>Category<select id="fCategory"></select></label>
+        <label>Colour<input id="fColour" type="text" maxlength="30" autocomplete="off"></label>
+      </div>
+      <label id="customCatWrap" hidden>Custom category<input id="fCustomCat" type="text" maxlength="30"></label>
+      <div class="row">
+        <select id="savedProducts"><option value="">Saved products…</option></select>
+        <button id="saveProduct" class="btn small" type="button">Save</button>
+        <button id="deleteProduct" class="btn small ghost" type="button">Delete</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Barcode</h2>
+      <div class="seg" id="barcodeSeg">
+        <button type="button" data-mode="none">None</button>
+        <button type="button" data-mode="auto">Auto number</button>
+        <button type="button" data-mode="manual">Type it</button>
+      </div>
+      <div id="barcodeAuto" class="row" hidden>
+        <div class="grow">Next number <b id="nextNumber" class="mono">000001</b></div>
+        <button id="manageBarcodes" class="btn small" type="button">Manage</button>
+      </div>
+      <label id="barcodeManual" hidden>Barcode text<input id="fManual" type="text" maxlength="40" autocomplete="off"></label>
+      <p class="hint">Put <code>{BARCODE}</code> in the label design to place it. Also <code>{STYLE} {MODEL} {CATEGORY} {COLOUR} {SIZE}</code>.</p>
+    </section>
+
+    <section class="card">
+      <div class="row"><h2 class="grow">Sizes &amp; quantity</h2>
+        <button id="qtyAll1" class="btn small ghost" type="button">All 1</button>
+        <button id="qtyClear" class="btn small ghost" type="button">Clear</button>
+      </div>
+      <div id="sizeGrid" class="sizes"></div>
+      <div class="row total"><span id="totalText">0 labels</span></div>
+    </section>
+
+    <section class="card">
+      <h2>Label</h2>
+      <div id="homePreview" class="thumb"></div>
+      <div class="row">
+        <button id="openEditor" class="btn" type="button">Edit label</button>
+        <button id="openSettings" class="btn ghost" type="button">Print settings</button>
+      </div>
+    </section>
+
+    <div id="progress" class="card progress" hidden>
+      <div id="progressText"></div>
+      <div class="bar"><i id="progressBar"></i></div>
+      <button id="progressCancel" class="btn danger small" type="button">Cancel</button>
+    </div>
+
+    <div class="actions">
+      <button id="printTest" class="btn ghost" type="button">Print 1 test label</button>
+      <button id="printBulk" class="btn primary" type="button">Print labels</button>
+    </div>
+  </main>
+</div>
+
+<!-- ============ EDITOR ============ -->
+<div id="editor" hidden>
+  <div class="ed-top">
+    <button id="edReturn" type="button"><i>&#8592;</i>Return</button>
+    <button id="edSave" type="button"><i>&#10003;</i>Save</button>
+    <button id="edMore" type="button"><i>&#8942;</i>More</button>
+    <button id="edAll" type="button"><i>&#9635;</i>Select all</button>
+    <button id="edMulti" type="button"><i>&#9744;</i><span id="edMultiText">Single</span></button>
+    <button id="edUndo" type="button"><i>&#8630;</i>Undo</button>
+    <button id="edRedo" type="button"><i>&#8631;</i>Redo</button>
+  </div>
+  <div class="ed-tools">
+    <button data-tool="text" type="button"><i>T</i>Text</button>
+    <button data-tool="icon" type="button"><i>&#9733;</i>Icon</button>
+    <button data-tool="barcode" type="button"><i>&#9646;&#9647;&#9646;</i>Barcode</button>
+    <button data-tool="insert" type="button"><i>&#9635;</i>Insert</button>
+    <button data-tool="qr" type="button"><i>&#9638;</i>QR</button>
+    <button data-tool="edit" type="button"><i>&#9998;</i>Edit</button>
+    <button data-tool="rect" type="button"><i>&#9645;</i>Rectangle</button>
+    <button data-tool="line" type="button"><i>&#9472;</i>Line</button>
+    <button data-tool="delete" type="button"><i>&#128465;</i>Delete</button>
+  </div>
+  <div id="edArea">
+    <div id="edStage">
+      <div id="rulerTop"></div>
+      <div id="rulerLeft"></div>
+      <div id="edLabel"></div>
+    </div>
+    <button id="edPrint" type="button" aria-label="Print test label">&#128438;<small>Print</small></button>
+  </div>
+  <div id="edTray"></div>
+  <input id="edFile" type="file" accept="image/*" hidden>
+</div>
+
+<div id="overlay"></div>
+<div id="toast" hidden></div>
+
+<script src="app.js"></script>
+<script src="editor.js"></script>
+</body>
+</html>

@@ -5,6 +5,8 @@ on:
   push:
     branches:
       - main
+      - rebuild
+  pull_request:
 
 jobs:
   build:
@@ -25,8 +27,16 @@ jobs:
         with:
           gradle-version: '8.9'
 
-      - name: Validate label editor JavaScript
-        run: node --check editor.js
+      - name: Validate web app JavaScript
+        run: |
+          for f in app/src/main/assets/www/*.js; do node --check "$f"; done
+
+      - name: Run barcode and printing logic tests
+        run: |
+          J=app/src/main/java/com/prasad/labelstudio
+          mkdir -p /tmp/core_out
+          javac -Xlint:all -d /tmp/core_out $J/BarcodeSequence.java $J/Tokens.java $J/LabelJob.java $J/JsonText.java $J/PrintCoordinator.java $J/RasterCodec.java $J/CodeSvg.java tests/CoreTests.java
+          java -cp /tmp/core_out com.prasad.labelstudio.CoreTests
 
       - name: Build Android APK
         run: gradle assembleDebug
