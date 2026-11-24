@@ -63,12 +63,18 @@ final class LabelRenderer implements PrintCoordinator.Rasterizer {
             double alignMm = options == null ? 0 : clampD(options.optDouble("alignMm", 0), -3, 3);
             int shiftDots = (int) Math.round(alignMm * 8.0);
 
-            // Gap labels: the raster already contains the whole label height. An extra fixed
-            // feed after each label accumulates and shifts every following label.
+            // Feed is always measured at 8 dots per mm (the printer's vertical resolution).
+            // Gap labels: the label itself is 30 mm of raster but the roll advances by
+            // label + gap, so after every label we feed the gap length (default 3 mm).
+            // If labels creep UP the roll over a batch, raise the gap; if they creep DOWN, lower it.
             String paperType = options == null ? "gap" : options.optString("paperType", "gap");
-            double feedMm = options == null ? 0 : options.optDouble(lastLabel ? "lastFeedMm" : "feedMm", 0);
-            if ("gap".equalsIgnoreCase(paperType)) feedMm = 0;
-            int feedDots = (int) Math.round(clampD(feedMm, 0, 10) * (width / pageW));
+            double feedMm;
+            if ("gap".equalsIgnoreCase(paperType)) {
+                feedMm = options == null ? 3 : options.optDouble("gapMm", 3);
+            } else {
+                feedMm = options == null ? 0 : options.optDouble(lastLabel ? "lastFeedMm" : "feedMm", 0);
+            }
+            int feedDots = (int) Math.round(clampD(feedMm, 0, 10) * 8.0);
 
             int[] pixels = new int[width * height];
             bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
