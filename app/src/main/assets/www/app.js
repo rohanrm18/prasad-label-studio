@@ -456,7 +456,7 @@ function init() {
     setQty(box.dataset.s, parseInt(e.target.value, 10) || 0); updateTotal(); renderPreview();
   });
   grid.addEventListener('change', e => { const box = e.target.closest('.size'); if (box) e.target.value = S.sizes[box.dataset.s] | 0; });
-  $('#qtyAll1').onclick = () => { SIZES.forEach(s => S.sizes[s] = 1); persist(); renderSizes(); renderPreview(); };
+  $('#qtyAll1').onclick = () => { const q = Math.max(0, Math.min(200, parseInt($('#qtyAllVal').value, 10) || 1)); SIZES.forEach(s => S.sizes[s] = q); persist(); renderSizes(); renderPreview(); };
   $('#qtyClear').onclick = () => { S.sizes = {}; persist(); renderSizes(); renderPreview(); };
 
   $('#printerChip').onclick = openPrinterSheet;
