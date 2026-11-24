@@ -12,7 +12,7 @@ const store = {
 const pad6 = n => String(n).padStart(6, '0');
 
 const SIZES = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '12', '14'];
-const CATS = ['Kurta Pyjama', 'Kurta', 'Pyjama', 'Shirt', 'T-Shirt', 'Trouser', 'Jeans', 'Jacket', 'Kidswear', 'Innerwear', 'Other'];
+const CATS = ['Kurta Pyjama', 'Kurta Jacket Pyjama', 'Kurta Jacket Dhoti Pyjama', 'Indo Western', 'Jacket Dhoti', 'Coat Suit', 'Sherwani', 'Jodhpuri Suit', 'Pathani Suit', 'Nehru Jacket Set', 'Dhoti Kurta', 'Waistcoat Set', 'Bandhgala Suit', 'Achkan Set', 'Shirt Pant', 'Blazer Set', 'Other'];
 
 /* ---------- toast ---------- */
 let toastTimer = 0;
