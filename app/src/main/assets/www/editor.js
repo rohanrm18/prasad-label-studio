@@ -19,30 +19,51 @@ function mk(type, o) {
 function txt(text, x, y, w, size, extra) {
   return mk('text', Object.assign({ text, x, y, w, h: Math.round(size * 1.25), size, font: 'sans', bold: false, italic: false, align: 'left', color: '#000000' }, extra || {}));
 }
-function defaultDesign() {
-  return {
-    page: { w: 50, h: 30 },
-    objects: [
-      txt('{STYLE}', 20, 20, 460, 40, { bold: true }),
-      txt('{MODEL} {COLOUR}', 20, 75, 460, 32),
-      txt('Size {SIZE}', 20, 118, 220, 32, { bold: true }),
-      txt('{CATEGORY}', 260, 122, 220, 28, { align: 'right' }),
-      mk('barcode', { text: '{BARCODE}', x: 20, y: 165, w: 460, h: 120, showText: true })
-    ]
-  };
+const mono = (t, y, size, x, extra) => txt(t, x == null ? 20 : x, y, 460, size, Object.assign({ font: 'mono' }, extra || {}));
+const head = (y, size) => txt('PRASAD APPARELS', 0, y, 500, size || 30, { bold: true, align: 'center' });
+const noLine = y => txt('No. {BARCODE}', 0, y, 500, 24, { font: 'mono', align: 'center' });
+const bars = (y, h) => mk('barcode', { text: '{BARCODE}', x: 20, y, w: 460, h, showText: false });
+const P = o => ({ page: { w: 50, h: 30 }, objects: o });
+
+/* Ready-made templates (50 x 30 mm). {STYLE} {MODEL} {CATEGORY} {COLOUR} {SIZE} {BARCODE} are filled in per label. */
+const TEMPLATES = [
+  { key: 'classic', name: 'Prasad classic', note: 'Heading, style, model, colour, size, barcode and number',
+    make: () => P([head(10), mono('Style no : {STYLE}', 48, 32), mono('Model    : {MODEL}', 86, 28), mono('Colour   : {COLOUR}', 118, 28), mono('Size     : {SIZE}', 150, 32, 20, { bold: true }), bars(192, 70), noLine(266)]) },
+  { key: 'category', name: 'Ethnic wear with category', note: 'Kurta Pyjama, Sherwani… shown in bold under the heading',
+    make: () => P([head(8, 28), txt('{CATEGORY}', 0, 42, 500, 30, { bold: true, align: 'center' }), mono('Style no : {STYLE}', 82, 30), mono('{MODEL} · {COLOUR}', 116, 28), mono('Size     : {SIZE}', 150, 34, 20, { bold: true }), bars(194, 66), noLine(266)]) },
+  { key: 'twocol', name: 'Big size box', note: 'Details on the left, size in a box on the right',
+    make: () => P([head(8, 28), mono('Style no', 48, 22, 20, { w: 300 }), txt('{STYLE}', 20, 70, 300, 34, { font: 'mono', bold: true }), mono('{MODEL}', 112, 26, 20, { w: 300 }), mono('{COLOUR}', 144, 26, 20, { w: 300 }),
+      mk('rect', { x: 340, y: 50, w: 140, h: 125, fill: 'none', stroke: '#111111', strokeWidth: 4, radius: 0 }), txt('Size', 340, 56, 140, 22, { align: 'center', font: 'mono' }), txt('{SIZE}', 340, 82, 140, 80, { align: 'center', bold: true }), bars(192, 70), noLine(266)]) },
+  { key: 'size', name: 'Size in large print', note: 'Easy to read at a glance when sorting',
+    make: () => P([txt('{STYLE}', 20, 12, 460, 30, { bold: true }), txt('{SIZE}', 20, 48, 460, 100, { bold: true, align: 'center' }), txt('{MODEL} · {COLOUR}', 20, 176, 460, 26, { font: 'mono', align: 'center' }), bars(212, 60), noLine(272)]) },
+  { key: 'simple', name: 'Simple', note: 'Style, model, size and a bold barcode',
+    make: () => P([txt('{STYLE}', 20, 20, 460, 40, { bold: true }), txt('{MODEL} {COLOUR}', 20, 75, 460, 32), txt('Size {SIZE}', 20, 118, 220, 32, { bold: true }), txt('{CATEGORY}', 260, 122, 220, 28, { align: 'right' }), mk('barcode', { text: '{BARCODE}', x: 20, y: 165, w: 460, h: 120, showText: true })]) },
+  { key: 'barcode', name: 'Barcode only', note: 'One big barcode with its number',
+    make: () => P([mk('barcode', { text: '{BARCODE}', x: 30, y: 30, w: 440, h: 240, showText: true })]) }
+];
+function defaultDesign() { return TEMPLATES[0].make(); }
+const PRESETS = {};
+TEMPLATES.forEach(t => { PRESETS[t.key] = t.make; });
+
+function openTemplates() {
+  const sample = { style: '8008', model: 'Kurta Pant', category: 'Kurta Pyjama', colour: 'Sky Blue', size: '2', barcode: '80508050' };
+  const s = A.sheet('<h3>Ready-made templates</h3><p class="hint">Pick one and it is applied to your label. You can still edit it afterwards.</p><div class="list" id="tplGallery"></div>');
+  const box = $('#tplGallery', s.el);
+  TEMPLATES.forEach(t => {
+    const row = document.createElement('div');
+    const th = document.createElement('div'); th.style.cssText = 'flex:none';
+    th.appendChild(renderStatic(t.make(), sample, 0.36));
+    const info = document.createElement('div'); info.className = 'grow'; info.innerHTML = '<b>' + esc(t.name) + '</b><small>' + esc(t.note) + '</small>';
+    const b = document.createElement('button'); b.className = 'btn small'; b.type = 'button'; b.textContent = 'Use';
+    b.onclick = async () => {
+      if (!(await A.ask({ title: 'Use "' + t.name + '"?', body: 'This replaces the current label design' + (E.opened ? '. Undo brings it back.' : '.'), ok: 'Use it' }))) return;
+      pushUndo(); S.design = t.make(); E.sel.clear(); A.designChanged();
+      if (E.opened) { layout(); drawLabel(); drawTray(); }
+      s.close(); A.toast('Template applied');
+    };
+    row.appendChild(th); row.appendChild(info); row.appendChild(b); box.appendChild(row);
+  });
 }
-const PRESETS = {
-  standard: () => defaultDesign(),
-  barcode: () => ({ page: { w: 50, h: 30 }, objects: [mk('barcode', { text: '{BARCODE}', x: 30, y: 30, w: 440, h: 240, showText: true })] }),
-  big: () => ({
-    page: { w: 50, h: 30 },
-    objects: [
-      txt('{STYLE}', 20, 15, 460, 30, { bold: true }),
-      txt('{SIZE}', 20, 50, 460, 100, { bold: true, align: 'center' }),
-      mk('barcode', { text: '{BARCODE}', x: 60, y: 190, w: 380, h: 95, showText: true })
-    ]
-  })
-};
 
 /* ---------- element building (used by the editor and the home preview) ---------- */
 const fam = f => f === 'serif' ? 'Georgia,"Times New Roman",serif' : f === 'mono' ? '"Courier New",monospace' : f === 'cond' ? '"Arial Narrow","Roboto Condensed",sans-serif' : 'system-ui,Roboto,Arial,sans-serif';
@@ -290,7 +311,7 @@ function openMore() {
       '<label>Label size</label><div class="chips">' + PAGES.map(q => '<button type="button" data-w="' + q[0] + '" data-h="' + q[1] + '" style="' + (cur.w === q[0] && cur.h === q[1] ? 'border-color:#1c7ed6;background:#e7f1ff' : '') + '">' + q[0] + ' × ' + q[1] + '</button>').join('') + '</div>' +
       '<div class="fields"><label>Width (mm)<input id="mW" type="number" min="20" max="80" value="' + cur.w + '"></label><label>Height (mm)<input id="mH" type="number" min="10" max="100" value="' + cur.h + '"></label></div>' +
       '<p class="hint">The printer prints up to 48 mm across; wider designs are scaled to fit.</p>' +
-      '<label>Start from a ready design</label><div class="chips"><button type="button" data-p="standard">Style · size · barcode</button><button type="button" data-p="barcode">Barcode only</button><button type="button" data-p="big">Big size</button></div>' +
+      '<div class="row"><button class="btn ghost" id="mTpl" type="button">Ready-made templates (ethnic wear)…</button></div>' +
       '<label>My designs</label><div class="list" id="tplList">' + (tpls.length ? tpls.map((t, i) => '<div><div class="grow">' + esc(t.name) + '</div><button class="btn small ghost" data-load="' + i + '" type="button">Use</button><button class="btn small ghost" data-del="' + i + '" type="button">Delete</button></div>').join('') : '<p class="hint">None saved yet.</p>') + '</div>' +
       '<div class="row"><input id="tplName" placeholder="Name this design" maxlength="30"><button class="btn small" id="tplSave" type="button">Save design</button></div>' +
       '<div class="row"><button class="btn small ghost" id="mClear" type="button">Clear label</button><button class="btn" id="mDone" type="button">Done</button></div>';
@@ -298,10 +319,7 @@ function openMore() {
     const setPage = (w, h) => { w = Math.max(20, Math.min(80, num(w, p.w))); h = Math.max(10, Math.min(100, num(h, p.h))); pushUndo(); D().page = { w, h }; layout(); changed(); draw(); };
     $$('[data-w]', s.el).forEach(b => b.onclick = () => setPage(+b.dataset.w, +b.dataset.h));
     q('#mW').onchange = () => setPage(q('#mW').value, q('#mH').value); q('#mH').onchange = () => setPage(q('#mW').value, q('#mH').value);
-    $$('[data-p]', s.el).forEach(b => b.onclick = async () => {
-      if (!(await A.ask({ title: 'Replace this label?', body: 'The current design is replaced. Undo brings it back.', ok: 'Replace' }))) return;
-      pushUndo(); const keep = D().page; D().objects = PRESETS[b.dataset.p]().objects; D().page = { w: keep.w, h: keep.h }; E.sel.clear(); changed(); drawTray(); s.close();
-    });
+    q('#mTpl').onclick = () => { s.close(); openTemplates(); };
     $$('[data-load]', s.el).forEach(b => b.onclick = () => { pushUndo(); const t = JSON.parse(JSON.stringify(tpls[+b.dataset.load].design)); t.objects.forEach(o => { o.id = uid(); }); S.design = t; E.sel.clear(); layout(); changed(); drawTray(); s.close(); });
     $$('[data-del]', s.el).forEach(b => b.onclick = () => { tpls.splice(+b.dataset.del, 1); A.store.set('pls2Templates', tpls); draw(); });
     q('#tplSave').onclick = () => { const n = q('#tplName').value.trim(); if (!n) return A.toast('Give the design a name'); tpls.unshift({ name: n, design: JSON.parse(snap()) }); A.store.set('pls2Templates', tpls); draw(); A.toast('Design saved'); };
@@ -438,5 +456,5 @@ function init() {
 }
 init();
 
-window.Editor = { open, close, isOpen: () => E.opened, renderStatic, defaultDesign, _state: E };
+window.Editor = { open, close, openTemplates, isOpen: () => E.opened, renderStatic, defaultDesign, _state: E };
 })();

@@ -469,6 +469,7 @@ function init() {
 
   $('#printerChip').onclick = openPrinterSheet;
   $('#openSettings').onclick = openSettings;
+  $('#openTemplates').onclick = () => window.Editor.openTemplates();
   $('#openEditor').onclick = () => window.Editor.open();
   $('#printBulk').onclick = printBulk;
   $('#printTest').onclick = printTest;
