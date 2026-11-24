@@ -201,7 +201,7 @@ function renderSaved() {
 function renderSizes() {
   $('#sizeGrid').innerHTML = SIZES.map(s => {
     const q = S.sizes[s] | 0;
-    return '<div class="size' + (q ? ' has' : '') + '" data-s="' + s + '"><b>Size ' + s + '</b><div class="q"><button type="button" data-d="-1" aria-label="less">−</button><input inputmode="numeric" value="' + q + '" aria-label="Quantity size ' + s + '"><button type="button" data-d="1" aria-label="more">+</button></div></div>';
+    return '<div class="size' + (q ? ' has' : '') + '" data-s="' + s + '"><label class="pick"><input type="checkbox" class="chk"' + (q ? ' checked' : '') + ' aria-label="Select size ' + s + '"> <b>Size ' + s + '</b></label><div class="q"><button type="button" data-d="-1" aria-label="less">−</button><input inputmode="numeric" value="' + q + '" aria-label="Quantity size ' + s + '"><button type="button" data-d="1" aria-label="more">+</button></div></div>';
   }).join('');
   updateTotal();
 }
@@ -449,13 +449,21 @@ function init() {
   grid.addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return;
     const box = b.closest('.size'), s = box.dataset.s;
-    setQty(s, (S.sizes[s] | 0) + (+b.dataset.d)); $('input', box).value = S.sizes[s]; updateTotal();
+    setQty(s, (S.sizes[s] | 0) + (+b.dataset.d)); $('input[inputmode]', box).value = S.sizes[s]; $('.chk', box).checked = S.sizes[s] > 0; updateTotal();
+  });
+  grid.addEventListener('change', e => {
+    if (!e.target.classList.contains('chk')) return;
+    const box = e.target.closest('.size'), s = box.dataset.s;
+    if (e.target.checked) setQty(s, S.sizes[s] > 0 ? S.sizes[s] : (S.lastQty && S.lastQty[s]) || 1);
+    else { S.lastQty = S.lastQty || {}; S.lastQty[s] = S.sizes[s] | 0; setQty(s, 0); }
+    $('input[inputmode]', box).value = S.sizes[s]; updateTotal(); renderPreview();
   });
   grid.addEventListener('input', e => {
-    const box = e.target.closest('.size'); if (!box) return;
-    setQty(box.dataset.s, parseInt(e.target.value, 10) || 0); updateTotal(); renderPreview();
+    const box = e.target.closest('.size'); if (!box || e.target.classList.contains('chk')) return;
+    setQty(box.dataset.s, parseInt(e.target.value, 10) || 0); $('.chk', box).checked = (S.sizes[box.dataset.s] | 0) > 0; updateTotal(); renderPreview();
   });
-  grid.addEventListener('change', e => { const box = e.target.closest('.size'); if (box) e.target.value = S.sizes[box.dataset.s] | 0; });
+  grid.addEventListener('focusout', e => { const box = e.target.closest('.size'); if (box && !e.target.classList.contains('chk')) e.target.value = S.sizes[box.dataset.s] | 0; });
+  $('#selAll').onclick = () => { SIZES.forEach(s => { if (!(S.sizes[s] > 0)) S.sizes[s] = 1; }); persist(); renderSizes(); renderPreview(); };
   $('#qtyAll1').onclick = () => { const q = Math.max(0, Math.min(200, parseInt($('#qtyAllVal').value, 10) || 1)); SIZES.forEach(s => S.sizes[s] = q); persist(); renderSizes(); renderPreview(); };
   $('#qtyClear').onclick = () => { S.sizes = {}; persist(); renderSizes(); renderPreview(); };
 

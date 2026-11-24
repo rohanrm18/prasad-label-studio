@@ -54,8 +54,11 @@
 
     <section class="card">
       <div class="row"><h2 class="grow">Sizes &amp; quantity</h2>
-        <input id="qtyAllVal" inputmode="numeric" value="1" aria-label="Quantity for all sizes" style="width:56px;min-height:36px;text-align:center"><button id="qtyAll1" class="btn small ghost" type="button">Apply to all sizes</button>
+        <button id="selAll" class="btn small ghost" type="button">Select all</button>
         <button id="qtyClear" class="btn small ghost" type="button">Clear</button>
+      </div>
+      <div class="row"><span class="grow hint" style="margin:0">Tick the sizes you want, then set each quantity.</span>
+        <input id="qtyAllVal" inputmode="numeric" value="1" aria-label="Quantity for all sizes" style="width:56px;min-height:36px;text-align:center"><button id="qtyAll1" class="btn small ghost" type="button">Set all</button>
       </div>
       <div id="sizeGrid" class="sizes"></div>
       <div class="row total"><span id="totalText">0 labels</span></div>
