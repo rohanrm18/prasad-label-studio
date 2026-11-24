@@ -141,7 +141,7 @@ const S = {
   sizes: store.get('pls2Sizes', {}),
   barcodeMode: store.get('pls2BarcodeMode', 'auto'),
   manual: store.get('pls2Manual', ''),
-  options: Object.assign({ paperType: 'gap', gapMode: 'rows', gapMm: 3, alignMm: 0, darkness: 160, feedMm: 0, lastFeedMm: 0 }, store.get('pls2Options', {})),
+  options: Object.assign({ paperType: 'gap', gapMode: 'ff', gapMm: 3, alignMm: 0, darkness: 160, feedMm: 0, lastFeedMm: 0 }, store.get('pls2OptionsV2', {})),
   design: store.get('pls2Design', null),
   saved: store.get('pls2Products', []),
   history: store.get('pls2History', []),
@@ -152,7 +152,7 @@ const S = {
 };
 const persist = () => {
   store.set('pls2Product', S.product); store.set('pls2Sizes', S.sizes); store.set('pls2BarcodeMode', S.barcodeMode);
-  store.set('pls2Manual', S.manual); store.set('pls2Options', S.options); store.set('pls2Products', S.saved);
+  store.set('pls2Manual', S.manual); store.set('pls2OptionsV2', S.options); store.set('pls2Products', S.saved);
 };
 
 /* tokens, mirrored from the Java side so preview and print agree */
