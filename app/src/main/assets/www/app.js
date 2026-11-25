@@ -275,7 +275,6 @@ function openSettings() {
   $('#oTest', s.el).onclick = () => {
     const cur = { paperType: $('#oPaper', s.el).value, gapMode: $('#oMode', s.el).value, gapMm: n2('#oGap', 3), alignMm: n2('#oAlign', 0), darkness: n2('#oDark', 160), feedMm: 0, lastFeedMm: 0 };
     s.close();
-    if (!checkBarcodeReady()) return;
     S.gapTest = { queue: ['rows', 'gsff', 'ff'], restore: S.options };
     S.options = Object.assign({}, cur, { paperType: 'gap' });
     nextGapTest();
@@ -338,15 +337,22 @@ function drawBarcodeManager() {
 function request(mode, items, extra) {
   return Object.assign({ mode, product: S.product, barcodeMode: S.barcodeMode, manualBarcode: S.manual, items, design: S.design, options: S.options }, extra || {});
 }
+function endGapTest(msg) {
+  const t = S.gapTest;
+  if (t) S.options = t.restore;
+  S.gapTest = null; persist();
+  if (msg) toast(msg);
+}
 function nextGapTest() {
   const t = S.gapTest;
   if (!t) return;
   const mode = t.queue.shift();
-  if (!mode) { S.options = t.restore; persist(); S.gapTest = null; toast('Gap test finished. Options restored.'); return; }
+  if (!mode) return endGapTest('Gap test finished. Your settings are restored.');
   S.options.gapMode = mode; persist();
   toast('Gap test: ' + ({ rows: 'fixed gap', gsff: 'GS FF', ff: 'FF' })[mode] + ' — 2 labels');
-  const res = B.print(request('bulk', [{ size: '0', quantity: 2 }]));
-  if (res !== 'ok') { S.gapTest = null; S.options = t.restore; persist(); ask({ title: 'Gap test stopped', body: String(res), ok: 'OK', cancel: false }); }
+  // A fixed test barcode, so the test never uses up numbers from the real sequence.
+  const res = B.print(request('bulk', [{ size: '0', quantity: 2 }], { barcodeMode: 'manual', manualBarcode: '000000' }));
+  if (res !== 'ok') { endGapTest(''); ask({ title: 'Gap test stopped', body: String(res), ok: 'OK', cancel: false }); }
 }
 function send(r) {
   const res = B.print(r);
@@ -426,7 +432,8 @@ function onProgress(d) {
     return;
   }
   $('#progress').hidden = true;
-  if (d.state === 'done' && S.gapTest) { setTimeout(nextGapTest, 1200); return; }
+  if (S.gapTest && d.state === 'done') { setTimeout(nextGapTest, 1200); return; }
+  if (S.gapTest && d.state !== 'printing') { endGapTest('Gap test stopped: ' + (d.message || d.state)); }
   if (d.state === 'done') toast('Printed ' + d.sent + (d.sent === 1 ? ' label' : ' labels'));
   else if (d.state === 'cancelled') toast('Cancelled after ' + d.sent + ' of ' + d.total);
   else if (d.state === 'uncertain') ask({ title: 'Check the last label', body: d.message + ' Open the barcode manager to say whether it printed.', ok: 'Open manager', cancel: 'Later' }).then(ok => { if (ok) openBarcodeManager(); });
